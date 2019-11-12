@@ -2,17 +2,15 @@
   "name": "erasure-client",
   "version": "1.0.0",
   "description": "",
-  "main": "build/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "webpack --mode=production",
-    "start": "webpack --watch",
-    "deploy:test": "node ./node_modules/@erasure/testenv/deploy.js"
+    "start": "webpack --watch"
   },
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0"
+    "web3": "^1.2.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.6.0",
@@ -20,41 +18,14 @@
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/polyfill": "^7.6.0",
     "@babel/preset-env": "^7.6.0",
-    "@babel/preset-react": "^7.0.0",
     "@babel/runtime": "^7.6.2",
-    "@erasure/testenv": "^1.1.0",
-    "@typescript-eslint/eslint-plugin": "^2.3.2",
-    "@typescript-eslint/parser": "^2.3.2",
-    "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
-    "css-loader": "^3.2.0",
-    "date-fns": "^2.4.1",
-    "eslint": "^6.5.1",
-    "eslint-config-react-app": "^5.0.2",
-    "eslint-plugin-flowtype": "^3.13.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.15.0",
-    "eslint-plugin-react-hooks": "^1.7.0",
-    "file-loader": "^4.2.0",
     "husky": "^3.0.5",
-    "ignore-loader": "^0.1.2",
     "lint-staged": "^9.2.5",
-    "ls": "^0.2.1",
-    "mdbreact": "^4.20.0",
-    "npm": "^6.11.3",
     "prettier": "^1.18.2",
-    "raw-loader": "^3.1.0",
-    "react": "^16.9.0",
-    "react-bootstrap": "^1.0.0-beta.12",
-    "react-datepicker": "^2.9.6",
-    "react-dom": "^16.9.0",
-    "react-scrollbar": "^0.5.6",
-    "style-loader": "^1.0.0",
-    "url-loader": "^2.1.0",
+    "web3": "^1.2.2",
     "webpack": "^4.40.2",
-    "webpack-cli": "^3.3.9",
-    "worker-loader": "^2.0.0"
+    "webpack-cli": "^3.3.9"
   },
   "husky": {
     "hooks": {

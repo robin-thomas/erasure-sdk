@@ -1,5 +1,5 @@
 import Web3New from "web3";
-import HDWalletProvider from "@truffle/hdwallet-provider";
+// import HDWalletProvider from "@truffle/hdwallet-provider";
 
 import Utils from "./Utils";
 
@@ -14,20 +14,17 @@ const Web = {
       provider = window.ethereum;
       enable = true;
     } else if (mnemonic) {
-      provider = new HDWalletProvider(mnemonic, infura);
+      // provider = new HDWalletProvider(mnemonic, infura);
     } else {
       provider = new Web3New.providers.HttpProvider(infura);
     }
 
-    return {
-      provider,
-      enable
-    };
+    return [provider, enable];
   },
 
   getWeb3: (provider = null, { infura, mneomic = null }) => {
     if (provider === null) {
-      provider = Web3.getWeb3Provider(infura, mneomic);
+      [provider] = Web3.getWeb3Provider(infura, mneomic);
     }
 
     return new Web3New(provider);
@@ -74,7 +71,7 @@ const Web = {
     } catch (err) {
       throw err;
     }
-  },
+  }
 };
 
 export default Web3;

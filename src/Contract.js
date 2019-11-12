@@ -55,7 +55,6 @@ class Contract {
       throw err;
     }
   }
-
-};
+}
 
 export default Contract;

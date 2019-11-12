@@ -1,5 +1,5 @@
 const Network = {
-  toNetworkId: (network) => {
+  toNetworkId: network => {
     switch (network) {
       case "ropsten":
         return 3;
