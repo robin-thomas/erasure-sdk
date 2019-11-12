@@ -1,0 +1,25 @@
+.erasure-container {
+  background: white;
+  color: black;
+  border-radius: 10px;
+  width: 250px !important;
+  border: 2px solid var(--erasure-color);
+  box-shadow: 0 1px 0 0 var(--erasure-color);
+  padding-top: 10px;
+  padding-bottom: 5px;
+}
+
+.erasure-container input:focus:not([readonly]) {
+  border-bottom: 1px solid var(--erasure-color) !important;
+  box-shadow: 0 1px 0 0 var(--erasure-color) !important;
+}
+
+.erasure-container input:focus:not([readonly]) + label {
+  color: var(--erasure-color) !important;
+}
+
+.erasure-container .form-control.input-validated {
+  background-repeat: no-repeat;
+  background-position: center right calc(0.375em + 0.1875rem);
+  background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}

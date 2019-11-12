@@ -1,0 +1,25 @@
+.erasure-content {
+  border-radius: 10px;
+  border: 2px solid var(--erasure-color);
+  overflow: hidden;
+}
+
+.erasure-content-header {
+  border-bottom-right-radius: 50px;
+  background: var(--erasure-color);
+  text-align: center;
+  color: #fff;
+}
+
+.erasure-content-close {
+  color: var(--erasure-color);
+  cursor: pointer;
+}
+
+.erasure-content-footer div[class*="col"] {
+  text-align: center;
+}
+
+.erasure-content-footer div[class*="col"]:nth-child(2) {
+  text-decoration: underline;
+}
