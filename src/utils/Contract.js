@@ -1,6 +1,5 @@
 import Web3 from "./Web3";
 import Utils from "./Utils";
-import Network from "./Network";
 
 import contracts from "../contracts.json";
 

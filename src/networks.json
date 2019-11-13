@@ -1,8 +1,0 @@
-{
-  "ropsten": {
-    "networkId": 3
-  },
-  "rinkeby": {
-    "networkId": 4
-  }
-}
