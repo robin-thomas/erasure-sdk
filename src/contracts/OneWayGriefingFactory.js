@@ -3,6 +3,8 @@ import CryptoIPFS from "@erasure/crypto-ipfs";
 import Web3 from "../utils/Web3";
 import Contract from "../utils/Contract";
 
+import contract from "../../artifacts/OneWayGriefing_Factory.json";
+
 class OneWayGriefingFactory {
   constructor({ network, web3 }) {
     this.web3 = web3;
