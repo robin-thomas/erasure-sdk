@@ -49,7 +49,7 @@ const Web = {
     }
   },
 
-  getTx: async (web3, txHash) => {
+  getTxReceipt: async (web3, txHash) => {
     // Wait till the transaction is mined.
     let _receipt = null;
     while (true) {
@@ -60,6 +60,12 @@ const Web = {
 
       await Utils.sleep(1000 /* 1s */);
     }
+
+    return _receipt;
+  },
+
+  getTx: async (web3, txHash) => {
+    const _receipt = await Web3.getTxReceipt(web3, txHash);
 
     try {
       if (_receipt.status === true) {

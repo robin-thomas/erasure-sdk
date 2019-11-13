@@ -31,13 +31,18 @@ class FeedFactory {
       // Convert the ipfs hash to multihash hex code.
       const feedStaticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
-      await this.contract.invokeFn(
+      // Creates a contract.
+      const txHash = await this.contract.invokeFn(
         "createExplicit",
         true,
         operator,
         postRegistry,
         feedStaticMetadata
       );
+
+      // Get the address of the newly created address.
+      const txReceipt = await Web3.getTxReceipt(this.web3, txHash);
+      return txReceipt.logs[0].address;
     } catch (err) {
       throw err;
     }

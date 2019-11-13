@@ -1,6 +1,5 @@
 import CryptoIPFS from "@erasure/crypto-ipfs";
 
-import Web3 from "../utils/Web3";
 import Contract from "../utils/Contract";
 
 import contract from "../../artifacts/Feed.json";
