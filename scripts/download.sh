@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 
-VERSION="v1.0.0"
+VERSION="v1.1.0"
+FAILBACK_VERSION="v1.0.0"
 ARTIFACT_DIR="artifacts"
 
 download_contracts() {
   [ -d "${ARTIFACT_DIR}" ] || mkdir "${ARTIFACT_DIR}"
-
-  version=$1
 
   declare -a contracts=(
     'CountdownGriefing'
@@ -17,6 +16,8 @@ download_contracts() {
     'Feed'
     'Feed_Factory'
     'MockNMR'
+    'OneWayGriefing'
+    'OneWayGriefing_Factory'
     'Post'
     'Post_Factory'
     'SimpleGriefing'
@@ -24,22 +25,22 @@ download_contracts() {
   )
 
   # download all the erasure contracts.
-  for key in "${contracts[@]}"; do
-    github_url="https://github.com/erasureprotocol/erasure-protocol/releases/download/${version}/${key}.json"
-    [ -f "${ARTIFACT_DIR}/${key}.json" ] || wget -q -O "${ARTIFACT_DIR}/${key}.json" "${github_url}"
+  for file in "${contracts[@]}"; do
+    [ -f "${ARTIFACT_DIR}/${file}.json" ] && continue
+
+    github_url="https://github.com/erasureprotocol/erasure-protocol/releases/download/${VERSION}/${file}.json"
+    wget -q --show-progress -O "${ARTIFACT_DIR}/${file}.json" "${github_url}"
+    if [ $? -ne 0 ]; then
+      github_url="https://github.com/erasureprotocol/erasure-protocol/releases/download/${FAILBACK_VERSION}/${file}.json"
+      wget -q --show-progress -O "${ARTIFACT_DIR}/${file}.json" "${github_url}"
+    fi
   done
 
   # download INMR contract artifact.
   github_url="https://raw.githubusercontent.com/numerai/contract/066f643afdfb8d591d568d55baed9d48577af316/build/INMR.json"
-  [ -f "${ARTIFACT_DIR}/NMR.json" ] || wget -q -O "${ARTIFACT_DIR}/NMR.json" "${github_url}"
-
-  # download OneWayGriefing_Factory contract artifact
-  if [ "$VERSION" != "v1.0.0" ]; then
-    github_url="https://github.com/erasureprotocol/erasure-protocol/releases/download/v1.0.0/OneWayGriefing_Factory.json"
-    [ -f "${ARTIFACT_DIR}/OneWayGriefing_Factory.json" ] || wget -q -O "${ARTIFACT_DIR}/OneWayGriefing_Factory.json" "${github_url}"
-  fi
+  [ -f "${ARTIFACT_DIR}/NMR.json" ] || wget -q --show-progress -O "${ARTIFACT_DIR}/NMR.json" "${github_url}"
 }
 
 case $1 in
-  "contracts") download_contracts $VERSION;;
+  "contracts") download_contracts;;
 esac
