@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VERSION="v1.1.0"
+VERSION="v1.0.0"
 ARTIFACT_DIR="artifacts"
 
 download_contracts() {
