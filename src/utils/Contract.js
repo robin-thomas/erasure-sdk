@@ -2,6 +2,8 @@ import Web3 from "./Web3";
 import Utils from "./Utils";
 import Network from "./Network";
 
+import address from "../contracts.json";
+
 class Contract {
   constructor(network, web3, contract) {
     this.web3 = web3;
@@ -48,6 +50,18 @@ class Contract {
       }
     } catch (err) {
       throw err;
+    }
+  }
+
+  getAddress(contract, network) {
+    try {
+      if (contract === "OneWayGriefing_Factory") {
+        return address["v1.0.0"][network].OneWayGriefing_Factory;
+      }
+
+      return address["v1.1.0"][network][contract];
+    } catch (err) {
+      throw new Error(`Contract address not found: ${contract}, ${network}`);
     }
   }
 }

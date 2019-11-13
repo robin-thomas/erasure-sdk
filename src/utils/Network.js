@@ -1,6 +1,6 @@
 const Network = {
   toNetworkId: network => {
-    switch (network) {
+    switch (network.toLowerCase()) {
       case "ropsten":
         return 3;
     }
