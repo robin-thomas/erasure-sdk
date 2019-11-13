@@ -14,7 +14,7 @@ class OneWayGriefingFactory {
       network,
       web3,
       abi: contract.abi,
-      address: "OneWayGriefing_Factory"
+      contract: "OneWayGriefing_Factory"
     });
   }
 
