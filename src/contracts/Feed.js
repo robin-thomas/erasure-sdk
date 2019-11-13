@@ -8,7 +8,13 @@ import contract from "../../artifacts/Feed.json";
 class Feed {
   constructor({ network, web3 }) {
     this.web3 = web3;
-    this.contract = new Contract({ network, web3, contract });
+
+    this.contract = new Contract({
+      network,
+      web3,
+      abi: contract.abi,
+      address: Contract.getAddress("Feed", this.network)
+    });
   }
 }
 

@@ -1,8 +1,11 @@
+import config from "../networks.json";
+
 const Network = {
   toNetworkId: network => {
-    switch (network.toLowerCase()) {
-      case "ropsten":
-        return 3;
+    try {
+      return config[network.toLowerCase()].networkId;
+    } catch (err) {
+      return -1;
     }
   }
 };

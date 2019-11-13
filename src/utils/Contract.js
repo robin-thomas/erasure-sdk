@@ -5,11 +5,11 @@ import Network from "./Network";
 import address from "../contracts.json";
 
 class Contract {
-  constructor(network, web3, contract) {
+  constructor(network, web3, abi, address) {
     this.web3 = web3;
 
     setNetwork(network);
-    setContract(contract);
+    setContract(abi, address);
   }
 
   setNetwork(network = null) {
@@ -21,14 +21,11 @@ class Contract {
     return this;
   }
 
-  setContract(contract = null) {
-    if (contract) {
-      this.contractAddress = contract.networks[this.networkId].address;
+  setContract(abi, address) {
+    if (abi !== undefined && abi !== null) {
+      this.address = address;
 
-      this.contract = new this.web3.eth.Contract(
-        contract.abi,
-        contract.networks[this._networkId].address
-      );
+      this.contract = new this.web3.eth.Contract(abi, address);
     }
 
     return this;
@@ -46,7 +43,7 @@ class Contract {
 
         return await _fn.call({ from: accounts[0] });
       } else {
-        return await Web3.sendSignedTx(this.contractAddress, _fn, this.web3);
+        return await Web3.sendSignedTx(this.address, _fn, this.web3);
       }
     } catch (err) {
       throw err;

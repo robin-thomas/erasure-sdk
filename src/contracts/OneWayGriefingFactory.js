@@ -9,7 +9,13 @@ class OneWayGriefingFactory {
   constructor({ network, web3 }) {
     this.web3 = web3;
     this.network = network;
-    this.contract = new Contract({ network, web3, contract });
+
+    this.contract = new Contract({
+      network,
+      web3,
+      abi: contract.abi,
+      address: Contract.getAddress("OneWayGriefing_Factory", this.network)
+    });
   }
 
   async createExplicit(counterParty, countdownLength, ipfsHash) {
