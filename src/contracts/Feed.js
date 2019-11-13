@@ -13,7 +13,7 @@ class Feed {
       network,
       web3,
       abi: contract.abi,
-      address: Contract.getAddress("Feed", this.network)
+      contract: "Feed"
     });
   }
 }

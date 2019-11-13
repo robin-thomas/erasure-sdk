@@ -13,7 +13,7 @@ class NMR {
       network,
       web3,
       abi: contract.abi,
-      address: Contract.getAddress("NMR", this.network)
+      contract: "NMR"
     });
   }
 

@@ -2,23 +2,26 @@ import Web3 from "./Web3";
 import Utils from "./Utils";
 import Network from "./Network";
 
-import address from "../contracts.json";
+import contracts from "../contracts.json";
 
-class Contract {
-  constructor(network, web3, abi, address) {
-    this.web3 = web3;
-
-    setNetwork(network);
-    setContract(abi, address);
-  }
-
-  setNetwork(network = null) {
-    if (network) {
-      this.network = network;
-      this.networkId = Network.toNetworkId(network);
+const getAddress = (contract, network) => {
+  try {
+    if (contract === "OneWayGriefing_Factory") {
+      return contracts["v1.0.0"][network].OneWayGriefing_Factory;
     }
 
-    return this;
+    return contracts["v1.1.0"][network][contract];
+  } catch (err) {
+    throw new Error(`Contract address not found: ${contract}, ${network}`);
+  }
+};
+
+class Contract {
+  constructor({ network, contract, abi, web3 }) {
+    this.web3 = web3;
+
+    this.address = getAddress(contract, network);
+    setContract(abi, this.address);
   }
 
   setContract(abi, address) {
@@ -47,18 +50,6 @@ class Contract {
       }
     } catch (err) {
       throw err;
-    }
-  }
-
-  getAddress(contract, network) {
-    try {
-      if (contract === "OneWayGriefing_Factory") {
-        return address["v1.0.0"][network].OneWayGriefing_Factory;
-      }
-
-      return address["v1.1.0"][network][contract];
-    } catch (err) {
-      throw new Error(`Contract address not found: ${contract}, ${network}`);
     }
   }
 }

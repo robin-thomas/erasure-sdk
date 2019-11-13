@@ -14,7 +14,7 @@ class OneWayGriefingFactory {
       network,
       web3,
       abi: contract.abi,
-      address: Contract.getAddress("OneWayGriefing_Factory", this.network)
+      address: "OneWayGriefing_Factory"
     });
   }
 

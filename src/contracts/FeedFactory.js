@@ -14,7 +14,7 @@ class FeedFactory {
       network,
       web3,
       abi: contract.abi,
-      address: Contract.getAddress("Feed_Factory", this.network)
+      contract: "Feed_Factory"
     });
   }
 
