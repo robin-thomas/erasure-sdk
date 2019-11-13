@@ -3,15 +3,10 @@ import Utils from "./Utils";
 import Network from "./Network";
 
 class Contract {
-  constructor({ network, infura, mnemonic, contract }) {
-    // Set the network details.
+  constructor(network, web3, contract) {
+    this.web3 = web3;
+
     setNetwork(network);
-
-    // Set the web3 details.
-    this.provider = Web3.getWeb3Provider(infura, mnemonic);
-    this.web3 = Web3.getWeb3(this.provider);
-
-    // Set contract.
     setContract(contract);
   }
 

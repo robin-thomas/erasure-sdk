@@ -1,3 +1,5 @@
-import Contract from "./Contract";
+import FeedFactory from "./contracts/FeedFactory";
+import NMR from "./contracts/NMR";
+import OneWayGriefingFactory from "./contracts/OneWayGriefingFactory";
 
-export { Contract };
+export { FeedFactory, NMR, OneWayGriefingFactory };
