@@ -1,20 +1,20 @@
 import Web3New from "web3";
-// import HDWalletProvider from "@truffle/hdwallet-provider";
+import HDWalletProvider from "@truffle/hdwallet-provider";
 
 import Utils from "./Utils";
 
-const Web = {
+const Web3 = {
   // Check if a web3 provider like metamask is already injected.
   // If yes, use that.
   getWeb3Provider: (infura, mnemonic = null) => {
     let enable = false;
     let provider = null;
 
-    if (window.ethereum) {
+    if (typeof window !== "undefined" && window.ethereum !== undefined) {
       provider = window.ethereum;
       enable = true;
     } else if (mnemonic) {
-      // provider = new HDWalletProvider(mnemonic, infura);
+      provider = new HDWalletProvider(mnemonic, infura);
     } else {
       provider = new Web3New.providers.HttpProvider(infura);
     }
@@ -22,28 +22,48 @@ const Web = {
     return [provider, enable];
   },
 
-  getWeb3: (provider = null, { infura, mneomic = null }) => {
+  getWeb3: async (provider = null, { infura, mnemonic = null }) => {
+    let enable = false;
     if (provider === null) {
-      [provider] = Web3.getWeb3Provider(infura, mneomic);
+      [provider, enable] = Web3.getWeb3Provider(infura, mnemonic);
     }
 
-    return new Web3New(provider);
+    const web3 = new Web3New(provider);
+    if (enable) {
+      await provider.enable();
+    }
+
+    return web3;
   },
 
-  sendSignedTx: async (networkId, contractAddress, fn, web3) => {
+  sendSignedTx: async (contractAddress, fn, web3) => {
     try {
       const accounts = await web3.eth.getAccounts();
 
       const tx = {
         from: accounts[0],
         to: contractAddress,
-        data: fn.encodeABI(),
-        gas: 8000000,
-        gasPrice: web3.utils.toHex(web3.utils.toWei("20", "Gwei"))
+        data: fn.encodeABI()
       };
 
       const signedTx = await web3.eth.signTransaction(tx, tx.from);
       return await web3.eth.sendSignedTransaction(signedTx.raw);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  estimateGas: async (contractAddress, fn, web3) => {
+    try {
+      const accounts = await web3.eth.getAccounts();
+
+      const tx = {
+        from: accounts[0],
+        to: contractAddress,
+        data: fn.encodeABI()
+      };
+
+      return await web3.eth.estimateGas(tx, tx.from);
     } catch (err) {
       throw err;
     }

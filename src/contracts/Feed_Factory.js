@@ -19,7 +19,7 @@ class Feed_Factory {
     });
   }
 
-  async createExplicit({ hash, data = null }) {
+  async createExplicit({ hash, data = null, estimate = false }) {
     try {
       const accounts = await this.web3.eth.getAccounts();
       const operator = accounts[0];
@@ -35,24 +35,23 @@ class Feed_Factory {
         ipfsHash = await IPFS.upload(data);
       }
       const feedStaticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
-      console.log(
-        `Uploaded to IPFS: hash = ${ipfsHash}, hex = ${feedStaticMetadata}`
-      );
 
-      // Creates a contract.
-      const txHash = await this.contract.invokeFn(
+      const fnArgs = [operator, postRegistry, feedStaticMetadata];
+
+      if (estimate) {
+        return await this.contract.estimateGas("createExplicit", ...fnArgs);
+      }
+
+      // Creates the contract.
+      const txReceipt = await this.contract.invokeFn(
         "createExplicit",
         true,
-        operator,
-        postRegistry,
-        feedStaticMetadata
+        ...fnArgs
       );
-
-      // Get the address of the newly created address.
-      const txReceipt = await Web3.getTxReceipt(this.web3, txHash);
 
       return {
         hash: ipfsHash,
+        txHash: txReceipt.logs[0].transactionHash,
         address: txReceipt.logs[0].address
       };
     } catch (err) {
