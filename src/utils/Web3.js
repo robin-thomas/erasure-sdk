@@ -22,7 +22,7 @@ const Web3 = {
     return [provider, enable];
   },
 
-  getWeb3: async (provider = null, { infura, mnemonic = null }) => {
+  getWeb3: (provider = null, { infura, mnemonic = null }) => {
     let enable = false;
     if (provider === null) {
       [provider, enable] = Web3.getWeb3Provider(infura, mnemonic);
@@ -30,7 +30,7 @@ const Web3 = {
 
     const web3 = new Web3New(provider);
     if (enable) {
-      await provider.enable();
+      provider.enable();
     }
 
     return web3;

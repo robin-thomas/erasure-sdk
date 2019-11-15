@@ -21,7 +21,17 @@ const Crypto = {
           .update(accounts[0])
           .digest("base64");
 
-        return cryptoIpfs.crypto.asymmetric.generateKeyPair(signature, salt);
+        const key = cryptoIpfs.crypto.asymmetric.generateKeyPair(
+          signature,
+          salt
+        );
+
+        return {
+          msg,
+          signature,
+          key,
+          salt
+        };
       } catch (err) {
         throw err;
       }

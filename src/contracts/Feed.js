@@ -1,5 +1,6 @@
 import CryptoIPFS from "@erasure/crypto-ipfs";
 
+import IPFS from "../utils/IPFS";
 import Contract from "../utils/Contract";
 
 import contract from "../../artifacts/Feed.json";
@@ -20,23 +21,25 @@ class Feed {
     this.contract = this.contract.setContract(contract.abi, address);
   }
 
-  async createPost(data) {
+  async createPost(encryptedDataHash) {
     const postFactory = Contract.getAddress("Post_Factory", this.network);
-    if (!this.web3.utils.isAddress(postRegistry)) {
+    if (!this.web3.utils.isAddress(postFactory)) {
       throw new Error(`PostFactory ${postFactory} is not an address`);
     }
 
-    // Creates a contract.
-    const txHash = await this.contract.invokeFn(
+    // Creates a post contract.
+    const txReceipt = await this.contract.invokeFn(
       "createPost",
       true,
       postFactory,
-      data
+      encryptedDataHash
     );
 
-    // Get the address of the newly created address.
-    const txReceipt = await Web3.getTxReceipt(this.web3, txHash);
-    return txReceipt.logs[0].address;
+    return {
+      encryptedDataHash,
+      address: txReceipt.logs[0].address,
+      txHash: txReceipt.logs[0].transactionHash
+    };
   }
 }
 

@@ -35,6 +35,7 @@ class Feed_Factory {
         ipfsHash = await IPFS.upload(data);
       }
       const feedStaticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
+      console.log(`IPFS: hash = ${ipfsHash}, hex = ${feedStaticMetadata}`);
 
       const fnArgs = [operator, postRegistry, feedStaticMetadata];
 
@@ -50,7 +51,7 @@ class Feed_Factory {
       );
 
       return {
-        hash: ipfsHash,
+        ipfsHash,
         txHash: txReceipt.logs[0].transactionHash,
         address: txReceipt.logs[0].address
       };

@@ -7,14 +7,15 @@ class Contract {
   constructor({ network, contract, abi, web3 }) {
     this.web3 = web3;
 
-    this.address = Contract.getAddress(contract, network);
+    this.address = web3.utils.isAddress(contract)
+      ? contract
+      : Contract.getAddress(contract, network);
     this.setContract(abi, this.address);
   }
 
   setContract(abi, address) {
     if (abi !== undefined && abi !== null) {
       this.address = address;
-
       this.contract = new this.web3.eth.Contract(abi, address);
     }
 
