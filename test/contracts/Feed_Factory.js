@@ -1,7 +1,7 @@
 import assert from "assert";
 
 import Web3 from "../../src/utils/Web3";
-import FeedFactory from "../../src/contracts/Feed_Factory";
+import Feed_Factory from "../../src/contracts/Feed_Factory";
 
 import config from "../../src/keys.json";
 
@@ -23,7 +23,7 @@ describe("Feed_Factory", () => {
 
   describe("#createExplicit", () => {
     it("", async () => {
-      const contract = new FeedFactory({ network, web3 });
+      const contract = new Feed_Factory({ network, web3 });
 
       const estimate = await contract.createExplicit({
         hash: ipfsHash,

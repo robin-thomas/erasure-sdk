@@ -20,14 +20,7 @@ class OneWayGriefing_Factory {
   }
 
   setAddress(address) {
-    this.contract = new Contract({
-      network,
-      web3,
-      abi: contract.abi,
-      contract: address
-    });
-
-    return this;
+    this.contract = this.contract.setContract(contract.abi, address);
   }
 
   async createExplicit({
