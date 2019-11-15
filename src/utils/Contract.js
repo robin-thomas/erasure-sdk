@@ -53,6 +53,8 @@ class Contract {
     try {
       if (contract === "OneWayGriefing_Factory") {
         return contracts["v1.0.0"][network].OneWayGriefing_Factory;
+      } else if (contract === "NMR") {
+        return contracts["v1.1.0"][network].NMR;
       }
 
       return contracts["v1.0.0"][network][contract];
