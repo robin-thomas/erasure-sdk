@@ -17,10 +17,17 @@ const IPFS = {
 
   add: async data => {
     try {
-      const content = Buffer.from(data);
-
-      const results = await IPFS.getClient().add(content);
+      const results = await IPFS.getClient().add(Buffer.from(data));
       return results[0].hash;
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  get: async hash => {
+    try {
+      const results = await IPFS.getClient().get(hash);
+      return results[0].content.toString();
     } catch (err) {
       throw err;
     }
