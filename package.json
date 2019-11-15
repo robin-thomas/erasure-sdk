@@ -25,6 +25,7 @@
     "@truffle/hdwallet-provider": "^1.0.25",
     "babel-loader": "^8.0.6",
     "esm": "^3.2.25",
+    "ethereumjs-util": "^6.2.0",
     "husky": "^3.0.5",
     "ipfs": "^0.39.0",
     "lint-staged": "^9.2.5",
