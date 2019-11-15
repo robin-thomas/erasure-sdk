@@ -19,7 +19,26 @@ class OneWayGriefing_Factory {
     });
   }
 
-  async createExplicit(counterParty, countdownLength, { hash, data = null }) {
+  setAddress(address) {
+    this.contract = new Contract({
+      network,
+      web3,
+      abi: contract.abi,
+      contract: address
+    });
+
+    return this;
+  }
+
+  async createExplicit({
+    counterParty,
+    countdownLength,
+    ratio,
+    ratioType,
+    hash,
+    data = null,
+    estimate = false
+  }) {
     try {
       const accounts = await this.web3.eth.getAccounts();
       const operator = accounts[0];
@@ -40,28 +59,32 @@ class OneWayGriefing_Factory {
         ipfsHash = await IPFS.upload(data);
       }
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
-      console.log(
-        `Uploaded to IPFS: hash = ${ipfsHash}, hex = ${staticMetadata}`
-      );
+      console.log(`IPFS: hash = ${ipfsHash}, hex = ${staticMetadata}`);
 
-      const txHash = await this.contract.invokeFn(
-        "createExplicit",
-        true,
+      const fnArgs = [
         token,
         operator,
         staker,
-        counterparty,
+        counterParty,
         ratio,
         ratioType,
         countdownLength,
         staticMetadata
-      );
+      ];
 
-      // Get the address of the newly created address.
-      const txReceipt = await Web3.getTxReceipt(this.web3, txHash);
+      if (estimate) {
+        return await this.contract.estimateGas("createExplicit", ...fnArgs);
+      }
+
+      const txReceipt = await this.contract.invokeFn(
+        "createExplicit",
+        true,
+        ...fnArgs
+      );
 
       return {
         hash: ipfsHash,
+        txHash: txReceipt.logs[0].transactionHash,
         address: txReceipt.logs[0].address
       };
     } catch (err) {
@@ -69,14 +92,24 @@ class OneWayGriefing_Factory {
     }
   }
 
-  async increaseStake(stakedAmount /* in NMR */) {
-    if (typeof stakedAmount !== "string" && !(stakedAmount instanceof String)) {
-      stakedAmount = stakedAmount.toString();
+  async increaseStake(stakeAmount /* in NMR */, estimate = false) {
+    if (typeof stakeAmount !== "string" && !(stakeAmount instanceof String)) {
+      stakeAmount = stakeAmount.toString();
     }
 
-    const stake = web3.utils.toHex(web3.utils.toWei(stakedAmount, "ether"));
+    const stake = web3.utils.toHex(web3.utils.toWei(stakeAmount, "ether"));
 
-    await this.contract.invokeFn("createExplicit", true, 0, stake);
+    const fnName = "increaseStake";
+    const fnArgs = [
+      0, // current stake
+      stake // new stake
+    ];
+
+    if (estimate) {
+      return await this.contract.estimateGas(fnName, ...fnArgs);
+    }
+
+    return await this.contract.invokeFn(fnName, true, ...fnArgs);
   }
 }
 
