@@ -76,7 +76,7 @@ class OneWayGriefing_Factory {
       );
 
       return {
-        hash: ipfsHash,
+        ipfsHash,
         txHash: txReceipt.logs[0].transactionHash,
         address: txReceipt.logs[0].address
       };

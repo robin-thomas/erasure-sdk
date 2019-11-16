@@ -17,11 +17,8 @@ class NMR {
     });
   }
 
-  async changeApproval(estimate = false) {
+  async changeApproval(spender, estimate = false) {
     try {
-      const accounts = await this.web3.eth.getAccounts();
-      const spender = accounts[0];
-
       const fnName = "changeApproval";
       const fnArgs = [spender, 0, -1 /* max uint256 value */];
 
