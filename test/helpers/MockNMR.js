@@ -1,11 +1,15 @@
 /* global web3 */
 
-import bn from "bn.js";
+import BN from "bn.js";
 import truffle_contract from "@truffle/contract";
 
 import MockNMR_json from "../../artifacts/MockNMR.json";
 
-const bNToStringOrIdentity = a => (bn.isBN(a) ? a.toString() : a);
+const bNToStringOrIdentity = a => (BN.isBN(a) ? a.toString() : a);
+
+const sleep = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
 
 const wrappedERC20 = contract => ({
   ...contract,
@@ -40,7 +44,27 @@ const MockNMR = {
       gasPrice: 10000000000
     });
 
-    return wrappedERC20(await contract.at(receipt.contractAddress));
+    const _contract = await contract.at(receipt.contractAddress);
+    const token = wrappedERC20(_contract);
+    console.log(`MockNMR contract created at: ${token.address}`);
+
+    // Wait for some mock NMR to be minted & transferred.
+    while (true) {
+      let decimals = await token.decimals();
+      decimals = new BN(10, 10).pow(decimals);
+
+      let balance = await token.balanceOf(account);
+      balance = balance.div(decimals).toNumber();
+
+      if (balance > 0) {
+        console.log(`Transferred ${balance} NMR to ${account}`);
+        break;
+      }
+
+      await sleep(1000);
+    }
+
+    return token;
   }
 };
 
