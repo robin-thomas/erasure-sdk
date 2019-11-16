@@ -65,9 +65,9 @@ class ErasureClient {
 
   // Reveal an encrypted post
   // so that others can view it.
-  async revealPost(postAddress) {
+  async revealPost(ipfsHash) {
     try {
-      return await RevealPost.bind(this)(postAddress);
+      return await RevealPost.bind(this)(ipfsHash);
     } catch (err) {
       throw err;
     }

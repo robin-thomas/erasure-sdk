@@ -48,6 +48,7 @@ class Feed {
     );
 
     return {
+      ipfsHash,
       address: txReceipt.logs[0].address,
       txHash: txReceipt.logs[0].transactionHash
     };

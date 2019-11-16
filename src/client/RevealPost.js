@@ -1,14 +1,14 @@
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
-const RevealPost = async postAddress => {
+const RevealPost = async ipfsHash => {
   try {
     // Get the encrypted ipfs hash from the post address
     const {
       nonce,
       encryptedSymmetricKey,
       encryptedPostIpfsHash
-    } = this.datastore.post.posts[postAddress].metadata;
+    } = this.datastore.post.posts[ipfsHash].metadata;
 
     // Download it from ipfs
     const encryptedPost = await IPFS.get(encryptedPostIpfsHash);

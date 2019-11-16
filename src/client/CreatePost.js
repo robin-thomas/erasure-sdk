@@ -28,8 +28,9 @@ const CreatePost = async post => {
 
     const result = await this.feed.createPost(ipfsHash, metadata);
 
-    this.datastore.post.posts[result.address] = {
+    this.datastore.post.posts[ipfsHash] = {
       metadata,
+      address: result.address,
       feed: this.datastore.feed.address,
       timestamp: new Date().toISOString()
     };
