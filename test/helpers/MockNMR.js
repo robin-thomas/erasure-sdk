@@ -3,13 +3,11 @@
 import BN from "bn.js";
 import truffle_contract from "@truffle/contract";
 
+import Utils from "../../src/utils/Utils";
+
 import MockNMR_json from "../../artifacts/MockNMR.json";
 
 const bNToStringOrIdentity = a => (BN.isBN(a) ? a.toString() : a);
-
-const sleep = ms => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
 
 const wrappedERC20 = contract => ({
   ...contract,
@@ -46,7 +44,7 @@ const MockNMR = {
 
     const _contract = await contract.at(receipt.contractAddress);
     const token = wrappedERC20(_contract);
-    console.log(`MockNMR contract created at: ${token.address}`);
+    console.log(`\tMockNMR contract created at: ${token.address}`);
 
     // Wait for some mock NMR to be minted & transferred.
     while (true) {
@@ -57,11 +55,11 @@ const MockNMR = {
       balance = balance.div(decimals).toNumber();
 
       if (balance > 0) {
-        console.log(`Transferred ${balance} NMR to ${account}`);
+        console.log(`\tTransferred ${balance} NMR to ${account}\n`);
         break;
       }
 
-      await sleep(1000);
+      await Utils.sleep(1000);
     }
 
     return token;

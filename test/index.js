@@ -7,7 +7,7 @@ import MockNMR from "./helpers/MockNMR";
 import config from "../src/keys.json";
 
 describe("ErasureClient", () => {
-  const stakeAmount = "0.01";
+  const stakeAmount = "1";
   const network = "rinkeby";
   const version = "1.0.0";
   const countdownLength = 3456000;
@@ -34,7 +34,6 @@ describe("ErasureClient", () => {
 
     mockNMR = await MockNMR.linkContract(account, web3);
     assert.ok(web3.utils.isAddress(mockNMR.address));
-    console.log(`MockNMR contract created at: ${mockNMR.address}`);
   });
 
   it("#createFeed", async () => {
@@ -59,8 +58,10 @@ describe("ErasureClient", () => {
       contractAddress: mockNMR.address
     });
 
-    assert.ok(web3.utils.isAddress(result.address));
-    console.log(`\tContract created at ${result.address}`);
+    const amount = web3.utils
+      .fromWei(web3.utils.toBN(result.stake.logs[0].data))
+      .toString();
+    assert.ok(amount === stakeAmount);
   });
 
   it("#revealPost", async () => {

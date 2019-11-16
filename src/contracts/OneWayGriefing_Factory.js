@@ -25,6 +25,7 @@ class OneWayGriefing_Factory {
     ratio,
     ratioType,
     hash,
+    contractAddress,
     data = null
   }) {
     try {
@@ -36,7 +37,9 @@ class OneWayGriefing_Factory {
         throw new Error(`CounterParty ${counterParty} is not an address`);
       }
 
-      const token = Contract.getAddress("NMR", this.network);
+      const token = this.web3.utils.isAddress(contractAddress)
+        ? contractAddress
+        : Contract.getAddress("NMR", this.network);
       if (!this.web3.utils.isAddress(token)) {
         throw new Error(`Token ${token} is not an address`);
       }

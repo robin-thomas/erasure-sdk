@@ -19,26 +19,26 @@ const Stake = async function({
       );
     }
 
-    // Create griefing agreement.
-    const griefing = await this.oneWayGriefingFactory.createExplicit({
+    let opts = {
       ratio,
       ratioType,
       counterParty,
       countdownLength,
       hash,
       data
-    });
-    this.oneWayGriefing.setAddress(griefing.address);
-    this.datastore.griefing = griefing;
+    };
 
-    // For test purposes.
-    if (
-      process.env.NODE_ENV === "test" &&
-      contractAddress !== undefined &&
-      contractAddress !== null
-    ) {
+    // Allowed only if its test.
+    // so that we shall have some mock NMR.
+    if (process.env.NODE_ENV === "test") {
+      opts.contractAddress = contractAddress;
       this.nmr.setAddress(contractAddress);
     }
+
+    // Create griefing agreement.
+    const griefing = await this.oneWayGriefingFactory.createExplicit(opts);
+    this.oneWayGriefing.setAddress(griefing.address);
+    this.datastore.griefing = griefing;
 
     // Approve and stake NMR.
     const spender = griefing.address;
