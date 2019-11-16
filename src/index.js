@@ -96,7 +96,8 @@ class ErasureClient {
     counterParty,
     countdownLength,
     ratio = 0,
-    ratioType = 1
+    ratioType = 1,
+    contractAddress
   }) {
     try {
       return await Stake.bind(this)({
@@ -104,7 +105,8 @@ class ErasureClient {
         counterParty,
         countdownLength,
         ratio,
-        ratioType
+        ratioType,
+        contractAddress
       });
     } catch (err) {
       throw err;

@@ -3,7 +3,8 @@ const Stake = async function({
   counterParty,
   countdownLength,
   ratio = 0,
-  ratioType = 1
+  ratioType = 1,
+  contractAddress
 }) {
   try {
     let data = null;
@@ -30,10 +31,18 @@ const Stake = async function({
     this.oneWayGriefing.setAddress(griefing.address);
     this.datastore.griefing = griefing;
 
+    // For test purposes.
+    if (
+      process.env.NODE_ENV === "test" &&
+      contractAddress !== undefined &&
+      contractAddress !== null
+    ) {
+      this.nmr.setAddress(contractAddress);
+    }
+
     // Approve and stake NMR.
-    const approval = await this.nmr.changeApproval(
-      griefing.address /* spender */
-    );
+    const spender = griefing.address;
+    const approval = await this.nmr.changeApproval(spender);
     const stake = await this.oneWayGriefing.increaseStake(stakeAmount);
 
     return {

@@ -13,9 +13,17 @@ class NMR {
     this.contract = new Contract({
       network,
       web3,
-      abi: network === "rinkeby" ? mockContract.abi : contract.abi,
+      abi: this.getAbi(),
       contract: "NMR"
     });
+  }
+
+  getAbi() {
+    return this.network === "rinkeby" ? mockContract.abi : contract.abi;
+  }
+
+  setAddress(address) {
+    this.contract = this.contract.setContract(this.getAbi(), address);
   }
 
   async changeApproval(spender) {

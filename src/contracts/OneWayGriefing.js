@@ -30,8 +30,7 @@ class OneWayGriefing {
         stakeAmount = stakeAmount.toString();
       }
 
-      const wei = this.web3.utils.toWei(stakeAmount, "ether");
-      const stake = this.web3.utils.toHex(wei);
+      const stake = this.web3.utils.toWei(stakeAmount, "ether");
 
       const fnName = "increaseStake";
       const fnArgs = [
