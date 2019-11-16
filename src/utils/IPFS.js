@@ -1,4 +1,5 @@
 import Ipfs from "ipfs";
+import cryptoIpfs from "@erasure/crypto-ipfs";
 
 import config from "../config.json";
 
@@ -28,6 +29,14 @@ const IPFS = {
     try {
       const results = await IPFS.getClient().get(hash);
       return results[0].content.toString();
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  getHash: async data => {
+    try {
+      return await cryptoIpfs.ipfs.onlyHash(data);
     } catch (err) {
       throw err;
     }

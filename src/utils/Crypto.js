@@ -5,7 +5,8 @@ import ethUtil from "ethereumjs-util";
 const Crypto = {
   symmetric: {
     genKey: () => cryptoIpfs.crypto.symmetric.generateKey(),
-    encrypt: (key, msg) => cryptoIpfs.crypto.symmetric.encryptMessage(key, msg)
+    encrypt: (key, msg) => cryptoIpfs.crypto.symmetric.encryptMessage(key, msg),
+    decrypt: (key, msg) => cryptoIpfs.crypto.symmetric.decryptMessage(key, msg)
   },
 
   asymmetric: {
@@ -38,8 +39,17 @@ const Crypto = {
     },
 
     genNonce: () => cryptoIpfs.crypto.asymmetric.generateNonce(),
+
     encrypt: (msg, nonce, keypair) =>
       cryptoIpfs.crypto.asymmetric.encryptMessage(
+        msg,
+        nonce,
+        keypair.publicKey,
+        keypair.secretKey
+      ),
+
+    decrypt: (msg, nonce, keypair) =>
+      cryptoIpfs.crypto.asymmetric.decryptMessage(
         msg,
         nonce,
         keypair.publicKey,

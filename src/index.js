@@ -1,12 +1,12 @@
+import NMR from "./contracts/NMR";
 import Feed from "./contracts/Feed";
 import Feed_Factory from "./contracts/Feed_Factory";
-import NMR from "./contracts/NMR";
 import OneWayGriefing_Factory from "./contracts/OneWayGriefing_Factory";
 
 import Web3 from "./utils/Web3";
 
 class ErasureClient {
-  constructor({ network, version, infura, mnemonic = null }) {
+  constructor({ network, version, infura, mnemonic }) {
     this.version = version;
     this.network = network;
 
@@ -33,9 +33,6 @@ class ErasureClient {
 
     // Generate a keypair.
     this.keystore.asymmetric = Crypto.asymmetric.genKeypair();
-
-    // Symmetric keys will be generated for each ipfs hash to be encrypted.
-    this.keystore.symmetric = {};
   }
 
   initDatastore() {
@@ -67,6 +64,7 @@ class ErasureClient {
         hash,
         data
       });
+      this.datastore.feed.timestamp = new Date().toISOString();
 
       // Feed contract has been created.
       // Update the contract object.
@@ -79,13 +77,11 @@ class ErasureClient {
   }
 
   // Create a new post.
-  async createPost(data) {
+  async createPost(post) {
     try {
-      const hash = await IPFS.add(data);
-
       const symmetricKey = Crypto.symmetric.genKey();
-      const encryptedData = Crypto.symmetric.encrypt(symmetricKey, data);
-      const encryptedDataHash = await IPFS.add(encryptedData);
+      const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
+      const encryptedPostIpfsHash = await IPFS.add(encryptedPost);
 
       const nonce = Crypto.asymmetric.genNonce();
       const encryptedSymmetricKey = Crypto.asymmetric.encrypt(
@@ -94,20 +90,57 @@ class ErasureClient {
         this.keystore.asymmetric.key
       );
 
-      this.keystore.symmetric[hash] = {
+      // Get the IPFS hash of the post
+      // without uploaded it to IPFS.
+      const ipfsHash = await IPFS.getHash(post);
+
+      const metadata = {
         nonce,
-        symmetricKey,
-        encryptedSymmetricKey
+        ipfsHash,
+        erasurePost: this.version,
+        encryptedSymmetricKey,
+        encryptedPostIpfsHash
       };
 
-      const result = await this.feed.createPost(encryptedDataHash);
-      this.datastore.post[hash] = {
-        encryptedDataHash,
-        address: result.address,
-        feed: this.datastore.feed.address
+      const result = await this.feed.createPost(ipfsHash, metadata);
+
+      this.datastore.post.posts[result.address] = {
+        metadata,
+        feed: this.datastore.feed.address,
+        timestamp: new Date().toISOString()
       };
 
       return result;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Reveal an encrypted post
+  // so that others can view it.
+  async revealPost(postAddress) {
+    try {
+      // Get the encrypted ipfs hash from the post address
+      const {
+        nonce,
+        encryptedSymmetricKey,
+        encryptedPostIpfsHash
+      } = this.datastore.post.posts[postAddress].metadata;
+
+      // Download it from ipfs
+      const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
+
+      // Decrypt the content.
+      const symmetricKey = Crypto.asymmetric.decrypt(
+        encryptedSymmetricKey,
+        nonce,
+        this.keystore.asymmetric.key
+      );
+      const post = Crypto.symmetric.decrypt(symmetricKey, encryptedPost);
+
+      // Upload the decrypted data to ipfs.
+      // Returns the IPFS hash.
+      return await IPFS.add(post);
     } catch (err) {
       throw err;
     }

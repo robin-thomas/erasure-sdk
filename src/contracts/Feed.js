@@ -21,25 +21,44 @@ class Feed {
     this.contract = this.contract.setContract(contract.abi, address);
   }
 
-  async createPost(encryptedDataHash) {
+  async createPost(ipfsHash, opts) {
     const postFactory = Contract.getAddress("Post_Factory", this.network);
     if (!this.web3.utils.isAddress(postFactory)) {
       throw new Error(`PostFactory ${postFactory} is not an address`);
     }
+
+    const accounts = await this.web3.eth.getAccounts();
+
+    const initData = this.web3.eth.abi.encodeParameters(
+      ["address", "bytes", "bytes", "bytes"],
+      [
+        accounts[0],
+        ipfsHash,
+        JSON.stringify(opts), // static metadata
+        JSON.stringify(opts) // variable metadata
+      ]
+    );
 
     // Creates a post contract.
     const txReceipt = await this.contract.invokeFn(
       "createPost",
       true,
       postFactory,
-      encryptedDataHash
+      initData
     );
 
     return {
-      encryptedDataHash,
       address: txReceipt.logs[0].address,
       txHash: txReceipt.logs[0].transactionHash
     };
+  }
+
+  async getPosts() {
+    try {
+      return await this.contract.invokeFn("getPosts", false);
+    } catch (err) {
+      throw err;
+    }
   }
 }
 
