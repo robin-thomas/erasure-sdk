@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import cryptoIpfs from "@erasure/crypto-ipfs";
-import ethUtil from "ethereumjs-util";
 
 const Crypto = {
   symmetric: {
@@ -55,18 +54,6 @@ const Crypto = {
         keypair.publicKey,
         keypair.secretKey
       )
-  },
-
-  getPubKey: (msg, sig) => {
-    const msgHash = ethUtil.hashPersonalMessage(ethUtil.toBuffer(msg));
-    const sigParams = ethUtil.fromRpcSig(ethUtil.toBuffer(sig));
-    const pubKey = ethUtil.ecrecover(
-      msgHash,
-      sigParams.v,
-      sigParams.r,
-      sigParams.s
-    );
-    return ethUtil.bufferToHex(pubKey);
   }
 };
 

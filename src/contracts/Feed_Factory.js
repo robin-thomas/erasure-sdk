@@ -32,10 +32,9 @@ class Feed_Factory {
       // Convert the ipfs hash to multihash hex code.
       let ipfsHash = hash;
       if (data) {
-        ipfsHash = await IPFS.upload(data);
+        ipfsHash = await IPFS.add(data);
       }
       const feedStaticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
-      console.log(`IPFS: hash = ${ipfsHash}, hex = ${feedStaticMetadata}`);
 
       const fnArgs = [operator, postRegistry, feedStaticMetadata];
 

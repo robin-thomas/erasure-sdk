@@ -1,7 +1,7 @@
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
-const RevealPost = async ipfsHash => {
+const RevealPost = async function(ipfsHash) {
   try {
     // Get the encrypted ipfs hash from the post address
     const {

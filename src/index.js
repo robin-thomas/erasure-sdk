@@ -8,12 +8,18 @@ import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
 
+import Crypto from "./utils/Crypto";
+
 class ErasureClient {
-  constructor({ network, version, infura, mnemonic }) {
+  constructor({ web3, network, version, infura, mnemonic }) {
     this.version = version;
     this.network = network;
 
-    this.web3 = Web3.getWeb3(null, { infura, mnemonic });
+    if (web3 == undefined) {
+      this.web3 = Web3.getWeb3(null, { infura, mnemonic });
+    } else {
+      this.web3 = web3;
+    }
 
     // Keystore
     // store the symmetric keys, keypair and so on.
@@ -34,8 +40,8 @@ class ErasureClient {
   initKeystore() {
     this.keystore = {};
 
-    // Generate a keypair.
-    this.keystore.asymmetric = Crypto.asymmetric.genKeypair();
+    // keypair will be generated for the first post.
+    this.keystore.asymmetric = null;
   }
 
   initDatastore() {
@@ -43,6 +49,9 @@ class ErasureClient {
 
     this.datastore.feed = {};
     this.datastore.griefing = {};
+    this.datastore.post = {
+      posts: []
+    };
   }
 
   // Create a new feed.
@@ -57,6 +66,12 @@ class ErasureClient {
   // Create a new post.
   async createPost(post) {
     try {
+      if (this.keystore.asymmetric === null) {
+        this.keystore.asymmetric = await Crypto.asymmetric.genKeyPair(
+          this.web3
+        );
+      }
+
       return await CreatePost.bind(this)(post);
     } catch (err) {
       throw err;

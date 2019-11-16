@@ -1,3 +1,4 @@
+import bs58 from "bs58";
 import CryptoIPFS from "@erasure/crypto-ipfs";
 
 import IPFS from "../utils/IPFS";
@@ -8,6 +9,7 @@ import contract from "../../artifacts/Feed.json";
 class Feed {
   constructor({ network, web3 }) {
     this.web3 = web3;
+    this.network = network;
 
     this.contract = new Contract({
       network,
@@ -29,13 +31,15 @@ class Feed {
 
     const accounts = await this.web3.eth.getAccounts();
 
+    const optsIpfsHash = await IPFS.add(JSON.stringify(opts));
+
     const initData = this.web3.eth.abi.encodeParameters(
       ["address", "bytes", "bytes", "bytes"],
       [
         accounts[0],
-        ipfsHash,
-        JSON.stringify(opts), // static metadata
-        JSON.stringify(opts) // variable metadata
+        `0x${bs58.decode(ipfsHash).toString("hex")}`,
+        `0x${bs58.decode(optsIpfsHash).toString("hex")}`, // static metadata
+        `0x${bs58.decode(optsIpfsHash).toString("hex")}` // variable metadata
       ]
     );
 

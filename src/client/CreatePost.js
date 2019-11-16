@@ -1,7 +1,7 @@
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
-const CreatePost = async post => {
+const CreatePost = async function(post) {
   try {
     const symmetricKey = Crypto.symmetric.genKey();
     const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);

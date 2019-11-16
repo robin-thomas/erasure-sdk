@@ -8,6 +8,7 @@ import mockContract from "../../artifacts/MockNMR.json";
 class NMR {
   constructor({ network, web3 }) {
     this.web3 = web3;
+    this.network = network;
 
     this.contract = new Contract({
       network,

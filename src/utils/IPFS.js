@@ -1,4 +1,4 @@
-import Ipfs from "ipfs";
+import Ipfs from "ipfs-http-client";
 import cryptoIpfs from "@erasure/crypto-ipfs";
 
 import config from "../config.json";
@@ -8,8 +8,8 @@ const IPFS = {
 
   getClient: () => {
     if (IPFS.ipfs === null) {
-      IPFS.ipfs = new Ipfs(config.host, config.port, {
-        protocol: config.protocol
+      IPFS.ipfs = new Ipfs(config.ipfs.host, config.ipfs.port, {
+        protocol: config.ipfs.protocol
       });
     }
 
@@ -18,7 +18,8 @@ const IPFS = {
 
   add: async data => {
     try {
-      const results = await IPFS.getClient().add(Buffer.from(data));
+      const content = Ipfs.Buffer.from(data);
+      const results = await IPFS.getClient().add(content);
       return results[0].hash;
     } catch (err) {
       throw err;

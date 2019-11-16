@@ -1,10 +1,10 @@
-const Stake = async ({
+const Stake = async function({
   stakeAmount,
   counterParty,
   countdownLength,
   ratio = 0,
   ratioType = 1
-}) => {
+}) {
   try {
     let data = null;
     const hash = this.datastore.griefing.ipfsHash;

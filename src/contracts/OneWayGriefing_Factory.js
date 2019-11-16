@@ -52,7 +52,6 @@ class OneWayGriefing_Factory {
         ipfsHash = await IPFS.upload(data);
       }
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
-      console.log(`IPFS: hash = ${ipfsHash}, hex = ${staticMetadata}`);
 
       const fnArgs = [
         token,

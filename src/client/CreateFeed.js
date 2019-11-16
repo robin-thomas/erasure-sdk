@@ -1,6 +1,7 @@
-const createFeed = async () => {
+const createFeed = async function() {
   try {
     let data = null;
+
     const hash = this.datastore.feed.ipfsHash;
     if (hash === null || hash === undefined) {
       data = JSON.stringify(

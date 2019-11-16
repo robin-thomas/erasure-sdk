@@ -7,7 +7,7 @@
     "prebuild": "./scripts/download.sh contracts",
     "build": "webpack --mode=production",
     "start": "webpack --watch",
-    "test": "mocha --require esm --exit test/contracts/NMR.js"
+    "test": "mocha --require esm --exit test/index.js"
   },
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
   "license": "MIT",
@@ -24,10 +24,10 @@
     "@erasure/crypto-ipfs": "^1.0.0",
     "@truffle/hdwallet-provider": "^1.0.25",
     "babel-loader": "^8.0.6",
+    "bs58": "^4.0.1",
     "esm": "^3.2.25",
-    "ethereumjs-util": "^6.2.0",
     "husky": "^3.0.5",
-    "ipfs": "^0.39.0",
+    "ipfs-http-client": "^39.0.2",
     "lint-staged": "^9.2.5",
     "mocha": "^6.2.2",
     "prettier": "^1.18.2",
