@@ -8,8 +8,11 @@ import config from "../src/keys.json";
 describe("ErasureClient", () => {
   const timeout = 1000 * 60 * 20; // 20 minutes
 
+  const stakeAmount = "0.01";
   const network = "rinkeby";
   const version = "1.0.0";
+  const countdownLength = 3456000;
+  const counterParty = "0x0A8b89246132a14cfe68a65C50B10B297743cd4C";
 
   let postIpfsHash;
   const post = Math.random().toString(36);
@@ -28,13 +31,13 @@ describe("ErasureClient", () => {
     });
   });
 
-  it("#createFeed", async () => {
+  xit("#createFeed", async () => {
     const result = await client.createFeed();
     assert.ok(web3.utils.isAddress(result.address));
     console.log(`\tContract created at ${result.address}`);
   }).timeout(timeout);
 
-  it("#createPost", async () => {
+  xit("#createPost", async () => {
     const result = await client.createPost(post);
     postIpfsHash = result.ipfsHash;
 
@@ -42,7 +45,18 @@ describe("ErasureClient", () => {
     console.log(`\tContract created at ${result.address}`);
   }).timeout(timeout);
 
-  it("#revealPost", async () => {
+  it("#stake", async () => {
+    const result = await client.stake({
+      stakeAmount,
+      counterParty,
+      countdownLength
+    });
+
+    assert.ok(web3.utils.isAddress(result.address));
+    console.log(`\tContract created at ${result.address}`);
+  }).timeout(timeout);
+
+  xit("#revealPost", async () => {
     const result = await client.revealPost(postIpfsHash);
     assert.ok(result === postIpfsHash);
   }).timeout(timeout);

@@ -1,6 +1,7 @@
 import NMR from "./contracts/NMR";
 import Feed from "./contracts/Feed";
 import Feed_Factory from "./contracts/Feed_Factory";
+import OneWayGriefing from "./contracts/OneWayGriefing";
 import OneWayGriefing_Factory from "./contracts/OneWayGriefing_Factory";
 
 import Stake from "./client/Stake";
@@ -34,6 +35,7 @@ class ErasureClient {
     this.nmr = new NMR(opts);
     this.feed = new Feed(opts);
     this.feedFactory = new Feed_Factory(opts);
+    this.oneWayGriefing = new OneWayGriefing(opts);
     this.oneWayGriefingFactory = new OneWayGriefing_Factory(opts);
   }
 

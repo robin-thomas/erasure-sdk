@@ -18,14 +18,10 @@ class NMR {
     });
   }
 
-  async changeApproval(spender, estimate = false) {
+  async changeApproval(spender) {
     try {
       const fnName = "changeApproval";
       const fnArgs = [spender, 0, -1 /* max uint256 value */];
-
-      if (estimate) {
-        return await this.contract.estimateGas(fnName, ...fnArgs);
-      }
 
       return await this.contract.invokeFn(fnName, true, ...fnArgs);
     } catch (err) {

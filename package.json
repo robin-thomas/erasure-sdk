@@ -7,7 +7,8 @@
     "prebuild": "./scripts/download.sh contracts",
     "build": "webpack --mode=production",
     "start": "webpack --watch",
-    "test": "mocha --require esm --exit test/index.js"
+    "test": "mocha --require esm --exit test/index.js",
+    "coverage": "nyc npm run test"
   },
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
   "license": "MIT",
@@ -30,6 +31,7 @@
     "ipfs-http-client": "^39.0.2",
     "lint-staged": "^9.2.5",
     "mocha": "^6.2.2",
+    "nyc": "^14.1.1",
     "prettier": "^1.18.2",
     "web3": "^1.2.2",
     "webpack": "^4.40.2",

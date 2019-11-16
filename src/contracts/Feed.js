@@ -57,14 +57,6 @@ class Feed {
       txHash: txReceipt.logs[0].transactionHash
     };
   }
-
-  async getPosts() {
-    try {
-      return await this.contract.invokeFn("getPosts", false);
-    } catch (err) {
-      throw err;
-    }
-  }
 }
 
 export default Feed;

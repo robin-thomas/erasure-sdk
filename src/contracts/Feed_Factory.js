@@ -19,7 +19,7 @@ class Feed_Factory {
     });
   }
 
-  async createExplicit({ hash, data = null, estimate = false }) {
+  async createExplicit({ hash, data = null }) {
     try {
       const accounts = await this.web3.eth.getAccounts();
       const operator = accounts[0];
@@ -37,10 +37,6 @@ class Feed_Factory {
       const feedStaticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
       const fnArgs = [operator, postRegistry, feedStaticMetadata];
-
-      if (estimate) {
-        return await this.contract.estimateGas("createExplicit", ...fnArgs);
-      }
 
       // Creates the contract.
       const txReceipt = await this.contract.invokeFn(

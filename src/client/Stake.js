@@ -27,14 +27,14 @@ const Stake = async function({
       hash,
       data
     });
-    this.oneWayGriefingFactory.setAddress(griefing.address);
+    this.oneWayGriefing.setAddress(griefing.address);
     this.datastore.griefing = griefing;
 
     // Approve and stake NMR.
     const approval = await this.nmr.changeApproval(
       griefing.address /* spender */
     );
-    const stake = await this.oneWayGriefingFactory.increaseStake(stakeAmount);
+    const stake = await this.oneWayGriefing.increaseStake(stakeAmount);
 
     return {
       griefing,

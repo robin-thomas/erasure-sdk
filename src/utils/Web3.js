@@ -53,22 +53,6 @@ const Web3 = {
     }
   },
 
-  estimateGas: async (contractAddress, fn, web3) => {
-    try {
-      const accounts = await web3.eth.getAccounts();
-
-      const tx = {
-        from: accounts[0],
-        to: contractAddress,
-        data: fn.encodeABI()
-      };
-
-      return await web3.eth.estimateGas(tx, tx.from);
-    } catch (err) {
-      throw err;
-    }
-  },
-
   getTxReceipt: async (web3, txHash) => {
     // Wait till the transaction is mined.
     let _receipt = null;

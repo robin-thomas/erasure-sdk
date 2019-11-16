@@ -19,18 +19,13 @@ class OneWayGriefing_Factory {
     });
   }
 
-  setAddress(address) {
-    this.contract = this.contract.setContract(contract.abi, address);
-  }
-
   async createExplicit({
     counterParty,
     countdownLength,
     ratio,
     ratioType,
     hash,
-    data = null,
-    estimate = false
+    data = null
   }) {
     try {
       const accounts = await this.web3.eth.getAccounts();
@@ -49,10 +44,11 @@ class OneWayGriefing_Factory {
       // Convert the ipfs hash to multihash hex code.
       let ipfsHash = hash;
       if (data) {
-        ipfsHash = await IPFS.upload(data);
+        ipfsHash = await IPFS.add(data);
       }
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
+      const fnName = "createExplicit";
       const fnArgs = [
         token,
         operator,
@@ -64,15 +60,7 @@ class OneWayGriefing_Factory {
         staticMetadata
       ];
 
-      if (estimate) {
-        return await this.contract.estimateGas("createExplicit", ...fnArgs);
-      }
-
-      const txReceipt = await this.contract.invokeFn(
-        "createExplicit",
-        true,
-        ...fnArgs
-      );
+      const txReceipt = await this.contract.invokeFn(fnName, true, ...fnArgs);
 
       return {
         ipfsHash,
@@ -82,26 +70,6 @@ class OneWayGriefing_Factory {
     } catch (err) {
       throw err;
     }
-  }
-
-  async increaseStake(stakeAmount /* in NMR */, estimate = false) {
-    if (typeof stakeAmount !== "string" && !(stakeAmount instanceof String)) {
-      stakeAmount = stakeAmount.toString();
-    }
-
-    const stake = web3.utils.toHex(web3.utils.toWei(stakeAmount, "ether"));
-
-    const fnName = "increaseStake";
-    const fnArgs = [
-      0, // current stake
-      stake // new stake
-    ];
-
-    if (estimate) {
-      return await this.contract.estimateGas(fnName, ...fnArgs);
-    }
-
-    return await this.contract.invokeFn(fnName, true, ...fnArgs);
   }
 }
 
