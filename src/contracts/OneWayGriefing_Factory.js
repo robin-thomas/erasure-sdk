@@ -7,6 +7,14 @@ import Contract from "../utils/Contract";
 import contract from "../../artifacts/OneWayGriefing_Factory.json";
 
 class OneWayGriefing_Factory {
+  /**
+   * OneWayGriefing_Factory
+   *
+   * @constructor
+   * @param {Object} config - configuration for OneWayGriefing_Factory
+   * @param {string} config.network - eth network string
+   * @param {Object} config.web3 - web3 object
+   */
   constructor({ network, web3 }) {
     this.web3 = web3;
     this.network = network;
@@ -19,14 +27,27 @@ class OneWayGriefing_Factory {
     });
   }
 
+  /**
+   * Create a Feed contract using Feed_Factory
+   *
+   * @param {Object} config - configuration for createExplicit
+   * @param {string} config.counterParty - party with whom the agreement to be made
+   * @param {string} config.countdownLength - duration of the agreement in seconds
+   * @param {string} [config.ratio] - griefing ratio
+   * @param {string} [config.ratioType] - griefing ratio type
+   * @param {string} [config.contractAddress] - for mocha test (to get Mock NMR tokens)
+   * @param {string} [config.hash] - IPFS hash of ErasureAgreement version
+   * @param {string} [config.data] - data of ErasureAgreement version to be uploaded to IPFS
+   * @returns {Promise} ipfsHash, txHash and address of new feed
+   */
   async createExplicit({
     counterParty,
     countdownLength,
     ratio,
     ratioType,
     hash,
-    contractAddress,
-    data = null
+    data = null,
+    contractAddress
   }) {
     try {
       const accounts = await this.web3.eth.getAccounts();

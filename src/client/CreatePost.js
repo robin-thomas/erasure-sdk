@@ -1,6 +1,12 @@
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
+/**
+ * Create a new Post
+ *
+ * @param {string} post - data to be posted
+ * @returns {Promise} transaction receipt of new post
+ */
 const CreatePost = async function(post) {
   try {
     const symmetricKey = Crypto.symmetric.genKey();

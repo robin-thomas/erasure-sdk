@@ -1,6 +1,12 @@
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
+/**
+ * Reveal an encrypted post so that others can view it
+ *
+ * @param {string} ipfsHash - ipfs hash of where the unencrypted post will be
+ * @returns {Promise} ipfs hash of the unencrypted post
+ */
 const RevealPost = async function(ipfsHash) {
   try {
     // Get the encrypted ipfs hash from the post address

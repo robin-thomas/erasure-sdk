@@ -1,3 +1,15 @@
+/**
+ * Stake your feed
+ *
+ * @param {Object} config - configuration for staking
+ * @param {string} config.stakeAmount - amount to be staked
+ * @param {string} config.counterParty - party with whom the agreement to be made
+ * @param {number} config.countdownLength - duration of the agreement in seconds
+ * @param {number} [config.ratio] - griefing ratio
+ * @param {number} [config.ratioType] - griefing ratio type
+ * @param {string} [config.contractAddress] - for mocha test (to get Mock NMR tokens)
+ * @returns {Promise} transaction receipts of griefing, approval and staking
+ */
 const Stake = async function({
   stakeAmount,
   counterParty,

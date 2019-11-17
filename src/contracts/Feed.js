@@ -7,6 +7,14 @@ import Contract from "../utils/Contract";
 import contract from "../../artifacts/Feed.json";
 
 class Feed {
+  /**
+   * Feed
+   *
+   * @constructor
+   * @param {Object} config - configuration for Feed
+   * @param {string} config.network - eth network string
+   * @param {Object} config.web3 - web3 object
+   */
   constructor({ network, web3 }) {
     this.web3 = web3;
     this.network = network;
@@ -19,10 +27,22 @@ class Feed {
     });
   }
 
+  /**
+   * Updates the address of the contract
+   *
+   * @param {string} address - address of the new contract instance
+   */
   setAddress(address) {
     this.contract = this.contract.setContract(contract.abi, address);
   }
 
+  /**
+   * Create a Post contract using Post_Factory
+   *
+   * @param {string} ipfsHash - ipfs hash of the post
+   * @param {Object} opts - post metadata
+   * @returns {Promise} ipfsHash, txHash and address of new feed
+   */
   async createPost(ipfsHash, opts) {
     const postFactory = Contract.getAddress("Post_Factory", this.network);
     if (!this.web3.utils.isAddress(postFactory)) {

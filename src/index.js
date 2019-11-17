@@ -12,6 +12,17 @@ import RevealPost from "./client/RevealPost";
 import Crypto from "./utils/Crypto";
 
 class ErasureClient {
+  /**
+   * ErasureClient
+   *
+   * @constructor
+   * @param {Object} config - configuration for ErasureClient
+   * @param {Object} [config.web3] - web3 object
+   * @param {string} config.network - eth network string (like ropsten, rinkeby)
+   * @param {string} config.version - version string for your ErasureClient
+   * @param {string} [config.infura] - infura network api endpoint
+   * @param {string} [config.mnemonic] - metamask mnemonic string of the wallet
+   */
   constructor({ web3, network, version, infura, mnemonic }) {
     this.version = version;
     this.network = network;
@@ -56,7 +67,11 @@ class ErasureClient {
     };
   }
 
-  // Create a new feed.
+  /**
+   * Create a new Feed
+   *
+   * @returns {Promise} transaction receipt of new feed
+   */
   async createFeed() {
     try {
       return await CreateFeed.bind(this)();
@@ -65,7 +80,12 @@ class ErasureClient {
     }
   }
 
-  // Create a new post.
+  /**
+   * Create a new Post
+   *
+   * @param {string} post - data to be posted
+   * @returns {Promise} transaction receipt of new post
+   */
   async createPost(post) {
     try {
       if (this.keystore.asymmetric === null) {
@@ -80,8 +100,12 @@ class ErasureClient {
     }
   }
 
-  // Reveal an encrypted post
-  // so that others can view it.
+  /**
+   * Reveal an encrypted post so that others can view it
+   *
+   * @param {string} ipfsHash - ipfs hash of where the unencrypted post will be
+   * @returns {Promise} ipfs hash of the unencrypted post
+   */
   async revealPost(ipfsHash) {
     try {
       return await RevealPost.bind(this)(ipfsHash);
@@ -90,7 +114,18 @@ class ErasureClient {
     }
   }
 
-  // Stake your feed.
+  /**
+   * Stake your feed
+   *
+   * @param {Object} config - configuration for staking
+   * @param {string} config.stakeAmount - amount to be staked
+   * @param {string} config.counterParty - party with whom the agreement to be made
+   * @param {number} config.countdownLength - duration of the agreement in seconds
+   * @param {number} [config.ratio] - griefing ratio
+   * @param {number} [config.ratioType] - griefing ratio type
+   * @param {string} [config.contractAddress] - for mocha test (to get Mock NMR tokens)
+   * @returns {Promise} transaction receipts of griefing, approval and staking
+   */
   async stake({
     stakeAmount,
     counterParty,

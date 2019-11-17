@@ -7,6 +7,14 @@ import Contract from "../utils/Contract";
 import contract from "../../artifacts/Feed_Factory.json";
 
 class Feed_Factory {
+  /**
+   * Feed_Factory
+   *
+   * @constructor
+   * @param {Object} config - configuration for Feed_Factory
+   * @param {string} config.network - eth network string
+   * @param {Object} config.web3 - web3 object
+   */
   constructor({ network, web3 }) {
     this.web3 = web3;
     this.network = network;
@@ -19,6 +27,14 @@ class Feed_Factory {
     });
   }
 
+  /**
+   * Create a Feed contract using Feed_Factory
+   *
+   * @param {Object} config - configuration for createExplicit
+   * @param {string} [config.hash] - IPFS hash of ErasureFeed version
+   * @param {string} [config.data] - data of ErasureFeed version to be uploaded to IPFS
+   * @returns {Promise} ipfsHash, txHash and address of new feed
+   */
   async createExplicit({ hash, data = null }) {
     try {
       const accounts = await this.web3.eth.getAccounts();

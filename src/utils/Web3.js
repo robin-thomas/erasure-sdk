@@ -4,8 +4,13 @@ import HDWalletProvider from "@truffle/hdwallet-provider";
 import Utils from "./Utils";
 
 const Web3 = {
-  // Check if a web3 provider like metamask is already injected.
-  // If yes, use that.
+  /**
+   * create a new web3 provider (returns metamask if already injected)
+   *
+   * @param {string} infura - infura api endpoint
+   * @param {string} [mnemonic] - metamask mnemonic
+   * @returns {Array} web3 provider
+   */
   getWeb3Provider: (infura, mnemonic = null) => {
     let enable = false;
     let provider = null;
@@ -22,6 +27,15 @@ const Web3 = {
     return [provider, enable];
   },
 
+  /**
+   * create a new web3 object
+   *
+   * @param {Object} [provider] - web3 provider
+   * @param {Object} config - configuration for new web3 object
+   * @param {string} [config.infura] - infura api endpoint
+   * @param {string} [config.mnemonic] - metamask mnemonic
+   * @returns {Object} web3 object
+   */
   getWeb3: (provider = null, { infura, mnemonic = null }) => {
     let enable = false;
     if (provider === null) {
@@ -36,6 +50,14 @@ const Web3 = {
     return web3;
   },
 
+  /**
+   * send a signed transaction
+   *
+   * @param {string} contractAddress - smart contract address
+   * @param {Object} fn - smart contract function object
+   * @param {Object} web3 - web3 object
+   * @returns {Promise} transaction receipt
+   */
   sendSignedTx: async (contractAddress, fn, web3) => {
     try {
       const accounts = await web3.eth.getAccounts();
@@ -48,36 +70,6 @@ const Web3 = {
 
       const signedTx = await web3.eth.signTransaction(tx, tx.from);
       return await web3.eth.sendSignedTransaction(signedTx.raw);
-    } catch (err) {
-      throw err;
-    }
-  },
-
-  getTxReceipt: async (web3, txHash) => {
-    // Wait till the transaction is mined.
-    let _receipt = null;
-    while (true) {
-      _receipt = await web3.eth.getTransactionReceipt(txHash);
-      if (_receipt !== null) {
-        break;
-      }
-
-      await Utils.sleep(1000 /* 1s */);
-    }
-
-    return _receipt;
-  },
-
-  getTx: async (web3, txHash) => {
-    const _receipt = await Web3.getTxReceipt(web3, txHash);
-
-    try {
-      if (_receipt.status === true) {
-        // Return tx details.
-        return await web3.eth.getTransaction(txHash);
-      }
-
-      throw new Error(`Transaction ${txHash} has failed`);
     } catch (err) {
       throw err;
     }

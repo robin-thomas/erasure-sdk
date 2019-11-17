@@ -1,4 +1,9 @@
-const createFeed = async function() {
+/**
+ * Create a new Feed
+ *
+ * @returns {Promise} transaction receipt of new feed
+ */
+const CreateFeed = async function() {
   try {
     let data = null;
 
@@ -29,4 +34,4 @@ const createFeed = async function() {
   }
 };
 
-export default createFeed;
+export default CreateFeed;
