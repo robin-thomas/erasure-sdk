@@ -1,8 +1,8 @@
 import NMR from "./contracts/NMR";
 import Feed from "./contracts/Feed";
 import Feed_Factory from "./contracts/Feed_Factory";
-import OneWayGriefing from "./contracts/OneWayGriefing";
-import OneWayGriefing_Factory from "./contracts/OneWayGriefing_Factory";
+import CountdownGriefing from "./contracts/CountdownGriefing";
+import CountdownGriefing_Factory from "./contracts/CountdownGriefing_Factory";
 
 import Stake from "./client/Stake";
 import CreateFeed from "./client/CreateFeed";
@@ -17,21 +17,12 @@ class ErasureClient {
    *
    * @constructor
    * @param {Object} config - configuration for ErasureClient
-   * @param {Object} [config.web3] - web3 object
    * @param {string} config.network - eth network string (like ropsten, rinkeby)
    * @param {string} config.version - version string for your ErasureClient
-   * @param {string} [config.infura] - infura network api endpoint
-   * @param {string} [config.mnemonic] - metamask mnemonic string of the wallet
    */
-  constructor({ web3, network, version, infura, mnemonic }) {
+  constructor({ network, version }) {
     this.version = version;
     this.network = network;
-
-    if (web3 == undefined) {
-      this.web3 = Web3.getWeb3(null, { infura, mnemonic });
-    } else {
-      this.web3 = web3;
-    }
 
     // Keystore
     // store the symmetric keys, keypair and so on.
@@ -46,8 +37,8 @@ class ErasureClient {
     this.nmr = new NMR(opts);
     this.feed = new Feed(opts);
     this.feedFactory = new Feed_Factory(opts);
-    this.oneWayGriefing = new OneWayGriefing(opts);
-    this.oneWayGriefingFactory = new OneWayGriefing_Factory(opts);
+    this.countdownGriefing = new CountdownGriefing(opts);
+    this.countdownGriefingFactory = new CountdownGriefing_Factory(opts);
   }
 
   initKeystore() {
@@ -89,9 +80,7 @@ class ErasureClient {
   async createPost(post) {
     try {
       if (this.keystore.asymmetric === null) {
-        this.keystore.asymmetric = await Crypto.asymmetric.genKeyPair(
-          this.web3
-        );
+        this.keystore.asymmetric = await Crypto.asymmetric.genKeyPair();
       }
 
       return await CreatePost.bind(this)(post);
@@ -121,18 +110,16 @@ class ErasureClient {
    * @param {string} config.stakeAmount - amount to be staked
    * @param {string} config.counterParty - party with whom the agreement to be made
    * @param {number} config.countdownLength - duration of the agreement in seconds
-   * @param {number} [config.ratio] - griefing ratio
+   * @param {string} [config.ratio] - griefing ratio
    * @param {number} [config.ratioType] - griefing ratio type
-   * @param {string} [config.contractAddress] - for mocha test (to get Mock NMR tokens)
    * @returns {Promise} transaction receipts of griefing, approval and staking
    */
   async stake({
     stakeAmount,
     counterParty,
     countdownLength,
-    ratio = 0,
-    ratioType = 1,
-    contractAddress
+    ratio = "1",
+    ratioType = 2
   }) {
     try {
       return await Stake.bind(this)({
@@ -140,8 +127,7 @@ class ErasureClient {
         counterParty,
         countdownLength,
         ratio,
-        ratioType,
-        contractAddress
+        ratioType
       });
     } catch (err) {
       throw err;

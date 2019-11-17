@@ -2,7 +2,7 @@ import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
 /**
- * Create a new Post
+ * Submits new post hash
  *
  * @param {string} post - data to be posted
  * @returns {Promise} transaction receipt of new post
@@ -32,16 +32,18 @@ const CreatePost = async function(post) {
       encryptedPostIpfsHash
     };
 
-    const result = await this.feed.createPost(ipfsHash, metadata);
+    const txReceipt = await this.feed.submitHash(metadata);
 
     this.datastore.post.posts[ipfsHash] = {
       metadata,
-      address: result.address,
       feed: this.datastore.feed.address,
       timestamp: new Date().toISOString()
     };
 
-    return result;
+    return {
+      ipfsHash,
+      txReceipt
+    };
   } catch (err) {
     throw err;
   }

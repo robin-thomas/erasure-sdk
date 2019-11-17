@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import cryptoIpfs from "@erasure/crypto-ipfs";
 
+import Ethers from "./Ethers";
+
 const Crypto = {
   symmetric: {
     /**
@@ -36,16 +38,16 @@ const Crypto = {
      * @param {Object} web3 - web3 object
      * @returns {Promise} keypair
      */
-    genKeyPair: async web3 => {
+    genKeyPair: async () => {
       try {
-        const accounts = await web3.eth.getAccounts();
+        const operator = Ethers.getAccount();
 
-        const msg = `I am signing this message to generate my ErasureClient keypair as ${accounts[0]}`;
-        const signature = await web3.eth.personal.sign(msg, accounts[0], null);
+        const msg = `I am signing this message to generate my ErasureClient keypair as ${operator}`;
+        const signature = await Ethers.getWallet().signMessage(msg);
 
         const salt = crypto
           .createHash("sha256")
-          .update(accounts[0])
+          .update(operator)
           .digest("base64");
 
         const key = cryptoIpfs.crypto.asymmetric.generateKeyPair(

@@ -1,4 +1,9 @@
 {
+  "erasure": {
+    "contract": {
+      "version": "v1.1.0"
+    }
+  },
   "ipfs": {
     "protocol": "https",
     "host": "ipfs.infura.io",

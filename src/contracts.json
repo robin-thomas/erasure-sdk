@@ -28,25 +28,5 @@
       "CountdownGriefing": "0xc5B883Db107Cc9927F9c6E18bc603A5d9FcE7074",
       "CountdownGriefing_Factory": "0x5B2fcD6264fCFF7803a99e262900214667B6C77C"
     }
-  },
-  "v1.0.0": {
-    "mainnet": {
-      "NMR": "0x1776e1F26f98b1A5dF9cD347953a26dd3Cb46671",
-      "Erasure_Posts": "0x348FA9DcFf507B81C7A1d7981244eA92E8c6Af29",
-      "Erasure_Agreements": "0xa6cf4Bf00feF8866e9F3f61C972bA7C687C6eDbF",
-      "Erasure_Users": "0x789D0082B20A929D6fB64EB4c10c68e827AAB7aB",
-      "Post_Factory": "0x480b8d6b5C184C0E34AE66036cC5B4e0390EcA8A",
-      "Feed_Factory": "0x1f09dDa453941c2536b9dE8c4382807D1FC603A9",
-      "OneWayGriefing_Factory": "0xF06eA7e3D791D88C7F7A88CE1280F36a823A7A62"
-    },
-    "rinkeby": {
-      "NMR": "0x1eBf22785bffb6B44fEbBc8a41056b1aD43401f9",
-      "Erasure_Posts": "0x036bd70228F7909b5Ef051D5f29f93018e8466f9",
-      "Erasure_Agreements": "0x3318D98E4CFf8bA162752de3D140640c72D462E9",
-      "Erasure_Users": "0xc065f32bF6648BBecEBBf683BEAb35a60b93F75D",
-      "Post_Factory": "0x0611DFe481Ca6D22BEb04cB8b4a5a4001CeBeEa7",
-      "Feed_Factory": "0xDCa2Af551f6d7F0Fad5769f5EE8C81eA0a9AE494",
-      "OneWayGriefing_Factory": "0x3Fd3C12F33F5993E2E7cbBEE480aebF71C830C95"
-    }
   }
 }

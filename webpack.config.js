@@ -16,10 +16,5 @@ module.exports = {
         use: "babel-loader"
       }
     ]
-  },
-  externals: {
-    web3: {
-      commonjs2: "web3"
-    }
   }
 };

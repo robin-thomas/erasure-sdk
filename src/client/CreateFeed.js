@@ -18,7 +18,7 @@ const CreateFeed = async function() {
       );
     }
 
-    this.datastore.feed = await this.feedFactory.createExplicit({
+    this.datastore.feed = await this.feedFactory.create({
       hash,
       data
     });

@@ -1,5 +1,6 @@
 import CryptoIPFS from "@erasure/crypto-ipfs";
 
+import Ethers from "../utils/Ethers";
 import Contract from "../utils/Contract";
 
 import contract from "../../artifacts/NMR.json";
@@ -12,17 +13,14 @@ class NMR {
    * @constructor
    * @param {Object} config - configuration for NMR
    * @param {string} config.network - eth network string
-   * @param {Object} config.web3 - web3 object
    */
-  constructor({ network, web3 }) {
-    this.web3 = web3;
+  constructor({ network }) {
     this.network = network;
 
     this.contract = new Contract({
       network,
-      web3,
       abi: this.getAbi(),
-      contract: "NMR"
+      contractName: "NMR"
     });
   }
 
@@ -52,10 +50,32 @@ class NMR {
    */
   async changeApproval(spender) {
     try {
-      const fnName = "changeApproval";
-      const fnArgs = [spender, 0, -1 /* max uint256 value */];
+      const tx = await this.contract.contract.changeApproval(
+        spender,
+        0,
+        Ethers.MaxUint256()
+      );
+      const txReceipt = await tx.wait();
 
-      return await this.contract.invokeFn(fnName, true, ...fnArgs);
+      return txReceipt;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Mints some mock NMR tokens
+   *
+   * @param {string} to - address to transfer some mock NMR tokens
+   * @param {string} value - wei amount of NMR to transfer
+   * @returns {Promise} receipt of the mintMockTokens transaction
+   */
+  async mintMockTokens(to, value) {
+    try {
+      const tx = await this.contract.contract.mintMockTokens(to, value);
+      const txReceipt = await tx.wait();
+
+      return txReceipt;
     } catch (err) {
       throw err;
     }
