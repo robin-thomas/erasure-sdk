@@ -25,13 +25,13 @@ describe("ErasureClient", () => {
     console.log(`\tUsing eth account: ${account}`);
   });
 
-  xit("#createFeed", async () => {
+  it("#createFeed", async () => {
     const result = await client.createFeed();
     assert.ok(Ethers.isAddress(result.address));
     console.log(`\tContract created at ${result.address}`);
   });
 
-  xit("#createPost", async () => {
+  it("#createPost", async () => {
     const result = await client.createPost(post);
     postIpfsHash = result.ipfsHash;
   });

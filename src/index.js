@@ -5,6 +5,7 @@ import CountdownGriefing from "./contracts/CountdownGriefing";
 import CountdownGriefing_Factory from "./contracts/CountdownGriefing_Factory";
 
 import Stake from "./client/Stake";
+import Reward from "./client/Reward";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
@@ -128,6 +129,25 @@ class ErasureClient {
         countdownLength,
         ratio,
         ratioType
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Reward a user
+   *
+   * @param {Object} config - configuration for reward
+   * @param {string} config.amountToAdd - amount to be rewarded
+   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @returns {Promise} transaction receipt of staking
+   */
+  async reward({ amountToAdd, griefingAddress }) {
+    try {
+      return await Reward.bind(this)({
+        amountToAdd,
+        griefingAddress
       });
     } catch (err) {
       throw err;

@@ -72,7 +72,12 @@ class NMR {
    */
   async mintMockTokens(to, value) {
     try {
-      const tx = await this.contract.contract.mintMockTokens(to, value);
+      const contract = this.contract.newContract(
+        this.getAbi(),
+        "0x1776e1F26f98b1A5dF9cD347953a26dd3Cb46671"
+      );
+
+      const tx = await contract.mintMockTokens(to, value);
       const txReceipt = await tx.wait();
 
       return txReceipt;

@@ -25,16 +25,26 @@ class Contract {
   }
 
   /**
-   * Creates a new web3 contract object
+   * Creates a new ethers contract object
    *
    * @param {Object} abi - contract abi
    * @param {string} address - contract address
    * @returns {Object} this object
    */
   setContract(abi, address) {
-    this.address = address;
-    this.contract = new ethers.Contract(this.address, abi, this.wallet);
+    this.contract = new ethers.Contract(address, abi, this.wallet);
     return this;
+  }
+
+  /**
+   * Creates a new ethers contract object
+   *
+   * @param {Object} abi - contract abi
+   * @param {string} address - contract address
+   * @returns {Object} this object
+   */
+  newContract(abi, address) {
+    return new ethers.Contract(address, abi, this.wallet);
   }
 
   /**

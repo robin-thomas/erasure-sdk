@@ -43,16 +43,27 @@ const Stake = async function({
     // Create griefing agreement.
     const griefing = await this.countdownGriefingFactory.create(opts);
     this.countdownGriefing.setAddress(griefing.address);
-    this.datastore.griefing = griefing;
+
+    this.datastore.griefing = {
+      ipfsHash: griefing.ipfsHash,
+      griefing: {}
+    };
+    this.datastore.griefing.griefing[griefing.address] = {
+      currentStake: "0"
+    };
 
     // Mint some mock NMR for test purposes.
     if (process.env.NODE_ENV === "test") {
-      await this.nmr.mintMockTokens(counterParty, Ethers.parseEther("1000"));
+      await this.nmr.mintMockTokens(counterParty, Ethers.parseEther("1001"));
     }
 
     // Approve and stake NMR.
     const approval = await this.nmr.changeApproval(griefing.address);
     const stake = await this.countdownGriefing.increaseStake("0", stakeAmount);
+
+    this.datastore.griefing.griefing[griefing.address] = {
+      currentStake: stakeAmount
+    };
 
     return {
       griefing,
