@@ -13,6 +13,7 @@ import RevealPost from "./client/RevealPost";
 import ReleaseStake from "./client/ReleaseStake";
 import RetrieveStake from "./client/RetrieveStake";
 
+import Box from "./utils/3Box";
 import Crypto from "./utils/Crypto";
 
 class ErasureClient {
@@ -29,14 +30,6 @@ class ErasureClient {
     this.version = version;
     this.network = network;
 
-    // Keystore
-    // store the symmetric keys, keypair and so on.
-    this.initKeystore();
-
-    // Datastore
-    // stores the details about IPFS hashes.
-    this.initDatastore();
-
     // Create contract objects.
     let opts = { network };
     if (process.env.NODE_ENV === "test") {
@@ -48,23 +41,6 @@ class ErasureClient {
     this.feedFactory = new Feed_Factory(opts);
     this.countdownGriefing = new CountdownGriefing(opts);
     this.countdownGriefingFactory = new CountdownGriefing_Factory(opts);
-  }
-
-  initKeystore() {
-    this.keystore = {};
-
-    // keypair will be generated for the first post.
-    this.keystore.asymmetric = null;
-  }
-
-  initDatastore() {
-    this.datastore = {};
-
-    this.datastore.feed = {};
-    this.datastore.griefing = {};
-    this.datastore.post = {
-      posts: []
-    };
   }
 
   /**
@@ -88,10 +64,6 @@ class ErasureClient {
    */
   async createPost(post) {
     try {
-      if (this.keystore.asymmetric === null) {
-        this.keystore.asymmetric = await Crypto.asymmetric.genKeyPair();
-      }
-
       return await CreatePost.bind(this)(post);
     } catch (err) {
       throw err;

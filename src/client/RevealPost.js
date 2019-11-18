@@ -12,18 +12,29 @@ const RevealPost = async function(ipfsHash) {
   try {
     // Get the encrypted ipfs hash from the post address
     const postData = await Box.get(Box.DATASTORE_POSTS);
-    const { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = postData[
+    if (postData === null || postData[ipfsHash] === undefined) {
+      throw new Error(`Unable to find post at: ${ipfsHash}`);
+    }
+
+    let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = postData[
       ipfsHash
     ].metadata;
+    nonce = new Uint8Array(nonce.split(","));
+    encryptedSymmetricKey = new Uint8Array(encryptedSymmetricKey.split(","));
 
     // Download it from ipfs
     const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
+
+    let keypair = await Box.getKeyPair();
+    if (keypair === null) {
+      throw new Error("Unable to retrieve a keypair");
+    }
 
     // Decrypt the content.
     const symmetricKey = Crypto.asymmetric.decrypt(
       encryptedSymmetricKey,
       nonce,
-      (await Box.get(Box.KEYSTORE_ASYMMETRIC)).key
+      keypair
     );
     const post = Crypto.symmetric.decrypt(symmetricKey, encryptedPost);
 

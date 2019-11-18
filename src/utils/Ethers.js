@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import IdentityWallet from "identity-wallet";
 
 const Ethers = {
   /**
@@ -12,7 +13,11 @@ const Ethers = {
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       provider = new ethers.providers.Web3Provider(window.ethereum);
     } else {
-      provider = new ethers.providers.JsonRpcProvider();
+      const keys = require("../../test/test.json");
+      const idWallet = new IdentityWallet(() => true /* getConsent */, {
+        seed: ethers.utils.HDNode.mnemonicToSeed(keys.metamask.mnemonic)
+      });
+      provider = idWallet.get3idProvider();
     }
 
     return provider;

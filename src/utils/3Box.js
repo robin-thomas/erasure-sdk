@@ -12,15 +12,12 @@ const Box = {
   DATASTORE_POSTS: "posts",
   DATASTORE_GRIEFING: "griefing",
   DATASTORE_GRIEFINGS: "griefings",
+
   KEYSTORE_ASYMMETRIC: "asymmetric",
 
   getClient: async () => {
     if (Box.space === null) {
-      const box = await ThreeBox.openBox(
-        Ethers.getAccount(),
-        Ethers.getProvider(),
-        {}
-      );
+      const box = await ThreeBox.openBox(null, Ethers.getProvider());
       await box.syncDone;
 
       Box.space = await box.openSpace(config.app.name);
@@ -31,7 +28,8 @@ const Box = {
 
   set: async (key, value) => {
     try {
-      await Box.getClient().private.set(key, value);
+      const client = await Box.getClient();
+      await client.private.set(key, value);
     } catch (err) {
       throw err;
     }
@@ -39,10 +37,33 @@ const Box = {
 
   get: async (key, value) => {
     try {
-      return await Box.getClient().private.get(key);
+      const client = await Box.getClient();
+      return await client.private.get(key);
     } catch (err) {
       return {};
     }
+  },
+
+  getKeyPair: async () => {
+    const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC);
+
+    return {
+      ...keypair,
+      key: {
+        publicKey: new Uint8Array(keypair.key.publicKey.split(",")),
+        secretKey: new Uint8Array(keypair.key.secretKey.split(","))
+      }
+    };
+  },
+
+  setKeyPair: async keypair => {
+    await Box.set(Box.KEYSTORE_ASYMMETRIC, {
+      ...keypair,
+      key: {
+        publicKey: keypair.key.publicKey.toString(),
+        secretKey: keypair.key.secretKey.toString()
+      }
+    });
   }
 };
 

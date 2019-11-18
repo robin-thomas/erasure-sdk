@@ -13,9 +13,17 @@ import Ethers from "../utils/Ethers";
 const Punish = async function({ punishAmount, griefingAddress, message }) {
   try {
     let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
-    const griefing = griefingData[griefingAddress];
+    if (griefingData === null) {
+      griefingData = {};
+    }
+    if (griefingData[griefingAddress] === undefined) {
+      griefingData[griefingAddress] = {
+        currentStake: "0"
+      };
+    }
 
-    const currentStake = Ethers.parseEther(griefing.currentStake);
+    let currentStake = griefingData[griefingAddress].currentStake;
+    currentStake = Ethers.parseEther(currentStake);
     punishAmount = Ethers.parseEther(punishAmount);
 
     const punishment = await this.countdownGriefing.punish(

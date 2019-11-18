@@ -14,11 +14,17 @@ const CreatePost = async function(post) {
     const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
     const encryptedPostIpfsHash = await IPFS.add(encryptedPost);
 
+    let keypair = await Box.getKeyPair();
+    if (keypair === null) {
+      keypair = await Crypto.asymmetric.genKeyPair();
+      Box.setKeyPair(keypair);
+    }
+
     const nonce = Crypto.asymmetric.genNonce();
     const encryptedSymmetricKey = Crypto.asymmetric.encrypt(
       symmetricKey,
       nonce,
-      (await Box.get(Box.KEYSTORE_ASYMMETRIC)).key
+      keypair
     );
 
     // Get the IPFS hash of the post
@@ -26,19 +32,23 @@ const CreatePost = async function(post) {
     const ipfsHash = await IPFS.getHash(post);
 
     const metadata = {
-      nonce,
+      nonce: nonce.toString(),
       ipfsHash,
       erasurePost: this.version,
-      encryptedSymmetricKey,
+      encryptedSymmetricKey: encryptedSymmetricKey.toString(),
       encryptedPostIpfsHash
     };
 
     const txReceipt = await this.feed.submitHash(metadata);
 
+    const feed = await Box.get(Box.DATASTORE_FEED);
     let postData = await Box.get(Box.DATASTORE_POSTS);
+    if (postData === null) {
+      postData = {};
+    }
     postData[ipfsHash] = {
       metadata,
-      feed: (await Box.get(Box.DATASTORE_FEED)).address,
+      feed: feed ? feed.address : null,
       timestamp: new Date().toISOString()
     };
     await Box.set(Box.DATASTORE_POSTS, postData);

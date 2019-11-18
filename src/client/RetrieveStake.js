@@ -13,6 +13,16 @@ const RetrieveStake = async function({ griefingAddress, recipient }) {
   try {
     const stake = await this.countdownGriefing.retrieveStake(recipient);
 
+    let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
+    if (griefingData === null) {
+      griefingData = {};
+    }
+    if (griefingData[griefingAddress] === undefined) {
+      griefingData[griefingAddress] = {
+        currentStake: "0"
+      };
+    }
+
     griefingData[griefingAddress].currentStake = "0";
     await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
 

@@ -12,9 +12,16 @@ import Ethers from "../utils/Ethers";
 const Reward = async function({ rewardAmount, griefingAddress }) {
   try {
     let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
-    const griefing = griefingData[griefingAddress];
-    let currentStake = griefing.currentStake;
+    if (griefingData === null) {
+      griefingData = {};
+    }
+    if (griefingData[griefingAddress] === undefined) {
+      griefingData[griefingAddress] = {
+        currentStake: "0"
+      };
+    }
 
+    let currentStake = griefingData[griefingAddress].currentStake;
     currentStake = Ethers.parseEther(currentStake);
     rewardAmount = Ethers.parseEther(rewardAmount);
 

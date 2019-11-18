@@ -35,7 +35,6 @@ const Crypto = {
     /**
      * generate a new keypair
      *
-     * @param {Object} web3 - web3 object
      * @returns {Promise} keypair
      */
     genKeyPair: async () => {
@@ -85,8 +84,8 @@ const Crypto = {
       cryptoIpfs.crypto.asymmetric.encryptMessage(
         msg,
         nonce,
-        keypair.publicKey,
-        keypair.secretKey
+        keypair.key.publicKey,
+        keypair.key.secretKey
       ),
 
     /**
@@ -101,8 +100,8 @@ const Crypto = {
       cryptoIpfs.crypto.asymmetric.decryptMessage(
         msg,
         nonce,
-        keypair.publicKey,
-        keypair.secretKey
+        keypair.key.publicKey,
+        keypair.key.secretKey
       )
   }
 };

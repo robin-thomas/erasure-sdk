@@ -2,6 +2,31 @@ import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
 
 /**
+ * Create a new Feed
+ *
+ * @param {string} version - version string from ErasureClient
+ * @returns {Promise} data, feed, hash
+ */
+const getData = async version => {
+  let data = null;
+
+  let griefing = await Box.get(Box.DATASTORE_GRIEFING);
+  const hash = griefing ? griefing.ipfsHash : null;
+
+  if (hash === null) {
+    data = JSON.stringify(
+      {
+        ErasureAgreement: version
+      },
+      null,
+      4
+    );
+  }
+
+  return { data, hash };
+};
+
+/**
  * Stake your feed
  *
  * @param {Object} config - configuration for staking
@@ -20,17 +45,7 @@ const Stake = async function({
   ratioType
 }) {
   try {
-    let data = null;
-    const hash = (await Box.get(Box.DATASTORE_GRIEFING)).ipfsHash;
-    if (hash === null || hash === undefined) {
-      data = JSON.stringify(
-        {
-          ErasureAgreement: this.version
-        },
-        null,
-        4
-      );
-    }
+    let { data, hash } = await getData(this.version);
 
     let opts = {
       ratio,

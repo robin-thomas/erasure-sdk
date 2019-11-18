@@ -34,6 +34,7 @@
     "ethers": "^4.0.39",
     "ganache-cli": "^6.7.0",
     "husky": "^3.0.5",
+    "identity-wallet": "^0.3.1",
     "ipfs-http-client": "^39.0.2",
     "jsdoc": "^3.6.3",
     "lint-staged": "^9.2.5",
