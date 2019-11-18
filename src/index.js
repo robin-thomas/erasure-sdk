@@ -6,6 +6,7 @@ import CountdownGriefing_Factory from "./contracts/CountdownGriefing_Factory";
 
 import Stake from "./client/Stake";
 import Reward from "./client/Reward";
+import Punish from "./client/Punish";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
@@ -144,15 +145,36 @@ class ErasureClient {
    * Reward a user
    *
    * @param {Object} config - configuration for reward
-   * @param {string} config.amountToAdd - amount to be rewarded
+   * @param {string} config.rewardAmount - amount to be rewarded
    * @param {string} config.griefingAddress - contract address of the griefing agreement
    * @returns {Promise} transaction receipt of staking
    */
-  async reward({ amountToAdd, griefingAddress }) {
+  async reward({ rewardAmount, griefingAddress }) {
     try {
       return await Reward.bind(this)({
-        amountToAdd,
+        rewardAmount,
         griefingAddress
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Punish a user
+   *
+   * @param {Object} config - configuration for punishment
+   * @param {string} config.punishAmount - amount to be punished
+   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @param {string} config.message - message
+   * @returns {Promise} transaction receipt of staking
+   */
+  async punish({ punishAmount, griefingAddress, message }) {
+    try {
+      return await Punish.bind(this)({
+        punishAmount,
+        griefingAddress,
+        message
       });
     } catch (err) {
       throw err;

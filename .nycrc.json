@@ -1,8 +1,3 @@
 {
-  "exclude": [
-    "test",
-    "src/utils/Web3.js",
-    "truffle-config.js",
-    "src/utils/Utils.js"
-  ]
+  "exclude": ["test", "truffle-config.js"]
 }

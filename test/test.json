@@ -3,7 +3,7 @@
     "port": 8545,
     "unlocked_accounts": ["0x9608010323ed882a38ede9211d7691102b4f0ba0"],
     "default_balance_ether": 10000,
-    "total_accounts": 15,
+    "total_accounts": 10,
     "hardfork": "constantinople"
   },
   "metamask": {

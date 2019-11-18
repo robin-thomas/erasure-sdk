@@ -33,9 +33,9 @@ const deployContract = async (contractName, params, signer) => {
   );
 
   console.log(
-    `\tDeployed | ${
+    `\tDeployed | ${contractName} | ${
       contract.address
-    } | ${contractName} | ${receipt.gasUsed.toString()} gas`
+    } | ${receipt.gasUsed.toString()} gas`
   );
 
   return contract;

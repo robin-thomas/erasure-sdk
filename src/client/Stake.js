@@ -63,10 +63,11 @@ const Stake = async function({
 
     // Approve and stake NMR.
     const approval = await this.nmr.changeApproval(griefing.address);
+    stakeAmount = Ethers.parseEther(stakeAmount);
     const stake = await this.countdownGriefing.increaseStake("0", stakeAmount);
 
     this.datastore.griefing.griefing[griefing.address] = {
-      currentStake: stakeAmount
+      currentStake: Ethers.formatEther(stakeAmount).toString()
     };
 
     return {

@@ -37,18 +37,38 @@ class CountdownGriefing {
   /**
    * Increase the staking amount
    *
-   * @param {string} currentStake - current staked amount
-   * @param {string} amountToAdd - amount (in NMR) to be added to the stake
+   * @param {BigNumber} currentStake - current staked amount
+   * @param {BigNumber} amountToAdd - amount (in NMR) to be added to the stake
    * @returns {Promise} receipt of the staking transaction
    */
   async increaseStake(currentStake, amountToAdd) {
     try {
-      amountToAdd = Ethers.parseEther(amountToAdd);
-      currentStake = Ethers.parseEther(currentStake);
-
       const tx = await this.contract.contract.increaseStake(
         currentStake,
         amountToAdd
+      );
+      const txReceipt = await tx.wait();
+
+      return txReceipt;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Punish the user
+   *
+   * @param {BigNumber} currentStake - current staked amount
+   * @param {BigNumber} punishAmount - amount (in NMR) to be burnt from the stake
+   * @param {string} message - message
+   * @returns {Promise} receipt of the staking transaction
+   */
+  async punish(currentStake, punishAmount, message) {
+    try {
+      const tx = await this.contract.contract.punish(
+        currentStake,
+        punishAmount,
+        Buffer.from(message)
       );
       const txReceipt = await tx.wait();
 

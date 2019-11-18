@@ -49,12 +49,12 @@ class NMR {
    * @param {string} spender - griefing instance address
    * @returns {Promise} receipt of the changeApproval transaction
    */
-  async changeApproval(spender) {
+  async changeApproval(spender, oldValue = 0, newValue = Ethers.MaxUint256()) {
     try {
       const tx = await this.contract.contract.changeApproval(
         spender,
-        0,
-        Ethers.MaxUint256()
+        oldValue,
+        newValue
       );
       const txReceipt = await tx.wait();
 

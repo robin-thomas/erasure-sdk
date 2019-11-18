@@ -4,34 +4,31 @@ import Ethers from "../utils/Ethers";
  * Reward a user
  *
  * @param {Object} config - configuration for reward
- * @param {string} config.punishment - amount to be punished
+ * @param {string} config.punishAmount - amount to be punished
  * @param {string} config.griefingAddress - contract address of the griefing agreement
  * @param {string} config.message - message
  * @returns {Promise} transaction receipts of staking
  */
-const Punish = async function({ amountToAdd, griefingAddress, message }) {
+const Punish = async function({ punishAmount, griefingAddress, message }) {
   try {
     const griefing = this.datastore.griefing.griefing[griefingAddress];
 
-    const ratio = griefing.ratio;
-    let currentStake = griefing.currentStake;
+    const currentStake = Ethers.parseEther(griefing.currentStake);
+    punishAmount = Ethers.parseEther(punishAmount);
 
-    punishment = Ethers.bigNumberify(punishment);
-    currentStake = Ethers.bigNumberify(currentStake);
-
-    const expectedCost = punishment.muln(ratio);
-
-    const stake = await this.countdownGriefing.punish(
+    const punishment = await this.countdownGriefing.punish(
       currentStake,
-      punishment,
-      Buffer.from(message)
+      punishAmount,
+      message
     );
 
     this.datastore.griefing.griefing[
       griefingAddress
-    ].currentStake = currentStake.sub(punishment).toString();
+    ].currentStake = Ethers.formatEther(
+      currentStake.sub(punishAmount)
+    ).toString();
 
-    return stake;
+    return punishment;
   } catch (err) {
     throw err;
   }

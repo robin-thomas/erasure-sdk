@@ -7,22 +7,22 @@ import Ethers from "../src/utils/Ethers";
 import testConfig from "./test.json";
 
 describe("ErasureClient", () => {
-  const rewardAmount = "1";
+  const punishAmount = "1";
+  const rewardAmount = "10";
   const stakeAmount = "1";
-  const network = "rinkeby";
-  const version = "1.0.0";
   const countdownLength = 100000000;
 
-  let postIpfsHash, agreement;
+  let postIpfsHash, griefingAddress;
   const post = Math.random().toString(36);
 
   let client, account, registry;
   before(async () => {
+    // Deploy all contracts to ganache.
     registry = await Deployer();
 
     client = new ErasureClient({
-      network,
-      version,
+      network: "rinkeby", // just to load contract abi
+      version: "1.0.0", // version string
       registry
     });
 
@@ -52,9 +52,9 @@ describe("ErasureClient", () => {
       counterParty: account,
       countdownLength
     });
-    agreement = result.griefing.address;
-    assert.ok(Ethers.isAddress(agreement));
-    console.log(`\tAgreement created at ${agreement}`);
+    griefingAddress = result.griefing.address;
+    assert.ok(Ethers.isAddress(griefingAddress));
+    console.log(`\tAgreement created at ${griefingAddress}`);
 
     const amount = Number(
       Ethers.formatEther(Ethers.bigNumberify(result.stake.logs[0].data))
@@ -64,13 +64,26 @@ describe("ErasureClient", () => {
 
   it("#reward", async () => {
     const result = await client.reward({
-      amountToAdd: rewardAmount,
-      griefingAddress: agreement
+      griefingAddress,
+      rewardAmount
     });
 
     const amount = Number(
       Ethers.formatEther(Ethers.bigNumberify(result.logs[0].data))
     ).toString();
     assert.ok(amount === rewardAmount);
+  });
+
+  it("#punish", async () => {
+    const result = await client.punish({
+      punishAmount,
+      griefingAddress,
+      message: "This is a punishment"
+    });
+
+    const amount = Number(
+      Ethers.formatEther(Ethers.bigNumberify(result.logs[1].data))
+    ).toString();
+    assert.ok(amount === punishAmount);
   });
 });
