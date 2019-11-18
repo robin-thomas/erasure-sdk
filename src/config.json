@@ -1,4 +1,7 @@
 {
+  "app": {
+    "name": "erasure-client"
+  },
   "erasure": {
     "contract": {
       "version": "v1.1.0"

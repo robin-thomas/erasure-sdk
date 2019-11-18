@@ -1,3 +1,4 @@
+import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
@@ -10,11 +11,10 @@ import Crypto from "../utils/Crypto";
 const RevealPost = async function(ipfsHash) {
   try {
     // Get the encrypted ipfs hash from the post address
-    const {
-      nonce,
-      encryptedSymmetricKey,
-      encryptedPostIpfsHash
-    } = this.datastore.post.posts[ipfsHash].metadata;
+    const postData = await Box.get(Box.DATASTORE_POSTS);
+    const { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = postData[
+      ipfsHash
+    ].metadata;
 
     // Download it from ipfs
     const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
@@ -23,7 +23,7 @@ const RevealPost = async function(ipfsHash) {
     const symmetricKey = Crypto.asymmetric.decrypt(
       encryptedSymmetricKey,
       nonce,
-      this.keystore.asymmetric.key
+      (await Box.get(Box.KEYSTORE_ASYMMETRIC)).key
     );
     const post = Crypto.symmetric.decrypt(symmetricKey, encryptedPost);
 

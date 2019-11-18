@@ -1,3 +1,4 @@
+import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
 
 /**
@@ -12,7 +13,8 @@ const RetrieveStake = async function({ griefingAddress, recipient }) {
   try {
     const stake = await this.countdownGriefing.retrieveStake(recipient);
 
-    this.datastore.griefing.griefing[griefingAddress].currentStake = "0";
+    griefingData[griefingAddress].currentStake = "0";
+    await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
 
     return stake;
   } catch (err) {

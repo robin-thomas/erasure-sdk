@@ -1,3 +1,5 @@
+import Box from "../utils/3Box";
+
 /**
  * Create a new Feed
  *
@@ -7,7 +9,8 @@ const CreateFeed = async function() {
   try {
     let data = null;
 
-    const hash = this.datastore.feed.ipfsHash;
+    let feed = await Box.get(Box.DATASTORE_FEED);
+    const hash = feed.ipfsHash;
     if (hash === null || hash === undefined) {
       data = JSON.stringify(
         {
@@ -18,17 +21,18 @@ const CreateFeed = async function() {
       );
     }
 
-    this.datastore.feed = await this.feedFactory.create({
-      hash,
-      data
-    });
-    this.datastore.feed.timestamp = new Date().toISOString();
+    // Create the new Feed contract.
+    feed = await this.feedFactory.create({ hash, data });
+    feed.timestamp = new Date().toISOString();
+
+    // store feed details in datastore.
+    await Box.set(Box.DATASTORE_FEED, feed);
 
     // Feed contract has been created.
     // Update the contract object.
-    this.feed.setAddress(this.datastore.feed.address);
+    this.feed.setAddress(feed.address);
 
-    return this.datastore.feed;
+    return feed;
   } catch (err) {
     throw err;
   }

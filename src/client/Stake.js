@@ -1,3 +1,4 @@
+import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
 
 /**
@@ -20,7 +21,7 @@ const Stake = async function({
 }) {
   try {
     let data = null;
-    const hash = this.datastore.griefing.ipfsHash;
+    const hash = (await Box.get(Box.DATASTORE_GRIEFING)).ipfsHash;
     if (hash === null || hash === undefined) {
       data = JSON.stringify(
         {
@@ -44,11 +45,10 @@ const Stake = async function({
     const griefing = await this.countdownGriefingFactory.create(opts);
     this.countdownGriefing.setAddress(griefing.address);
 
-    this.datastore.griefing = {
-      ipfsHash: griefing.ipfsHash,
-      griefing: {}
-    };
-    this.datastore.griefing.griefing[griefing.address] = {
+    await Box.set(Box.DATASTORE_GRIEFING, griefing);
+
+    let griefingData = {};
+    griefingData[griefing.address] = {
       currentStake: "0",
       ratio,
       ratioType,
@@ -66,9 +66,10 @@ const Stake = async function({
     stakeAmount = Ethers.parseEther(stakeAmount);
     const stake = await this.countdownGriefing.increaseStake("0", stakeAmount);
 
-    this.datastore.griefing.griefing[griefing.address] = {
-      currentStake: Ethers.formatEther(stakeAmount).toString()
-    };
+    griefingData[griefing.address].currentStake = Ethers.formatEther(
+      stakeAmount
+    ).toString();
+    await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
 
     return {
       griefing,

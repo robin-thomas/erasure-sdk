@@ -1,3 +1,4 @@
+import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
 
 /**
@@ -11,7 +12,8 @@ import Ethers from "../utils/Ethers";
  */
 const Punish = async function({ punishAmount, griefingAddress, message }) {
   try {
-    const griefing = this.datastore.griefing.griefing[griefingAddress];
+    let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
+    const griefing = griefingData[griefingAddress];
 
     const currentStake = Ethers.parseEther(griefing.currentStake);
     punishAmount = Ethers.parseEther(punishAmount);
@@ -22,11 +24,11 @@ const Punish = async function({ punishAmount, griefingAddress, message }) {
       message
     );
 
-    this.datastore.griefing.griefing[
-      griefingAddress
-    ].currentStake = Ethers.formatEther(
+    griefingData[griefingAddress].currentStake = Ethers.formatEther(
       currentStake.sub(punishAmount)
     ).toString();
+
+    await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
 
     return punishment;
   } catch (err) {

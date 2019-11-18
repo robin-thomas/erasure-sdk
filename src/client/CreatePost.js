@@ -1,3 +1,4 @@
+import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 
@@ -17,7 +18,7 @@ const CreatePost = async function(post) {
     const encryptedSymmetricKey = Crypto.asymmetric.encrypt(
       symmetricKey,
       nonce,
-      this.keystore.asymmetric.key
+      (await Box.get(Box.KEYSTORE_ASYMMETRIC)).key
     );
 
     // Get the IPFS hash of the post
@@ -34,11 +35,13 @@ const CreatePost = async function(post) {
 
     const txReceipt = await this.feed.submitHash(metadata);
 
-    this.datastore.post.posts[ipfsHash] = {
+    let postData = await Box.get(Box.DATASTORE_POSTS);
+    postData[ipfsHash] = {
       metadata,
-      feed: this.datastore.feed.address,
+      feed: (await Box.get(Box.DATASTORE_FEED)).address,
       timestamp: new Date().toISOString()
     };
+    await Box.set(Box.DATASTORE_POSTS, postData);
 
     return {
       ipfsHash,
