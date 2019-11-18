@@ -72,7 +72,7 @@ const deployNMR = async () => {
   // needs to increment the nonce to 1 by
   await signer.sendTransaction({ to: signer.address, value: 0 });
 
-  return await deployContract("NMR", [], signer);
+  return await deployContract("MockNMR", [], signer);
 };
 
 const deploy = async () => {

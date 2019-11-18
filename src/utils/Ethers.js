@@ -40,6 +40,7 @@ const Ethers = {
     }
   },
   parseEther: ether => ethers.utils.parseEther(ether),
+  formatEther: wei => ethers.utils.formatEther(wei),
   getAccount: () => Ethers.getWallet().address,
   bigNumberify: value => ethers.utils.bigNumberify(value),
 

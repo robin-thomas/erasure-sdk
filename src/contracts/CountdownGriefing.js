@@ -43,8 +43,8 @@ class CountdownGriefing {
    */
   async increaseStake(currentStake, amountToAdd) {
     try {
-      amountToAdd = Ethers.bigNumberify(amountToAdd);
-      currentStake = Ethers.bigNumberify(currentStake);
+      amountToAdd = Ethers.parseEther(amountToAdd);
+      currentStake = Ethers.parseEther(currentStake);
 
       const tx = await this.contract.contract.increaseStake(
         currentStake,

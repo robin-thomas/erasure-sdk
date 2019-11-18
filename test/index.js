@@ -30,18 +30,18 @@ describe("ErasureClient", () => {
     console.log(`\n\tUsing eth account: ${account}\n`);
   });
 
-  xit("#createFeed", async () => {
+  it("#createFeed", async () => {
     const result = await client.createFeed();
     assert.ok(Ethers.isAddress(result.address));
     console.log(`\tFeed created at ${result.address}`);
   });
 
-  xit("#createPost", async () => {
+  it("#createPost", async () => {
     const result = await client.createPost(post);
     postIpfsHash = result.ipfsHash;
   });
 
-  xit("#revealPost", async () => {
+  it("#revealPost", async () => {
     const result = await client.revealPost(postIpfsHash);
     assert.ok(result === postIpfsHash);
   });
@@ -53,21 +53,23 @@ describe("ErasureClient", () => {
       countdownLength
     });
     agreement = result.griefing.address;
+    assert.ok(Ethers.isAddress(agreement));
+    console.log(`\tAgreement created at ${agreement}`);
 
-    const amount = Ethers.parseEther(
-      Ethers.bigNumberify(result.stake.logs[0].data)
+    const amount = Number(
+      Ethers.formatEther(Ethers.bigNumberify(result.stake.logs[0].data))
     ).toString();
     assert.ok(amount === stakeAmount);
   });
 
-  xit("#reward", async () => {
-    const result = await client.stake({
+  it("#reward", async () => {
+    const result = await client.reward({
       amountToAdd: rewardAmount,
       griefingAddress: agreement
     });
 
-    const amount = Ethers.parseEther(
-      Ethers.bigNumberify(result.logs[0].data)
+    const amount = Number(
+      Ethers.formatEther(Ethers.bigNumberify(result.logs[0].data))
     ).toString();
     assert.ok(amount === rewardAmount);
   });
