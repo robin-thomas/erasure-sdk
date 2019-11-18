@@ -86,4 +86,16 @@ describe("ErasureClient", () => {
     ).toString();
     assert.ok(amount === punishAmount);
   });
+
+  it("#releaseStake", async () => {
+    const result = await client.releaseStake({
+      amountToRelease: punishAmount,
+      griefingAddress
+    });
+
+    const amount = Number(
+      Ethers.formatEther(Ethers.bigNumberify(result.logs[0].data))
+    ).toString();
+    assert.ok(amount === punishAmount);
+  });
 });

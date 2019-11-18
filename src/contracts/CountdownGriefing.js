@@ -61,7 +61,7 @@ class CountdownGriefing {
    * @param {BigNumber} currentStake - current staked amount
    * @param {BigNumber} punishAmount - amount (in NMR) to be burnt from the stake
    * @param {string} message - message
-   * @returns {Promise} receipt of the staking transaction
+   * @returns {Promise} receipt of the punishment transaction
    */
   async punish(currentStake, punishAmount, message) {
     try {
@@ -69,6 +69,27 @@ class CountdownGriefing {
         currentStake,
         punishAmount,
         Buffer.from(message)
+      );
+      const txReceipt = await tx.wait();
+
+      return txReceipt;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Release some stake to the staker
+   *
+   * @param {BigNumber} currentStake - current staked amount
+   * @param {BigNumber} amountToRelease - amount (in NMR) to be released to staker
+   * @returns {Promise} receipt of the release stake transaction
+   */
+  async releaseStake(currentStake, amountToRelease) {
+    try {
+      const tx = await this.contract.contract.releaseStake(
+        currentStake,
+        amountToRelease
       );
       const txReceipt = await tx.wait();
 

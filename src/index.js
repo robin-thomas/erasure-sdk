@@ -10,6 +10,7 @@ import Punish from "./client/Punish";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
+import ReleaseStake from "./client/ReleaseStake";
 
 import Crypto from "./utils/Crypto";
 
@@ -175,6 +176,25 @@ class ErasureClient {
         punishAmount,
         griefingAddress,
         message
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Release some stake to the staker
+   *
+   * @param {Object} config - configuration for releaseStake
+   * @param {string} config.amountToRelease - amount to be released
+   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @returns {Promise} transaction receipt of staking
+   */
+  async releaseStake({ amountToRelease, griefingAddress }) {
+    try {
+      return await ReleaseStake.bind(this)({
+        amountToRelease,
+        griefingAddress
       });
     } catch (err) {
       throw err;
