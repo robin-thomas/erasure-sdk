@@ -14,13 +14,14 @@ class NMR {
    * @param {Object} config - configuration for NMR
    * @param {string} config.network - eth network string
    */
-  constructor({ network }) {
+  constructor({ network, registry }) {
     this.network = network;
 
     this.contract = new Contract({
       network,
       abi: this.getAbi(),
-      contractName: "NMR"
+      contractName: "NMR",
+      registry
     });
   }
 
@@ -72,12 +73,7 @@ class NMR {
    */
   async mintMockTokens(to, value) {
     try {
-      const contract = this.contract.newContract(
-        this.getAbi(),
-        "0x1776e1F26f98b1A5dF9cD347953a26dd3Cb46671"
-      );
-
-      const tx = await contract.mintMockTokens(to, value);
+      const tx = await this.contract.contract.mintMockTokens(to, value);
       const txReceipt = await tx.wait();
 
       return txReceipt;

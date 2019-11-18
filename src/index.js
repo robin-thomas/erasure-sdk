@@ -20,8 +20,9 @@ class ErasureClient {
    * @param {Object} config - configuration for ErasureClient
    * @param {string} config.network - eth network string (like ropsten, rinkeby)
    * @param {string} config.version - version string for your ErasureClient
+   * @param {string} [config.registry] - for tests
    */
-  constructor({ network, version }) {
+  constructor({ network, version, registry }) {
     this.version = version;
     this.network = network;
 
@@ -34,7 +35,11 @@ class ErasureClient {
     this.initDatastore();
 
     // Create contract objects.
-    const opts = { network, web3: this.web3 };
+    let opts = { network };
+    if (process.env.NODE_ENV === "test") {
+      opts.registry = registry;
+    }
+
     this.nmr = new NMR(opts);
     this.feed = new Feed(opts);
     this.feedFactory = new Feed_Factory(opts);

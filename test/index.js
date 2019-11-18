@@ -1,39 +1,49 @@
 import assert from "assert";
 
+import Deployer from "./deploy";
 import ErasureClient from "../src";
 import Ethers from "../src/utils/Ethers";
 
-import config from "../src/keys.json";
+import testConfig from "./test.json";
 
 describe("ErasureClient", () => {
+  const rewardAmount = "1";
   const stakeAmount = "1";
   const network = "rinkeby";
   const version = "1.0.0";
   const countdownLength = 100000000;
 
-  let postIpfsHash;
+  let postIpfsHash, agreement;
   const post = Math.random().toString(36);
 
-  let client, account;
+  let client, account, registry;
   before(async () => {
+    registry = await Deployer();
+
     client = new ErasureClient({
       network,
-      version
+      version,
+      registry
     });
 
     account = Ethers.getAccount();
-    console.log(`\tUsing eth account: ${account}`);
+    console.log(`\n\tUsing eth account: ${account}\n`);
   });
 
-  it("#createFeed", async () => {
+  xit("#createFeed", async () => {
     const result = await client.createFeed();
     assert.ok(Ethers.isAddress(result.address));
-    console.log(`\tContract created at ${result.address}`);
+    console.log(`\tFeed created at ${result.address}`);
   });
 
-  it("#createPost", async () => {
+  xit("#createPost", async () => {
     const result = await client.createPost(post);
     postIpfsHash = result.ipfsHash;
+  });
+
+  xit("#revealPost", async () => {
+    const result = await client.revealPost(postIpfsHash);
+    assert.ok(result === postIpfsHash);
   });
 
   it("#stake", async () => {
@@ -42,6 +52,7 @@ describe("ErasureClient", () => {
       counterParty: account,
       countdownLength
     });
+    agreement = result.griefing.address;
 
     const amount = Ethers.parseEther(
       Ethers.bigNumberify(result.stake.logs[0].data)
@@ -49,8 +60,15 @@ describe("ErasureClient", () => {
     assert.ok(amount === stakeAmount);
   });
 
-  xit("#revealPost", async () => {
-    const result = await client.revealPost(postIpfsHash);
-    assert.ok(result === postIpfsHash);
+  xit("#reward", async () => {
+    const result = await client.stake({
+      amountToAdd: rewardAmount,
+      griefingAddress: agreement
+    });
+
+    const amount = Ethers.parseEther(
+      Ethers.bigNumberify(result.logs[0].data)
+    ).toString();
+    assert.ok(amount === rewardAmount);
   });
 });

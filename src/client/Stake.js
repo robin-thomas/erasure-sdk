@@ -49,12 +49,16 @@ const Stake = async function({
       griefing: {}
     };
     this.datastore.griefing.griefing[griefing.address] = {
-      currentStake: "0"
+      currentStake: "0",
+      ratio,
+      ratioType,
+      counterParty,
+      countdownLength
     };
 
     // Mint some mock NMR for test purposes.
     if (process.env.NODE_ENV === "test") {
-      await this.nmr.mintMockTokens(counterParty, Ethers.parseEther("1001"));
+      await this.nmr.mintMockTokens(counterParty, Ethers.parseEther("1000"));
     }
 
     // Approve and stake NMR.

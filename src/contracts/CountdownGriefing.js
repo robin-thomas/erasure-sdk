@@ -14,13 +14,14 @@ class CountdownGriefing {
    * @param {Object} config - configuration for CountdownGriefing
    * @param {string} config.network - eth network string
    */
-  constructor({ network }) {
+  constructor({ network, registry }) {
     this.network = network;
 
     this.contract = new Contract({
       network,
       abi: contract.abi,
-      contractName: "CountdownGriefing"
+      contractName: "CountdownGriefing",
+      registry
     });
   }
 
@@ -42,8 +43,8 @@ class CountdownGriefing {
    */
   async increaseStake(currentStake, amountToAdd) {
     try {
-      amountToAdd = Ethers.parseEther(amountToAdd);
-      currentStake = Ethers.parseEther(currentStake);
+      amountToAdd = Ethers.bigNumberify(amountToAdd);
+      currentStake = Ethers.bigNumberify(currentStake);
 
       const tx = await this.contract.contract.increaseStake(
         currentStake,

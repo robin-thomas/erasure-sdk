@@ -16,13 +16,14 @@ class CountdownGriefing_Factory {
    * @param {string} config.network - eth network string
    * @param {Object} config.web3 - web3 object
    */
-  constructor({ network }) {
+  constructor({ network, registry }) {
     this.network = network;
 
     this.contract = new Contract({
       network,
       abi: contract.abi,
-      contractName: "CountdownGriefing_Factory"
+      contractName: "CountdownGriefing_Factory",
+      registry
     });
   }
 

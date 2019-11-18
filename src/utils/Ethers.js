@@ -12,19 +12,19 @@ const Ethers = {
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       provider = new ethers.providers.Web3Provider(window.ethereum);
     } else {
-      provider = ethers.getDefaultProvider("rinkeby");
+      provider = new ethers.providers.JsonRpcProvider();
     }
 
     return provider;
   },
 
-  // TODO: support for metamask.
+  // TODO: add support for metamask.
   getWallet: () => {
     let wallet = null;
     if (process.env.NODE_ENV === "test") {
-      const keys = require("../keys.json");
+      const keys = require("../../test/test.json");
       wallet = ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
-        ethers.getDefaultProvider("rinkeby")
+        new ethers.providers.JsonRpcProvider()
       );
     }
 

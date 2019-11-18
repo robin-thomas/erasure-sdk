@@ -31,6 +31,7 @@
     "docdash": "^1.1.1",
     "esm": "^3.2.25",
     "ethers": "^4.0.39",
+    "ganache-cli": "^6.7.0",
     "husky": "^3.0.5",
     "ipfs-http-client": "^39.0.2",
     "jsdoc": "^3.6.3",

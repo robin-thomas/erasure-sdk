@@ -14,12 +14,17 @@ class Contract {
    * @param {Object} config.abi - contract abi
    * @param {string} config.network - eth network string
    * @param {Object} [config.contractName] - new contract address
+   * @param {Object} [config.registry] - for running tests
    */
-  constructor({ network, contractName, abi }) {
+  constructor({ network, contractName, abi, registry }) {
     this.wallet = Ethers.getWallet();
     this.provider = Ethers.getProvider();
 
-    this.address = Contract.getAddress(contractName, network);
+    if (registry && Ethers.isAddress(registry[contractName])) {
+      this.address = registry[contractName];
+    } else {
+      this.address = Contract.getAddress(contractName, network);
+    }
 
     this.setContract(abi, this.address);
   }
