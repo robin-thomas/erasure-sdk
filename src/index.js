@@ -11,6 +11,7 @@ import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
 import ReleaseStake from "./client/ReleaseStake";
+import RetrieveStake from "./client/RetrieveStake";
 
 import Crypto from "./utils/Crypto";
 
@@ -194,6 +195,25 @@ class ErasureClient {
     try {
       return await ReleaseStake.bind(this)({
         amountToRelease,
+        griefingAddress
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Retrieve the stake
+   *
+   * @param {Object} config - configuration for releaseStake
+   * @param {string} config.recipient - recipient to receive the stake
+   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @returns {Promise} transaction receipt of retrieveStake
+   */
+  async retrieveStake({ recipient, griefingAddress }) {
+    try {
+      return await RetrieveStake.bind(this)({
+        recipient,
         griefingAddress
       });
     } catch (err) {

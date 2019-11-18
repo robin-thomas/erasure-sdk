@@ -98,6 +98,23 @@ class CountdownGriefing {
       throw err;
     }
   }
+
+  /**
+   * Retrieve the stake
+   *
+   * @param {string} config.recipient - recipient to receive the stake
+   * @returns {Promise} receipt of the retrieve stake transaction
+   */
+  async retrieveStake(recipient) {
+    try {
+      const tx = await this.contract.contract.retrieveStake(recipient);
+      const txReceipt = await tx.wait();
+
+      return txReceipt;
+    } catch (err) {
+      throw err;
+    }
+  }
 }
 
 export default CountdownGriefing;

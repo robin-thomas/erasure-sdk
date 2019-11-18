@@ -44,7 +44,8 @@ const Ethers = {
   getAccount: () => Ethers.getWallet().address,
   bigNumberify: value => ethers.utils.bigNumberify(value),
 
-  MaxUint256: () => ethers.constants.MaxUint256
+  MaxUint256: () => ethers.constants.MaxUint256,
+  AddressZero: () => ethers.constants.AddressZero
 };
 
 export default Ethers;

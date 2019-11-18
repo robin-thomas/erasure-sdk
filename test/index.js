@@ -6,13 +6,33 @@ import Ethers from "../src/utils/Ethers";
 
 import testConfig from "./test.json";
 
+const addStake = (stake, amount) => {
+  stake = Ethers.parseEther(stake);
+  amount = Ethers.bigNumberify(amount);
+
+  stake = stake.add(amount);
+
+  return [Ethers.formatEther(stake), Ethers.formatEther(amount)];
+};
+
+const subStake = (stake, amount) => {
+  stake = Ethers.parseEther(stake);
+  amount = Ethers.bigNumberify(amount);
+
+  stake = stake.sub(amount);
+
+  return [Ethers.formatEther(stake), Ethers.formatEther(amount)];
+};
+
 describe("ErasureClient", () => {
   const punishAmount = "1";
   const rewardAmount = "10";
   const stakeAmount = "1";
   const countdownLength = 100000000;
 
-  let postIpfsHash, griefingAddress;
+  let postIpfsHash,
+    griefingAddress,
+    currentStake = "0";
   const post = Math.random().toString(36);
 
   let client, account, registry;
@@ -56,10 +76,9 @@ describe("ErasureClient", () => {
     assert.ok(Ethers.isAddress(griefingAddress));
     console.log(`\tAgreement created at ${griefingAddress}`);
 
-    const amount = Number(
-      Ethers.formatEther(Ethers.bigNumberify(result.stake.logs[0].data))
-    ).toString();
-    assert.ok(amount === stakeAmount);
+    let amount = "";
+    [currentStake, amount] = addStake(currentStake, result.stake.logs[0].data);
+    assert.ok(Number(amount).toString() === stakeAmount);
   });
 
   it("#reward", async () => {
@@ -68,10 +87,9 @@ describe("ErasureClient", () => {
       rewardAmount
     });
 
-    const amount = Number(
-      Ethers.formatEther(Ethers.bigNumberify(result.logs[0].data))
-    ).toString();
-    assert.ok(amount === rewardAmount);
+    let amount = "";
+    [currentStake, amount] = addStake(currentStake, result.logs[0].data);
+    assert.ok(Number(amount).toString() === rewardAmount);
   });
 
   it("#punish", async () => {
@@ -81,10 +99,9 @@ describe("ErasureClient", () => {
       message: "This is a punishment"
     });
 
-    const amount = Number(
-      Ethers.formatEther(Ethers.bigNumberify(result.logs[1].data))
-    ).toString();
-    assert.ok(amount === punishAmount);
+    let amount = "";
+    [currentStake, amount] = subStake(currentStake, result.logs[1].data);
+    assert.ok(Number(amount).toString() === punishAmount);
   });
 
   it("#releaseStake", async () => {
@@ -93,9 +110,20 @@ describe("ErasureClient", () => {
       griefingAddress
     });
 
-    const amount = Number(
-      Ethers.formatEther(Ethers.bigNumberify(result.logs[0].data))
-    ).toString();
-    assert.ok(amount === punishAmount);
+    let amount = "";
+    [currentStake, amount] = subStake(currentStake, result.logs[0].data);
+    assert.ok(Number(amount).toString() === punishAmount);
+  });
+
+  it("#retrieveStake", async () => {
+    try {
+      await client.retrieveStake({
+        recipient: Ethers.AddressZero(),
+        griefingAddress
+      });
+      assert.fail("0", "1", "Agreement deadline has not passed");
+    } catch (err) {
+      assert.ok(true);
+    }
   });
 });
