@@ -18,7 +18,6 @@ class Contract {
    */
   constructor({ network, contractName, abi, registry }) {
     this.wallet = Ethers.getWallet();
-    this.provider = Ethers.getProvider();
 
     if (registry && Ethers.isAddress(registry[contractName])) {
       this.address = registry[contractName];

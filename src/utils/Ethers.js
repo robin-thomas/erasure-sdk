@@ -12,30 +12,42 @@ const Ethers = {
 
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       provider = new ethers.providers.Web3Provider(window.ethereum);
-    } else {
+    } else if (process.env.NODE_ENV === "test") {
       const keys = require("../../test/test.json");
+
       const idWallet = new IdentityWallet(() => true /* getConsent */, {
         seed: ethers.utils.HDNode.mnemonicToSeed(keys.metamask.mnemonic)
       });
+
       provider = idWallet.get3idProvider();
     }
 
     return provider;
   },
 
-  // TODO: add support for metamask.
+  /**
+   * returns ethers signer
+   *
+   * @returns {Object} ethers signer
+   */
   getWallet: () => {
-    let wallet = null;
     if (process.env.NODE_ENV === "test") {
       const keys = require("../../test/test.json");
-      wallet = ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
+
+      return ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
         new ethers.providers.JsonRpcProvider()
       );
     }
 
-    return wallet;
+    return Ethers.getProvider().getSigner();
   },
 
+  /**
+   * checks if an address is valid
+   *
+   * @param {string} address
+   * @returns {Boolean} returns true if input is an address
+   */
   isAddress: address => {
     try {
       ethers.utils.getAddress(address);
@@ -44,6 +56,7 @@ const Ethers = {
       return false;
     }
   },
+
   parseEther: ether => ethers.utils.parseEther(ether),
   formatEther: wei => ethers.utils.formatEther(wei),
   getAccount: () => Ethers.getWallet().address,
