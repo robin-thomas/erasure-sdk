@@ -15,6 +15,7 @@ import RetrieveStake from "./client/RetrieveStake";
 
 import Box from "./utils/3Box";
 import Crypto from "./utils/Crypto";
+import Ethers from "./utils/Ethers";
 
 class ErasureClient {
   /**
@@ -22,18 +23,19 @@ class ErasureClient {
    *
    * @constructor
    * @param {Object} config - configuration for ErasureClient
-   * @param {string} config.network - eth network string (like ropsten, rinkeby)
    * @param {string} config.version - version string for your ErasureClient
+   * @param {string} config.network - ethereum network string (rinkeby, mainnet)
    * @param {string} [config.registry] - for running tests
    */
-  constructor({ network, version, registry }) {
+  constructor({ version, registry, network }) {
     this.version = version;
-    this.network = network;
 
     // Create contract objects.
-    let opts = { network };
+    let opts = {};
     if (process.env.NODE_ENV === "test") {
       opts.registry = registry;
+    } else {
+      opts.network = network;
     }
 
     this.nmr = new NMR(opts);

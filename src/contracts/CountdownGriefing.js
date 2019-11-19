@@ -12,17 +12,15 @@ class CountdownGriefing {
    *
    * @constructor
    * @param {Object} config - configuration for CountdownGriefing
-   * @param {string} [config.network] - eth network string
+   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for testing purposes
    */
   constructor({ network, registry }) {
-    this.network = network;
-
     this.contract = new Contract({
-      network,
       abi: contract.abi,
       contractName: "CountdownGriefing",
-      registry
+      registry,
+      network
     });
   }
 
@@ -32,7 +30,7 @@ class CountdownGriefing {
    * @param {string} address - address of the new contract instance
    */
   setAddress(address) {
-    this.contract = this.contract.setContract(contract.abi, address);
+    this.contract = this.contract.setContract(address);
   }
 
   /**

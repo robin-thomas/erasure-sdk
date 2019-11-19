@@ -12,20 +12,43 @@ class Contract {
    * @constructor
    * @param {Object} config - configuration for Contract
    * @param {Object} config.abi - contract abi
-   * @param {string} config.network - eth network string
    * @param {Object} [config.contractName] - new contract address
+   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for running tests
    */
-  constructor({ network, contractName, abi, registry }) {
+  constructor({ contractName, abi, registry, network }) {
+    this.abi = abi;
     this.wallet = Ethers.getWallet();
+    this.contractName = contractName;
 
     if (registry && Ethers.isAddress(registry[contractName])) {
       this.address = registry[contractName];
     } else {
       this.address = Contract.getAddress(contractName, network);
+
+      // Update the contract object on network change.
+      let onNetworkChange = function(network) {
+        switch (network) {
+          case 1:
+            this.updateNetwork("mainnet");
+            break;
+
+          case 4:
+            this.updateNetwork("rinkeby");
+            break;
+        }
+      };
+      onNetworkChange = onNetworkChange.bind(this);
+
+      window.ethereum.on("networkChanged", onNetworkChange);
     }
 
-    this.setContract(abi, this.address);
+    this.setContract(this.address);
+  }
+
+  updateNetwork(network) {
+    const address = Contract.getAddress(this.contractName, network);
+    this.setContract(address);
   }
 
   /**
@@ -35,8 +58,10 @@ class Contract {
    * @param {string} address - contract address
    * @returns {Object} this object
    */
-  setContract(abi, address) {
-    this.contract = new ethers.Contract(address, abi, this.wallet);
+  setContract(address) {
+    if (address) {
+      this.contract = new ethers.Contract(address, this.abi, this.wallet);
+    }
     return this;
   }
 
@@ -62,7 +87,7 @@ class Contract {
     try {
       return contracts[config.erasure.contract.version][network][contract];
     } catch (err) {
-      throw new Error(`Contract address not found: ${contract}, ${network}`);
+      return ethers.constants.AddressZero;
     }
   }
 }

@@ -13,17 +13,15 @@ class Feed_Factory {
    *
    * @constructor
    * @param {Object} config - configuration for Feed_Factory
-   * @param {string} [config.network] - eth network string
+   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ network, registry }) {
-    this.network = network;
-
+  constructor({ registry, network }) {
     this.contract = new Contract({
-      network,
       abi: contract.abi,
       contractName: "Feed_Factory",
-      registry
+      registry,
+      network
     });
   }
 

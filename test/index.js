@@ -40,11 +40,7 @@ describe("ErasureClient", () => {
     // Deploy all contracts to ganache.
     registry = await Deployer();
 
-    client = new ErasureClient({
-      network: "rinkeby", // just to load contract abi
-      version: "1.0.0", // version string
-      registry
-    });
+    client = new ErasureClient({ version: "1.0.0", registry });
 
     account = Ethers.getAccount();
     console.log(`\n\tUsing eth account: ${account}\n`);

@@ -12,27 +12,16 @@ class NMR {
    *
    * @constructor
    * @param {Object} config - configuration for NMR
-   * @param {string} [config.network] - eth network string
+   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for testing purposes
    */
   constructor({ network, registry }) {
-    this.network = network;
-
     this.contract = new Contract({
-      network,
-      abi: this.getAbi(),
+      abi: this.network === "rinkeby" ? mockContract.abi : contract.abi,
       contractName: "NMR",
-      registry
+      registry,
+      network
     });
-  }
-
-  /**
-   * Returns the contract abi
-   *
-   * @returns {Object} contract abi
-   */
-  getAbi() {
-    return this.network === "rinkeby" ? mockContract.abi : contract.abi;
   }
 
   /**
@@ -41,7 +30,7 @@ class NMR {
    * @param {string} address - address of the new contract instance
    */
   setAddress(address) {
-    this.contract = this.contract.setContract(this.getAbi(), address);
+    this.contract = this.contract.setContract(address);
   }
 
   /**
