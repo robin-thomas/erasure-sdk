@@ -1,7 +1,7 @@
 import Box from "../utils/3Box";
 
 /**
- * Create a new Feed
+ * Create a new version string for Feed (if required)
  *
  * @param {string} version - version string from ErasureClient
  * @returns {Promise} data, feed, hash

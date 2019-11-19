@@ -2,12 +2,12 @@ import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
 
 /**
- * Reward a user
+ * Release some stake to the staker
  *
- * @param {Object} config - configuration for reward
- * @param {string} config.amountToRelease - amount to be rewarded
+ * @param {Object} config - configuration for releaseStake
+ * @param {string} config.amountToRelease - amount to be released
  * @param {string} config.griefingAddress - contract address of the griefing agreement
- * @returns {Promise} transaction receipts of staking
+ * @returns {Promise} transaction receipts of releaseStake
  */
 const ReleaseStake = async function({ amountToRelease, griefingAddress }) {
   try {

@@ -13,7 +13,8 @@ class Feed_Factory {
    *
    * @constructor
    * @param {Object} config - configuration for Feed_Factory
-   * @param {string} config.network - eth network string
+   * @param {string} [config.network] - eth network string
+   * @param {Object} [config.registry] - for testing purposes
    */
   constructor({ network, registry }) {
     this.network = network;

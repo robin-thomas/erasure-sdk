@@ -15,6 +15,11 @@ const Box = {
 
   KEYSTORE_ASYMMETRIC: "asymmetric",
 
+  /**
+   * create a new 3Box space client
+   *
+   * @returns {Object} authenticated 3Box space client
+   */
   getClient: async () => {
     if (Box.space === null) {
       const box = await ThreeBox.openBox(null, Ethers.getProvider());
@@ -26,6 +31,12 @@ const Box = {
     return Box.space;
   },
 
+  /**
+   * Add/update a new value to the 3Box space
+   *
+   * @param {Object} key
+   * @param {Object} value
+   */
   set: async (key, value) => {
     try {
       const client = await Box.getClient();
@@ -35,6 +46,12 @@ const Box = {
     }
   },
 
+  /**
+   * Retrieve value from the 3Box space
+   *
+   * @param {Object} key
+   * @returns {Object} value
+   */
   get: async (key, value) => {
     try {
       const client = await Box.getClient();
@@ -44,6 +61,12 @@ const Box = {
     }
   },
 
+  /**
+   * Retrieve the keypair stored.
+   * We use this, because 3Box cannot store Uint8Arrays
+   *
+   * @returns {Object} keypair
+   */
   getKeyPair: async () => {
     const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC);
 
@@ -56,6 +79,11 @@ const Box = {
     };
   },
 
+  /**
+   * Store a new keypair
+   * We use this, because 3Box cannot store Uint8Arrays
+   *
+   */
   setKeyPair: async keypair => {
     await Box.set(Box.KEYSTORE_ASYMMETRIC, {
       ...keypair,

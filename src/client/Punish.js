@@ -2,13 +2,13 @@ import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
 
 /**
- * Reward a user
+ * Punish a user
  *
- * @param {Object} config - configuration for reward
+ * @param {Object} config - configuration for punishment
  * @param {string} config.punishAmount - amount to be punished
  * @param {string} config.griefingAddress - contract address of the griefing agreement
  * @param {string} config.message - message
- * @returns {Promise} transaction receipts of staking
+ * @returns {Promise} transaction receipts of punishment
  */
 const Punish = async function({ punishAmount, griefingAddress, message }) {
   try {

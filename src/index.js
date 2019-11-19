@@ -24,7 +24,7 @@ class ErasureClient {
    * @param {Object} config - configuration for ErasureClient
    * @param {string} config.network - eth network string (like ropsten, rinkeby)
    * @param {string} config.version - version string for your ErasureClient
-   * @param {string} [config.registry] - for tests
+   * @param {string} [config.registry] - for running tests
    */
   constructor({ network, version, registry }) {
     this.version = version;
@@ -46,7 +46,7 @@ class ErasureClient {
   /**
    * Create a new Feed
    *
-   * @returns {Promise} transaction receipt of new feed
+   * @returns {Promise} transaction receipt of the new feed
    */
   async createFeed() {
     try {
@@ -74,7 +74,7 @@ class ErasureClient {
    * Reveal an encrypted post so that others can view it
    *
    * @param {string} ipfsHash - ipfs hash of where the unencrypted post will be
-   * @returns {Promise} ipfs hash of the unencrypted post
+   * @returns {Promise} ipfs hash of the unencrypted post (after uploading)
    */
   async revealPost(ipfsHash) {
     try {
@@ -121,7 +121,7 @@ class ErasureClient {
    * @param {Object} config - configuration for reward
    * @param {string} config.rewardAmount - amount to be rewarded
    * @param {string} config.griefingAddress - contract address of the griefing agreement
-   * @returns {Promise} transaction receipt of staking
+   * @returns {Promise} transaction receipt of the reward
    */
   async reward({ rewardAmount, griefingAddress }) {
     try {
@@ -141,7 +141,7 @@ class ErasureClient {
    * @param {string} config.punishAmount - amount to be punished
    * @param {string} config.griefingAddress - contract address of the griefing agreement
    * @param {string} config.message - message
-   * @returns {Promise} transaction receipt of staking
+   * @returns {Promise} transaction receipt of the punishment
    */
   async punish({ punishAmount, griefingAddress, message }) {
     try {
@@ -177,7 +177,7 @@ class ErasureClient {
   /**
    * Retrieve the stake
    *
-   * @param {Object} config - configuration for releaseStake
+   * @param {Object} config - configuration for retrieveStake
    * @param {string} config.recipient - recipient to receive the stake
    * @param {string} config.griefingAddress - contract address of the griefing agreement
    * @returns {Promise} transaction receipt of retrieveStake

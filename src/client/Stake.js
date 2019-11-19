@@ -2,7 +2,7 @@ import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
 
 /**
- * Create a new Feed
+ * Create a new version string for Agreement (if required)
  *
  * @param {string} version - version string from ErasureClient
  * @returns {Promise} data, feed, hash

@@ -5,7 +5,7 @@ import Crypto from "../utils/Crypto";
 /**
  * Reveal an encrypted post so that others can view it
  *
- * @param {string} ipfsHash - ipfs hash of where the unencrypted post will be
+ * @param {string} ipfsHash - ipfs hash of what the unencrypted post will be
  * @returns {Promise} ipfs hash of the unencrypted post
  */
 const RevealPost = async function(ipfsHash) {

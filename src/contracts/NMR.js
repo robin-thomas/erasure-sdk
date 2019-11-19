@@ -12,7 +12,8 @@ class NMR {
    *
    * @constructor
    * @param {Object} config - configuration for NMR
-   * @param {string} config.network - eth network string
+   * @param {string} [config.network] - eth network string
+   * @param {Object} [config.registry] - for testing purposes
    */
   constructor({ network, registry }) {
     this.network = network;

@@ -18,6 +18,12 @@ const Abi = {
     return encoded;
   },
 
+  /**
+   * createSelector
+   *
+   * @param {string} fnName
+   * @param {Array<string>} abiTypes
+   */
   createSelector: (fnName, abiTypes) => {
     const joinedTypes = abiTypes.join(",");
     const fnSignature = `${fnName}(${joinedTypes})`;

@@ -28,7 +28,7 @@ const CreatePost = async function(post) {
     );
 
     // Get the IPFS hash of the post
-    // without uploaded it to IPFS.
+    // without uploading it to IPFS.
     const ipfsHash = await IPFS.getHash(post);
 
     const metadata = {

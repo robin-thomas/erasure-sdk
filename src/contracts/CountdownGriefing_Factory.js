@@ -13,8 +13,8 @@ class CountdownGriefing_Factory {
    *
    * @constructor
    * @param {Object} config - configuration for CountdownGriefing_Factory
-   * @param {string} config.network - eth network string
-   * @param {Object} config.web3 - web3 object
+   * @param {string} [config.network] - eth network string
+   * @param {Object} [config.registry] - for testing purposes
    */
   constructor({ network, registry }) {
     this.network = network;
