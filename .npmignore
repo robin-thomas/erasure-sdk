@@ -1,8 +1,14 @@
 .git
+.nyc_output
+artifacts
+erasure
+ipfs
+orbitdb
+scripts
 src
 test
 .babelrc
 .gitignore
-now.json
+.nycrc.json
+jsdcoc.json
 webpack.config.js
-.eslintrc.json

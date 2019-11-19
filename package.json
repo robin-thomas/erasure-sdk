@@ -1,5 +1,5 @@
 {
-  "name": "erasure-client",
+  "name": "@erasure/client",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -15,9 +15,6 @@
   },
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
   "license": "MIT",
-  "peerDependencies": {
-    "web3": "^1.2.2"
-  },
   "devDependencies": {
     "3box": "^1.13.2",
     "@babel/cli": "^7.6.0",
