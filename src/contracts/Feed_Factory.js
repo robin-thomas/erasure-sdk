@@ -13,15 +13,13 @@ class Feed_Factory {
    *
    * @constructor
    * @param {Object} config - configuration for Feed_Factory
-   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, network }) {
+  constructor({ registry }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "Feed_Factory",
-      registry,
-      network
+      registry
     });
   }
 
@@ -35,7 +33,7 @@ class Feed_Factory {
    */
   async create({ hash, data = null }) {
     try {
-      const operator = Ethers.getAccount();
+      const operator = await Ethers.getAccount();
 
       // Convert the ipfs hash to multihash hex code.
       let ipfsHash = hash;

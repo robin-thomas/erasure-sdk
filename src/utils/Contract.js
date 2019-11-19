@@ -5,6 +5,23 @@ import Ethers from "./Ethers";
 import config from "../config.json";
 import contracts from "../contracts.json";
 
+const accountChange = function() {
+  this.wallet = Ethers.getWallet();
+  this.setContract(this.address);
+};
+
+const networkChange = function(network) {
+  let address = null;
+  if (network === "mainnet" || network === "rinkeby") {
+    address = Contract.getAddress(this.contractName, network);
+  }
+
+  if (address) {
+    this.network = network;
+    this.setContract(address);
+  }
+};
+
 class Contract {
   /**
    * Contract
@@ -13,42 +30,32 @@ class Contract {
    * @param {Object} config - configuration for Contract
    * @param {Object} config.abi - contract abi
    * @param {Object} [config.contractName] - new contract address
-   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for running tests
    */
-  constructor({ contractName, abi, registry, network }) {
+  constructor({ contractName, abi, registry }) {
     this.abi = abi;
     this.wallet = Ethers.getWallet();
     this.contractName = contractName;
 
+    const onAccountChange = accountChange.bind(this);
+    const onNetworkChange = networkChange.bind(this);
+
     if (registry && Ethers.isAddress(registry[contractName])) {
-      this.address = registry[contractName];
+      this.network = "rinkeby";
+      this.setContract(registry[contractName]);
     } else {
-      this.address = Contract.getAddress(contractName, network);
+      // Contract object will be created when we get the network.
+      Ethers.getNetworkSync(onNetworkChange);
 
-      // Update the contract object on network change.
-      let onNetworkChange = function(network) {
-        switch (network) {
-          case 1:
-            this.updateNetwork("mainnet");
-            break;
-
-          case 4:
-            this.updateNetwork("rinkeby");
-            break;
-        }
-      };
-      onNetworkChange = onNetworkChange.bind(this);
-
-      window.ethereum.on("networkChanged", onNetworkChange);
+      // Listen for any metamask changes.
+      if (window.ethereum) {
+        window.ethereum.on("networkChanged", function(networkId) {
+          const network = Ethers.getNetworkName(networkId);
+          onNetworkChange(network);
+        });
+        window.ethereum.on("accountsChanged", onAccountChange);
+      }
     }
-
-    this.setContract(this.address);
-  }
-
-  updateNetwork(network) {
-    const address = Contract.getAddress(this.contractName, network);
-    this.setContract(address);
   }
 
   /**
@@ -60,9 +67,22 @@ class Contract {
    */
   setContract(address) {
     if (address) {
-      this.contract = new ethers.Contract(address, this.abi, this.wallet);
+      this.address = address;
+      this.wallet = Ethers.getWallet();
+
+      // NMR contract.
+      if (this.abi.mainnet !== undefined) {
+        if (this.abi[this.network] !== undefined) {
+          this.contract = new ethers.Contract(
+            address,
+            this.abi[this.network],
+            this.wallet
+          );
+        }
+      } else {
+        this.contract = new ethers.Contract(address, this.abi, this.wallet);
+      }
     }
-    return this;
   }
 
   /**
@@ -87,7 +107,7 @@ class Contract {
     try {
       return contracts[config.erasure.contract.version][network][contract];
     } catch (err) {
-      return ethers.constants.AddressZero;
+      throw new Error("This network is not supported!");
     }
   }
 }

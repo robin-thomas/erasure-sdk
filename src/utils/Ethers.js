@@ -12,6 +12,7 @@ const Ethers = {
 
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       provider = new ethers.providers.Web3Provider(window.ethereum);
+      window.ethereum.enable();
     } else if (process.env.NODE_ENV === "test") {
       const keys = require("../../test/test.json");
 
@@ -43,6 +44,28 @@ const Ethers = {
   },
 
   /**
+   * retrieves the eth network name
+   *
+   * @param {Function} callback - callback function
+   */
+  getNetworkSync: callback => {
+    Ethers.getProvider()
+      .getNetwork()
+      .then(net => callback(net.name))
+      .catch(console.error);
+  },
+
+  // refer: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
+  getNetworkName: networkId => {
+    switch (networkId) {
+      case 1:
+        return "mainnet";
+      case 4:
+        return "rinkeby";
+    }
+  },
+
+  /**
    * checks if an address is valid
    *
    * @param {string} address
@@ -59,8 +82,11 @@ const Ethers = {
 
   parseEther: ether => ethers.utils.parseEther(ether),
   formatEther: wei => ethers.utils.formatEther(wei),
-  getAccount: () => Ethers.getWallet().address,
   bigNumberify: value => ethers.utils.bigNumberify(value),
+
+  getAccount: async () => {
+    return await Ethers.getWallet().getAddress();
+  },
 
   MaxUint256: () => ethers.constants.MaxUint256,
   AddressZero: () => ethers.constants.AddressZero

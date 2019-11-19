@@ -12,15 +12,13 @@ class Feed {
    *
    * @constructor
    * @param {Object} config - configuration for Feed
-   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ network, registry }) {
+  constructor({ registry }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "Feed",
-      registry,
-      network
+      registry
     });
   }
 
@@ -30,7 +28,7 @@ class Feed {
    * @param {string} address - address of the new contract instance
    */
   setAddress(address) {
-    this.contract = this.contract.setContract(address);
+    this.contract.setContract(address);
   }
 
   /**

@@ -13,15 +13,13 @@ class CountdownGriefing_Factory {
    *
    * @constructor
    * @param {Object} config - configuration for CountdownGriefing_Factory
-   * @param {Object} [config.network] - network name
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, network }) {
+  constructor({ registry }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "CountdownGriefing_Factory",
-      registry,
-      network
+      registry
     });
   }
 
@@ -46,7 +44,7 @@ class CountdownGriefing_Factory {
     data = null
   }) {
     try {
-      const operator = Ethers.getAccount();
+      const operator = await Ethers.getAccount();
 
       if (!Ethers.isAddress(counterParty)) {
         throw new Error(`CounterParty ${counterParty} is not an address`);

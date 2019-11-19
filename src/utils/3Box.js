@@ -22,10 +22,18 @@ const Box = {
    */
   getClient: async () => {
     if (Box.space === null) {
-      const box = await ThreeBox.openBox(null, Ethers.getProvider());
-      await box.syncDone;
+      if (window.ethereum) {
+        const account = await Ethers.getAccount();
+        const box = await ThreeBox.openBox(account, window.ethereum);
+        await box.syncDone;
 
-      Box.space = await box.openSpace(config.app.name);
+        Box.space = await box.openSpace(config.app.name);
+      } else {
+        const box = await ThreeBox.openBox(null, Ethers.getProvider());
+        await box.syncDone;
+
+        Box.space = await box.openSpace(config.app.name);
+      }
     }
 
     return Box.space;

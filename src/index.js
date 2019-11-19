@@ -24,18 +24,15 @@ class ErasureClient {
    * @constructor
    * @param {Object} config - configuration for ErasureClient
    * @param {string} config.version - version string for your ErasureClient
-   * @param {string} config.network - ethereum network string (rinkeby, mainnet)
    * @param {string} [config.registry] - for running tests
    */
-  constructor({ version, registry, network }) {
+  constructor({ version, registry }) {
     this.version = version;
 
     // Create contract objects.
     let opts = {};
     if (process.env.NODE_ENV === "test") {
       opts.registry = registry;
-    } else {
-      opts.network = network;
     }
 
     this.nmr = new NMR(opts);

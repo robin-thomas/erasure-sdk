@@ -22,7 +22,7 @@ const getData = async version => {
     );
   }
 
-  return { data, feed, hash };
+  return { data, hash };
 };
 
 /**
@@ -32,10 +32,10 @@ const getData = async version => {
  */
 const CreateFeed = async function() {
   try {
-    let { data, feed, hash } = await getData(this.version);
+    let { data, hash } = await getData(this.version);
 
     // Create the new Feed contract.
-    feed = await this.feedFactory.create({ hash, data });
+    let feed = await this.feedFactory.create({ hash, data });
     feed.timestamp = new Date().toISOString();
 
     // store feed details in datastore.

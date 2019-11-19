@@ -39,7 +39,7 @@ const Crypto = {
      */
     genKeyPair: async () => {
       try {
-        const operator = Ethers.getAccount();
+        const operator = await Ethers.getAccount();
 
         const msg = `I am signing this message to generate my ErasureClient keypair as ${operator}`;
         const signature = await Ethers.getWallet().signMessage(msg);
