@@ -41,7 +41,6 @@ class Contract {
     const onNetworkChange = networkChange.bind(this);
 
     if (registry && Ethers.isAddress(registry[contractName])) {
-      this.network = "rinkeby";
       this.setContract(registry[contractName]);
     } else {
       // Contract object will be created when we get the network.
@@ -55,6 +54,17 @@ class Contract {
         });
         window.ethereum.on("accountsChanged", onAccountChange);
       }
+    }
+  }
+
+  /**
+   * Login to metamask
+   *
+   */
+  async login() {
+    if (window.ethereum) {
+      await window.ethereum.enable();
+      this.wallet = Ethers.getWallet();
     }
   }
 

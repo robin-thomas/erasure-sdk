@@ -24,6 +24,14 @@ class Feed_Factory {
   }
 
   /**
+   * Login to metamask
+   *
+   */
+  login() {
+    this.contract.login();
+  }
+
+  /**
    * Create a Feed contract using Feed_Factory
    *
    * @param {Object} config - configuration for createExplicit

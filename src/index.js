@@ -43,6 +43,22 @@ class ErasureClient {
   }
 
   /**
+   * To initialize the client.
+   *
+   */
+  async login() {
+    try {
+      await this.nmr.login();
+      await this.feed.login();
+      await this.feedFactory.login();
+      await this.countdownGriefing.login();
+      await this.countdownGriefingFactory.login();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
    * Create a new Feed
    *
    * @returns {Promise} transaction receipt of the new feed

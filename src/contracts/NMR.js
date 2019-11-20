@@ -26,6 +26,14 @@ class NMR {
   }
 
   /**
+   * Login to metamask
+   *
+   */
+  login() {
+    this.contract.login();
+  }
+
+  /**
    * Updates the address of the contract
    *
    * @param {string} address - address of the new contract instance

@@ -23,6 +23,14 @@ class CountdownGriefing {
   }
 
   /**
+   * Login to metamask
+   *
+   */
+  login() {
+    this.contract.login();
+  }
+
+  /**
    * Update the contract address of the CountdownGriefing
    *
    * @param {string} address - address of the new contract instance

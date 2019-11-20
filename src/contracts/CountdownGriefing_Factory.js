@@ -24,6 +24,14 @@ class CountdownGriefing_Factory {
   }
 
   /**
+   * Login to metamask
+   *
+   */
+  login() {
+    this.contract.login();
+  }
+
+  /**
    * Create a CountdownGriefing contract using CountdownGriefing_Factory
    *
    * @param {Object} config - configuration for createExplicit
