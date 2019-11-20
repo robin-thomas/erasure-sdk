@@ -6,9 +6,10 @@ import Crypto from "../utils/Crypto";
  * Submits new post hash
  *
  * @param {string} post - data to be posted
+ * @param {string} feedAddress - feed to where this post should be added
  * @returns {Promise} transaction receipt of new post
  */
-const CreatePost = async function(post) {
+const CreatePost = async function(post, feedAddress) {
   try {
     const symmetricKey = Crypto.symmetric.genKey();
     const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
@@ -39,16 +40,18 @@ const CreatePost = async function(post) {
       encryptedPostIpfsHash
     };
 
+    // Feed contract has been created.
+    // Update the contract object.
+    this.feed.setAddress(feedAddress);
     const txReceipt = await this.feed.submitHash(metadata);
 
-    const feed = await Box.get(Box.DATASTORE_FEED);
     let postData = await Box.get(Box.DATASTORE_POSTS);
     if (postData === null) {
       postData = {};
     }
     postData[ipfsHash] = {
       metadata,
-      feed: feed ? feed.address : null,
+      feedAddress,
       timestamp: new Date().toISOString()
     };
     await Box.set(Box.DATASTORE_POSTS, postData);

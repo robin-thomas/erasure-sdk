@@ -7,7 +7,7 @@ import config from "../config.json";
 const Box = {
   space: null,
 
-  DATASTORE_FEED: "feed",
+  DATASTORE_FEEDS: "feeds",
   DATASTORE_POST: "post",
   DATASTORE_POSTS: "posts",
   DATASTORE_GRIEFING: "griefing",
@@ -22,18 +22,16 @@ const Box = {
    */
   getClient: async () => {
     if (Box.space === null) {
-      if (window.ethereum) {
+      let box;
+      if (typeof window !== "undefined" && window.ethereum !== undefined) {
         const account = await Ethers.getAccount();
-        const box = await ThreeBox.openBox(account, window.ethereum);
-        await box.syncDone;
-
-        Box.space = await box.openSpace(config.app.name);
+        box = await ThreeBox.openBox(account, window.ethereum);
       } else {
-        const box = await ThreeBox.openBox(null, Ethers.getProvider());
-        await box.syncDone;
-
-        Box.space = await box.openSpace(config.app.name);
+        box = await ThreeBox.openBox(null, Ethers.getProvider());
       }
+
+      await box.syncDone;
+      Box.space = await box.openSpace(config.app.name);
     }
 
     return Box.space;
@@ -65,7 +63,7 @@ const Box = {
       const client = await Box.getClient();
       return await client.private.get(key);
     } catch (err) {
-      return {};
+      throw err;
     }
   },
 
@@ -77,6 +75,9 @@ const Box = {
    */
   getKeyPair: async () => {
     const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC);
+    if (keypair === null) {
+      return null;
+    }
 
     return {
       ...keypair,

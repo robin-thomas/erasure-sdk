@@ -11,6 +11,7 @@ const Ethers = {
     let provider = null;
 
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
+      window.ethereum.autoRefreshOnNetworkChange = false;
       provider = new ethers.providers.Web3Provider(window.ethereum);
     } else if (process.env.NODE_ENV === "test") {
       const keys = require("../../test/test.json");

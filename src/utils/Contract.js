@@ -41,6 +41,7 @@ class Contract {
     const onNetworkChange = networkChange.bind(this);
 
     if (registry && Ethers.isAddress(registry[contractName])) {
+      this.network = "rinkeby"; // for test purposes.
       this.setContract(registry[contractName]);
     } else {
       // Contract object will be created when we get the network.
@@ -64,7 +65,9 @@ class Contract {
   async login() {
     if (window.ethereum) {
       await window.ethereum.enable();
-      this.wallet = Ethers.getWallet();
+
+      const network = await Ethers.getProvider().getNetwork();
+      networkChange.bind(this)(network);
     }
   }
 

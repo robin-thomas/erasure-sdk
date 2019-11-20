@@ -48,6 +48,7 @@ class Feed {
   async submitHash(metadata) {
     const ipfsHash = await IPFS.add(JSON.stringify(metadata));
     const hex = Utils.hash(ipfsHash);
+    console.log(`IPFS | ${ipfsHash} | ${hex}`);
 
     // submits the new post hash
     const tx = await this.contract.contract.submitHash(hex);

@@ -31,6 +31,7 @@ describe("ErasureClient", () => {
   const countdownLength = 100000000;
 
   let postIpfsHash,
+    feedAddress,
     griefingAddress,
     currentStake = "0";
   const post = Math.random().toString(36);
@@ -48,12 +49,13 @@ describe("ErasureClient", () => {
 
   it("#createFeed", async () => {
     const result = await client.createFeed();
-    assert.ok(Ethers.isAddress(result.address));
-    console.log(`\tFeed created at ${result.address}`);
+    feedAddress = result.address;
+    assert.ok(Ethers.isAddress(feedAddress));
+    console.log(`\tFeed created at ${feedAddress}`);
   });
 
   it("#createPost", async () => {
-    const result = await client.createPost(post);
+    const result = await client.createPost(post, feedAddress);
     postIpfsHash = result.ipfsHash;
   });
 

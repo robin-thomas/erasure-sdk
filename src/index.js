@@ -7,6 +7,7 @@ import CountdownGriefing_Factory from "./contracts/CountdownGriefing_Factory";
 import Stake from "./client/Stake";
 import Reward from "./client/Reward";
 import Punish from "./client/Punish";
+import GetFeeds from "./client/GetFeeds";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
@@ -72,14 +73,32 @@ class ErasureClient {
   }
 
   /**
+   * Get all feeds of this user
+   *
+   * @returns {Promise} get all feeds of this user
+   */
+  async getFeeds() {
+    try {
+      return await GetFeeds.bind(this)();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
    * Create a new Post
    *
    * @param {string} post - data to be posted
+   * @param {string} feedAddress - feed to where the post to be added
    * @returns {Promise} transaction receipt of new post
    */
-  async createPost(post) {
+  async createPost(post, feedAddress) {
     try {
-      return await CreatePost.bind(this)(post);
+      if (!Ethers.isAddress(feedAddress)) {
+        throw new Error(`Not a valid feed address: ${feedAddress}`);
+      }
+
+      return await CreatePost.bind(this)(post, feedAddress);
     } catch (err) {
       throw err;
     }
