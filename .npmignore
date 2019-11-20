@@ -10,5 +10,5 @@ test
 .babelrc
 .gitignore
 .nycrc.json
-jsdcoc.json
+jsdoc.json
 webpack.config.js
