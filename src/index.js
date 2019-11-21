@@ -245,4 +245,5 @@ class ErasureClient {
   }
 }
 
+export { Ethers };
 export default ErasureClient;
