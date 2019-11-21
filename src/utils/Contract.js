@@ -67,7 +67,12 @@ class Contract {
       await window.ethereum.enable();
 
       const network = await Ethers.getProvider().getNetwork();
-      networkChange.bind(this)(network);
+
+      if (network.name === "homestead" || network.name === "rinkeby") {
+        networkChange.bind(this)(network);
+      } else {
+        throw new Error("Only mainnet and rinkeby networks are supported!");
+      }
     } else {
       throw new Error("Metamask not detected!");
     }
