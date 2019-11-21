@@ -69,6 +69,7 @@ class Contract {
       const network = await Ethers.getProvider().getNetwork();
       networkChange.bind(this)(network);
     }
+    return true;
   }
 
   /**

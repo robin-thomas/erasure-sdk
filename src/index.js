@@ -54,6 +54,7 @@ class ErasureClient {
       await this.feedFactory.login();
       await this.countdownGriefing.login();
       await this.countdownGriefingFactory.login();
+      return true;
     } catch (err) {
       throw err;
     }

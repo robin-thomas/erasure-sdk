@@ -27,8 +27,8 @@ class Feed_Factory {
    * Login to metamask
    *
    */
-  login() {
-    this.contract.login();
+  async login() {
+    return await this.contract.login();
   }
 
   /**
