@@ -5,20 +5,21 @@ import Crypto from "../utils/Crypto";
 /**
  * Reveal an encrypted post so that others can view it
  *
+ * @param {string} feedAddress
  * @param {string} ipfsHash - ipfs hash of what the unencrypted post will be
  * @returns {Promise} ipfs hash of the unencrypted post
  */
-const RevealPost = async function(ipfsHash) {
+const RevealPost = async function(feedAddress, ipfsHash) {
   try {
     // Get the encrypted ipfs hash from the post address
     const postData = await Box.get(Box.DATASTORE_POSTS);
-    if (postData === null || postData[ipfsHash] === undefined) {
-      throw new Error(`Unable to find post at: ${ipfsHash}`);
+    if (postData === null || postData[feedAddress] === undefined) {
+      throw new Error(`Unable to find feed: ${feedAddress}`);
     }
 
     let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = postData[
-      ipfsHash
-    ].metadata;
+      feedAddress
+    ][ipfsHash].metadata;
     nonce = new Uint8Array(nonce.split(","));
     encryptedSymmetricKey = new Uint8Array(encryptedSymmetricKey.split(","));
 

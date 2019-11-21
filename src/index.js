@@ -8,6 +8,7 @@ import Stake from "./client/Stake";
 import Reward from "./client/Reward";
 import Punish from "./client/Punish";
 import GetFeeds from "./client/GetFeeds";
+import GetPosts from "./client/GetPosts";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
@@ -106,14 +107,29 @@ class ErasureClient {
   }
 
   /**
+   * Get all posts of this user given a feed
+   *
+   * @param {string} feedAddress
+   * @returns {Promise} get all posts of this user
+   */
+  async getPosts(feedAddress) {
+    try {
+      return await GetPosts.bind(this)(feedAddress);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
    * Reveal an encrypted post so that others can view it
    *
+   * @param {string} feedAddress
    * @param {string} ipfsHash - ipfs hash of where the unencrypted post will be
    * @returns {Promise} ipfs hash of the unencrypted post (after uploading)
    */
-  async revealPost(ipfsHash) {
+  async revealPost(feedAddress, ipfsHash) {
     try {
-      return await RevealPost.bind(this)(ipfsHash);
+      return await RevealPost.bind(this)(feedAddress, ipfsHash);
     } catch (err) {
       throw err;
     }

@@ -49,9 +49,11 @@ const CreatePost = async function(post, feedAddress) {
     if (postData === null) {
       postData = {};
     }
-    postData[ipfsHash] = {
+    if (postData[feedAddress] === undefined) {
+      postData[feedAddress] = {};
+    }
+    postData[feedAddress][ipfsHash] = {
       metadata,
-      feedAddress,
       timestamp: new Date().toISOString()
     };
     await Box.set(Box.DATASTORE_POSTS, postData);

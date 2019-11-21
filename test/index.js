@@ -60,7 +60,7 @@ describe("ErasureClient", () => {
   });
 
   it("#revealPost", async () => {
-    const result = await client.revealPost(postIpfsHash);
+    const result = await client.revealPost(feedAddress, postIpfsHash);
     assert.ok(result === postIpfsHash);
   });
 
