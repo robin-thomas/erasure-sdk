@@ -40,7 +40,11 @@ const Ethers = {
       );
     }
 
-    return Ethers.getProvider().getSigner();
+    try {
+      return Ethers.getProvider().getSigner();
+    } catch (err) {
+      return null;
+    }
   },
 
   /**
@@ -49,10 +53,12 @@ const Ethers = {
    * @param {Function} callback - callback function
    */
   getNetworkSync: callback => {
-    Ethers.getProvider()
-      .getNetwork()
-      .then(net => callback(net.name))
-      .catch(console.error);
+    try {
+      Ethers.getProvider()
+        .getNetwork()
+        .then(net => callback(net.name))
+        .catch(console.error);
+    } catch (err) {}
   },
 
   // refer: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md

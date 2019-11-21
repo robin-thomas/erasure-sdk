@@ -68,8 +68,9 @@ class Contract {
 
       const network = await Ethers.getProvider().getNetwork();
       networkChange.bind(this)(network);
+    } else {
+      throw new Error("Metamask not detected!");
     }
-    return true;
   }
 
   /**
