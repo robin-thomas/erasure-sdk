@@ -1,9 +1,9 @@
 import Box from "../utils/3Box";
 
 /**
- * Return all the feeds of this user
+ * Return all the griefings of this user
  *
- * @returns {Promise} all the feeds of this user
+ * @returns {Promise} all the griefings of this user
  */
 const GetGriefings = async function() {
   try {

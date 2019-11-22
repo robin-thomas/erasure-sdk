@@ -50,6 +50,12 @@ class NMR {
    */
   async changeApproval(spender, oldValue = 0, newValue = Ethers.MaxUint256()) {
     try {
+      // Mint some mock tokens if in rinkeby network.
+      const network = await Ethers.getProvider().getNetwork();
+      if (network && network.name === "rinkeby") {
+        await this.mintMockTokens(counterParty, Ethers.parseEther("1000"));
+      }
+
       const tx = await this.contract.contract.changeApproval(
         spender,
         oldValue,

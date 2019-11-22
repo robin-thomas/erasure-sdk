@@ -170,7 +170,6 @@ class ErasureClient {
   /**
    * Get all griefings of this user
    *
-   * @param {string} feedAddress
    * @returns {Promise} get all griefings of this user
    */
   async getGriefings() {
