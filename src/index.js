@@ -12,6 +12,7 @@ import GetPosts from "./client/GetPosts";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
+import GetGriefings from "./client/GetGriefings";
 import ReleaseStake from "./client/ReleaseStake";
 import RetrieveStake from "./client/RetrieveStake";
 
