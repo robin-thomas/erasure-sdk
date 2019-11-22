@@ -167,6 +167,20 @@ class ErasureClient {
   }
 
   /**
+   * Get all griefings of this user
+   *
+   * @param {string} feedAddress
+   * @returns {Promise} get all griefings of this user
+   */
+  async getGriefings() {
+    try {
+      return await GetGriefings.bind(this)();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
    * Reward a user
    *
    * @param {Object} config - configuration for reward
