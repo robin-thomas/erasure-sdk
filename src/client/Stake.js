@@ -72,8 +72,14 @@ const Stake = async function({
     };
 
     // Mint some mock NMR for test purposes.
+    const operator = await Ethers.getAccount();
     if (process.env.NODE_ENV === "test") {
-      await this.nmr.mintMockTokens(counterParty, Ethers.parseEther("1000"));
+      await this.nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
+    } else {
+      const network = await Ethers.getProvider().getNetwork();
+      if (network && network.name === "rinkeby") {
+        await this.nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
+      }
     }
 
     // Approve and stake NMR.
