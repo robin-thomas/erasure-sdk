@@ -23,10 +23,10 @@
       "Post_Factory": "0xbd1E2C679ED25485e27e5AD8eD3a2776769d22aF",
       "Feed": "0x7aA06aa3b6D5476c0CE720231E2Add74164f78CD",
       "Feed_Factory": "0xa3140871346f4efF924dc874EC6AfD4573232F03",
-      "SimpleGriefing": "0x5B0d1Db5f266E97f739685b788C5F1DE3E325b25",
-      "SimpleGriefing_Factory": "0xe2940cfF284eaEB54caad6A0d7946657283375a1",
-      "CountdownGriefing": "0xc5B883Db107Cc9927F9c6E18bc603A5d9FcE7074",
-      "CountdownGriefing_Factory": "0x5B2fcD6264fCFF7803a99e262900214667B6C77C"
+      "SimpleGriefing": "0x183347dA3DABb0F8a43a49E4Df93C957030f6780",
+      "SimpleGriefing_Factory": "0x896E5C478c297092965441A62d0a0B0A4A4CC6E8",
+      "CountdownGriefing": "0xb84d62fbd39bf3504d197D2405FCD5b86427D35B",
+      "CountdownGriefing_Factory": "0xab005C507c877696033e60BB99cAc9B9ADD6A741"
     }
   }
 }
