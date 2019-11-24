@@ -13,7 +13,7 @@ const GetFeeds = async function(user) {
     if (user === null) {
       return await Box.get(Box.DATASTORE_FEEDS);
     } else {
-      return await Apollo.getFeeds(operator);
+      return await Apollo.getFeeds(user);
     }
   } catch (err) {
     throw err;
