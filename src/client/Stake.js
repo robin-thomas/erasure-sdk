@@ -4,26 +4,15 @@ import Ethers from "../utils/Ethers";
 /**
  * Create a new version string for Agreement (if required)
  *
+ * @param {string} appName
  * @param {string} version - version string from ErasureClient
  * @returns {Promise} data, feed, hash
  */
-const getData = async version => {
-  let data = null;
+const getData = async (appName, version) => {
+  let data = {};
+  data[`${appName}-Agreement`] = version;
 
-  let griefing = await Box.get(Box.DATASTORE_GRIEFING);
-  const hash = griefing ? griefing.ipfsHash : null;
-
-  if (hash === null) {
-    data = JSON.stringify(
-      {
-        ErasureAgreement: version
-      },
-      null,
-      4
-    );
-  }
-
-  return { data, hash };
+  return JSON.stringify(data, null, 4);
 };
 
 /**
@@ -45,31 +34,19 @@ const Stake = async function({
   ratioType
 }) {
   try {
-    let { data, hash } = await getData(this.version);
+    const data = await getData(this.appName, this.version);
 
     let opts = {
       ratio,
       ratioType,
       counterParty,
       countdownLength,
-      hash,
       data
     };
 
     // Create griefing agreement.
     const griefing = await this.countdownGriefingFactory.create(opts);
     this.countdownGriefing.setAddress(griefing.address);
-
-    await Box.set(Box.DATASTORE_GRIEFING, griefing);
-
-    let griefingData = {};
-    griefingData[griefing.address] = {
-      currentStake: "0",
-      ratio,
-      ratioType,
-      counterParty,
-      countdownLength
-    };
 
     // Mint some mock NMR for test purposes.
     const operator = await Ethers.getAccount();
@@ -87,9 +64,18 @@ const Stake = async function({
     stakeAmount = Ethers.parseEther(stakeAmount);
     const stake = await this.countdownGriefing.increaseStake("0", stakeAmount);
 
-    griefingData[griefing.address].currentStake = Ethers.formatEther(
-      stakeAmount
-    ).toString();
+    // Save it to datastore.
+    let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
+    if (griefingData === null) {
+      griefingData = {};
+    }
+    griefingData[griefing.address] = {
+      ratio,
+      ratioType,
+      counterParty,
+      countdownLength,
+      currentStake: Ethers.formatEther(stakeAmount).toString()
+    };
     await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
 
     return {

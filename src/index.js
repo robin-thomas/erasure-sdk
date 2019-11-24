@@ -32,9 +32,10 @@ class ErasureClient {
    */
   constructor({ version, appName, registry }) {
     this.version = version;
+    this.appName = appName;
 
     // Create contract objects.
-    let opts = { appName };
+    let opts = {};
     if (process.env.NODE_ENV === "test") {
       opts.registry = registry;
     }

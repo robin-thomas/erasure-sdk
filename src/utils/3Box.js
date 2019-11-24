@@ -8,7 +8,6 @@ const Box = {
   space: null,
 
   DATASTORE_FEEDS: "feeds",
-  DATASTORE_GRIEFING: "griefing",
   DATASTORE_GRIEFINGS: "griefings",
 
   KEYSTORE_ASYMMETRIC: "asymmetric",

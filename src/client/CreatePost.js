@@ -41,7 +41,6 @@ const CreatePost = async function(post, feedAddress) {
     if (boxFeed === null || boxFeed[feedAddress] === undefined) {
       throw new Error(`Unable to find feed: ${feedAddress}`);
     }
-    this.feed.setAddress(feedAddress);
 
     // Get the IPFS hash of the post without uploading it to IPFS.
     const ipfsHash = await IPFS.getHash(post);
@@ -55,6 +54,7 @@ const CreatePost = async function(post, feedAddress) {
       })
     );
 
+    this.feed.setAddress(feedAddress);
     await this.feed.submitHash(proofHash);
 
     boxFeed[feedAddress].posts[proofHash] = {
