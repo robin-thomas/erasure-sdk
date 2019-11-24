@@ -34,26 +34,21 @@ class Feed_Factory {
   /**
    * Create a Feed contract using Feed_Factory
    *
-   * @param {Object} config - configuration for createExplicit
-   * @param {string} [config.hash] - IPFS hash of ErasureFeed version
-   * @param {string} [config.data] - data of ErasureFeed version to be uploaded to IPFS
+   * @param {string} data - data of ErasureFeed version to be uploaded to IPFS
    * @returns {Promise} ipfsHash, txHash and address of new feed
    */
-  async create({ hash, data = null }) {
+  async create(data) {
     try {
       const operator = await Ethers.getAccount();
 
       // Convert the ipfs hash to multihash hex code.
-      let ipfsHash = hash;
-      if (data) {
-        ipfsHash = await IPFS.add(data);
-      }
-      const feedStaticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
+      const staticMetadataB58 = await IPFS.add(data);
+      const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
 
       const callData = Abi.abiEncodeWithSelector(
         "initialize",
         ["address", "bytes", "bytes"],
-        [operator, feedStaticMetadata, feedStaticMetadata]
+        [operator, staticMetadata, staticMetadata]
       );
 
       // Creates the contract.
@@ -61,9 +56,12 @@ class Feed_Factory {
       const txReceipt = await tx.wait();
 
       return {
-        ipfsHash,
-        txHash: tx.hash,
-        address: txReceipt.logs[0].address
+        id: txReceipt.logs[0].address,
+        creator: operator,
+        operator,
+        posts: {},
+        staticMetadataB58,
+        createdTimestamp: new Date().toISOString()
       };
     } catch (err) {
       throw err;

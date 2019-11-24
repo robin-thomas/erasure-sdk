@@ -5,6 +5,7 @@ import Ethers from "../src/utils/Ethers";
 
 import testConfig from "./test.json";
 import contractConfig from "../src/contracts.json";
+import appConfig from "../src/config.json";
 
 // Setup ganache
 const server = ganache.server({
@@ -16,7 +17,8 @@ server.listen("8545");
 const provider = new ethers.providers.JsonRpcProvider();
 
 const deployContract = async (contractName, params, signer) => {
-  const contractAddress = contractConfig["v1.1.0"]["mainnet"][contractName];
+  const contractAddress =
+    contractConfig[appConfig.erasure.contract.version]["rinkeby"][contractName];
 
   const artifact = require(`../artifacts/${contractName}.json`);
 

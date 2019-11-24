@@ -27,13 +27,14 @@ class ErasureClient {
    * @constructor
    * @param {Object} config - configuration for ErasureClient
    * @param {string} config.version - version string for your ErasureClient
+   * @param {Object} config.appName
    * @param {string} [config.registry] - for running tests
    */
-  constructor({ version, registry }) {
+  constructor({ version, appName, registry }) {
     this.version = version;
 
     // Create contract objects.
-    let opts = {};
+    let opts = { appName };
     if (process.env.NODE_ENV === "test") {
       opts.registry = registry;
     }
@@ -125,12 +126,12 @@ class ErasureClient {
    * Reveal an encrypted post so that others can view it
    *
    * @param {string} feedAddress
-   * @param {string} ipfsHash - ipfs hash of where the unencrypted post will be
+   * @param {string} proofHash
    * @returns {Promise} ipfs hash of the unencrypted post (after uploading)
    */
-  async revealPost(feedAddress, ipfsHash) {
+  async revealPost(feedAddress, proofHash) {
     try {
-      return await RevealPost.bind(this)(feedAddress, ipfsHash);
+      return await RevealPost.bind(this)(feedAddress, proofHash);
     } catch (err) {
       throw err;
     }

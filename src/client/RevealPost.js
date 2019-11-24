@@ -9,26 +9,27 @@ import Crypto from "../utils/Crypto";
  * @param {string} ipfsHash - ipfs hash of what the unencrypted post will be
  * @returns {Promise} ipfs hash of the unencrypted post
  */
-const RevealPost = async function(feedAddress, ipfsHash) {
+const RevealPost = async function(feedAddress, proofHash) {
   try {
-    // Get the encrypted ipfs hash from the post address
-    const postData = await Box.get(Box.DATASTORE_POSTS);
-    if (postData === null || postData[feedAddress] === undefined) {
+    let boxFeed = await Box.get(Box.DATASTORE_FEEDS);
+    if (boxFeed === null || boxFeed[feedAddress] === undefined) {
       throw new Error(`Unable to find feed: ${feedAddress}`);
     }
 
-    let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = postData[
-      feedAddress
-    ][ipfsHash].metadata;
+    // Retrieve the proofHash details.
+    const metadata = await IPFS.get(proofHash);
+    let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = JSON.parse(
+      metadata
+    );
     nonce = new Uint8Array(nonce.split(","));
     encryptedSymmetricKey = new Uint8Array(encryptedSymmetricKey.split(","));
 
-    // Download it from ipfs
+    // Download the encryptedPost from ipfs
     const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
 
-    let keypair = await Box.getKeyPair();
+    const keypair = await Box.getKeyPair();
     if (keypair === null) {
-      throw new Error("Unable to retrieve a keypair");
+      throw new Error("Unable to retrieve the keypair");
     }
 
     // Decrypt the content.

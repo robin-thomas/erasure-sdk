@@ -8,8 +8,6 @@ const Box = {
   space: null,
 
   DATASTORE_FEEDS: "feeds",
-  DATASTORE_POST: "post",
-  DATASTORE_POSTS: "posts",
   DATASTORE_GRIEFING: "griefing",
   DATASTORE_GRIEFINGS: "griefings",
 
@@ -58,7 +56,7 @@ const Box = {
    * @param {Object} key
    * @returns {Object} value
    */
-  get: async (key, value) => {
+  get: async key => {
     try {
       const client = await Box.getClient();
       return await client.private.get(key);

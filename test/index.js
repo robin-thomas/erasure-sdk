@@ -2,6 +2,7 @@ import assert from "assert";
 
 import Deployer from "./deploy";
 import ErasureClient from "../src";
+import IPFS from "../src/utils/IPFS";
 import Ethers from "../src/utils/Ethers";
 
 import testConfig from "./test.json";
@@ -30,7 +31,7 @@ describe("ErasureClient", () => {
   const stakeAmount = "1";
   const countdownLength = 100000000;
 
-  let postIpfsHash,
+  let proofHash,
     feedAddress,
     griefingAddress,
     currentStake = "0";
@@ -49,19 +50,19 @@ describe("ErasureClient", () => {
 
   it("#createFeed", async () => {
     const result = await client.createFeed();
-    feedAddress = result.address;
+    feedAddress = result.id;
     assert.ok(Ethers.isAddress(feedAddress));
     console.log(`\tFeed created at ${feedAddress}`);
   });
 
   it("#createPost", async () => {
-    const result = await client.createPost(post, feedAddress);
-    postIpfsHash = result.ipfsHash;
+    proofHash = await client.createPost(post, feedAddress);
   });
 
   it("#revealPost", async () => {
-    const result = await client.revealPost(feedAddress, postIpfsHash);
-    assert.ok(result === postIpfsHash);
+    const ipfsHash = await client.revealPost(feedAddress, proofHash);
+    const result = await IPFS.get(proofHash);
+    assert.ok(JSON.parse(result).ipfsHash === ipfsHash);
   });
 
   it("#stake", async () => {

@@ -1,6 +1,32 @@
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
+import Ethers from "../utils/Ethers";
+
+const crypto = async post => {
+  const symmetricKey = Crypto.symmetric.genKey();
+  const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
+  const encryptedPostIpfsHash = await IPFS.add(encryptedPost);
+
+  let keypair = await Box.getKeyPair();
+  if (keypair === null) {
+    keypair = await Crypto.asymmetric.genKeyPair();
+    Box.setKeyPair(keypair);
+  }
+
+  const nonce = Crypto.asymmetric.genNonce();
+  const encryptedSymmetricKey = Crypto.asymmetric.encrypt(
+    symmetricKey,
+    nonce,
+    keypair
+  );
+
+  return {
+    nonce: nonce.toString(),
+    encryptedSymmetricKey: encryptedSymmetricKey.toString(),
+    encryptedPostIpfsHash
+  };
+};
 
 /**
  * Submits new post hash
@@ -11,57 +37,33 @@ import Crypto from "../utils/Crypto";
  */
 const CreatePost = async function(post, feedAddress) {
   try {
-    const symmetricKey = Crypto.symmetric.genKey();
-    const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
-    const encryptedPostIpfsHash = await IPFS.add(encryptedPost);
-
-    let keypair = await Box.getKeyPair();
-    if (keypair === null) {
-      keypair = await Crypto.asymmetric.genKeyPair();
-      Box.setKeyPair(keypair);
+    let boxFeed = await Box.get(Box.DATASTORE_FEEDS);
+    if (boxFeed === null || boxFeed[feedAddress] === undefined) {
+      throw new Error(`Unable to find feed: ${feedAddress}`);
     }
+    this.feed.setAddress(feedAddress);
 
-    const nonce = Crypto.asymmetric.genNonce();
-    const encryptedSymmetricKey = Crypto.asymmetric.encrypt(
-      symmetricKey,
-      nonce,
-      keypair
-    );
-
-    // Get the IPFS hash of the post
-    // without uploading it to IPFS.
+    // Get the IPFS hash of the post without uploading it to IPFS.
     const ipfsHash = await IPFS.getHash(post);
 
-    const metadata = {
-      nonce: nonce.toString(),
-      ipfsHash,
-      erasurePost: this.version,
-      encryptedSymmetricKey: encryptedSymmetricKey.toString(),
-      encryptedPostIpfsHash
-    };
+    const metadata = await crypto(post);
+    const proofHash = await IPFS.add(
+      JSON.stringify({
+        ...metadata,
+        ipfsHash,
+        erasurePost: this.version
+      })
+    );
 
-    // Feed contract has been created.
-    // Update the contract object.
-    this.feed.setAddress(feedAddress);
-    const txReceipt = await this.feed.submitHash(metadata);
+    await this.feed.submitHash(proofHash);
 
-    let postData = await Box.get(Box.DATASTORE_POSTS);
-    if (postData === null) {
-      postData = {};
-    }
-    if (postData[feedAddress] === undefined) {
-      postData[feedAddress] = {};
-    }
-    postData[feedAddress][ipfsHash] = {
-      metadata,
-      timestamp: new Date().toISOString()
+    boxFeed[feedAddress].posts[proofHash] = {
+      feed: feedAddress,
+      createdTimestamp: new Date().toISOString()
     };
-    await Box.set(Box.DATASTORE_POSTS, postData);
+    await Box.set(Box.DATASTORE_FEEDS, boxFeed);
 
-    return {
-      ipfsHash,
-      txReceipt
-    };
+    return proofHash;
   } catch (err) {
     throw err;
   }

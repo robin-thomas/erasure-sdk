@@ -1,28 +1,17 @@
 import Box from "../utils/3Box";
 
 /**
- * Create a new version string for Feed (if required)
+ * Create a new version string for Feed
  *
- * @param {string} version - version string from ErasureClient
- * @returns {Promise} data, feed, hash
+ * @param {string} appName
+ * @param {string} version
+ * @returns {Promise} json string data
  */
-const getData = async version => {
-  let data = null;
+const getData = (appName, version) => {
+  let data = {};
+  data[`${appName}-Feed`] = version;
 
-  const feed = await Box.get(Box.DATASTORE_FEEDS);
-  const hash = feed && feed.ipfsHash ? feed.ipfsHash : null;
-
-  if (hash === null || hash === undefined) {
-    data = JSON.stringify(
-      {
-        ErasureFeed: version
-      },
-      null,
-      4
-    );
-  }
-
-  return { data, hash };
+  return JSON.stringify(data, null, 4);
 };
 
 /**
@@ -32,23 +21,17 @@ const getData = async version => {
  */
 const CreateFeed = async function() {
   try {
-    const { data, hash } = await getData(this.version);
+    const data = getData(this.appName, this.version);
 
     // Create the new Feed contract.
-    const feed = await this.feedFactory.create({ hash, data });
-    feed.timestamp = new Date().toISOString();
-    const ipfsHash = feed.ipfsHash;
-    delete feed.ipfsHash;
+    const feed = await this.feedFactory.create(data);
 
     // store feed details in datastore.
     let boxFeed = await Box.get(Box.DATASTORE_FEEDS);
     if (boxFeed === null) {
-      boxFeed = {
-        ipfsHash,
-        feeds: []
-      };
+      boxFeed = {};
     }
-    boxFeed.feeds.push(feed);
+    boxFeed[feed.id] = feed;
     await Box.set(Box.DATASTORE_FEEDS, boxFeed);
 
     return feed;
