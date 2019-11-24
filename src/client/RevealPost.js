@@ -15,9 +15,16 @@ const RevealPost = async function(feedAddress, proofHash) {
     if (boxFeed === null || boxFeed[feedAddress] === undefined) {
       throw new Error(`Unable to find feed: ${feedAddress}`);
     }
+    if (boxFeed[feedAddress].posts[proofHash] === undefined) {
+      throw new Error(
+        `Unable to find proofHas: ${proofHash} in feed: ${feedAddress}`
+      );
+    }
 
     // Retrieve the proofHash details.
-    const metadata = await IPFS.get(proofHash);
+    const staticMetadataB58 =
+      boxFeed[feedAddress].posts[proofHash].staticMetadataB58;
+    const metadata = await IPFS.get(staticMetadataB58);
     let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = JSON.parse(
       metadata
     );

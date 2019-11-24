@@ -59,10 +59,15 @@ describe("ErasureClient", () => {
     proofHash = await client.createPost(post, feedAddress);
   });
 
+  it("#getFeeds", async () => {
+    const feeds = await client.getFeeds();
+    assert.ok(feeds[feedAddress].posts[proofHash].proofHash === proofHash);
+  });
+
   it("#revealPost", async () => {
     const ipfsHash = await client.revealPost(feedAddress, proofHash);
-    const result = await IPFS.get(proofHash);
-    assert.ok(JSON.parse(result).ipfsHash === ipfsHash);
+    const result = await IPFS.get(ipfsHash);
+    assert.ok(result === post);
   });
 
   it("#stake", async () => {

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 VERSION="v1.1.0"
-FAILBACK_VERSION="v1.0.0"
 ARTIFACT_DIR="artifacts"
 
 download_contracts() {
@@ -28,10 +27,6 @@ download_contracts() {
 
     github_url="https://github.com/erasureprotocol/erasure-protocol/releases/download/${VERSION}/${file}.json"
     wget -q --show-progress -O "${ARTIFACT_DIR}/${file}.json" "${github_url}"
-    if [ $? -ne 0 ]; then
-      github_url="https://github.com/erasureprotocol/erasure-protocol/releases/download/${FAILBACK_VERSION}/${file}.json"
-      wget -q --show-progress -O "${ARTIFACT_DIR}/${file}.json" "${github_url}"
-    fi
   done
 
   # download INMR contract artifact.

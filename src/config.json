@@ -5,6 +5,10 @@
   "erasure": {
     "contract": {
       "version": "v1.1.0"
+    },
+    "graph": {
+      "api": "https://api.thegraph.com/subgraphs/name/jgeary/erasure",
+      "subscription": "wss://api.thegraph.com/subgraphs/name/jgeary/erasure"
     }
   },
   "ipfs": {

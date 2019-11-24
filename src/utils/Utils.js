@@ -12,7 +12,7 @@ const Utils = {
   },
 
   hexlify: utf8str => ethers.utils.hexlify(ethers.utils.toUtf8Bytes(utf8str)),
-  hash: utf8str => ethers.utils.keccak256(Utils.hexlify(utf8str))
+  hash: utf8str => ethers.utils.sha256(Utils.hexlify(utf8str))
 };
 
 export default Utils;

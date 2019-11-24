@@ -1,5 +1,6 @@
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
@@ -46,18 +47,21 @@ const CreatePost = async function(post, feedAddress) {
     const ipfsHash = await IPFS.getHash(post);
 
     const metadata = await crypto(post);
-    const proofHash = await IPFS.add(
+    const staticMetadataB58 = await IPFS.add(
       JSON.stringify({
         ...metadata,
         ipfsHash,
         erasurePost: this.version
       })
     );
+    const proofHash = Utils.hash(staticMetadataB58);
 
     this.feed.setAddress(feedAddress);
     await this.feed.submitHash(proofHash);
 
     boxFeed[feedAddress].posts[proofHash] = {
+      proofHash,
+      staticMetadataB58,
       feed: feedAddress,
       createdTimestamp: new Date().toISOString()
     };

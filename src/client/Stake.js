@@ -8,7 +8,7 @@ import Ethers from "../utils/Ethers";
  * @param {string} version - version string from ErasureClient
  * @returns {Promise} data, feed, hash
  */
-const getData = async (appName, version) => {
+const getData = (appName, version) => {
   let data = {};
   data[`${appName}-Agreement`] = version;
 
@@ -34,7 +34,7 @@ const Stake = async function({
   ratioType
 }) {
   try {
-    const data = await getData(this.appName, this.version);
+    const data = getData(this.appName, this.version);
 
     let opts = {
       ratio,

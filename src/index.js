@@ -8,7 +8,6 @@ import Stake from "./client/Stake";
 import Reward from "./client/Reward";
 import Punish from "./client/Punish";
 import GetFeeds from "./client/GetFeeds";
-import GetPosts from "./client/GetPosts";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import RevealPost from "./client/RevealPost";
@@ -78,13 +77,15 @@ class ErasureClient {
   }
 
   /**
-   * Get all feeds of this user
+   * Get all feeds of a user.
+   * if no user is supplied, feeds of current user will be returned.
    *
+   * @param {string} [user] - get all feeds of this user
    * @returns {Promise} get all feeds of this user
    */
-  async getFeeds() {
+  async getFeeds(user = null) {
     try {
-      return await GetFeeds.bind(this)();
+      return await GetFeeds.bind(this)(user);
     } catch (err) {
       throw err;
     }
@@ -104,20 +105,6 @@ class ErasureClient {
       }
 
       return await CreatePost.bind(this)(post, feedAddress);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  /**
-   * Get all posts of this user given a feed
-   *
-   * @param {string} feedAddress
-   * @returns {Promise} get all posts of this user
-   */
-  async getPosts(feedAddress) {
-    try {
-      return await GetPosts.bind(this)(feedAddress);
     } catch (err) {
       throw err;
     }
