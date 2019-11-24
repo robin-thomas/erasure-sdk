@@ -11,17 +11,13 @@ import Ethers from "../utils/Ethers";
  */
 const RetrieveStake = async function({ griefingAddress, recipient }) {
   try {
-    const stake = await this.countdownGriefing.retrieveStake(recipient);
-
     let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
-    if (griefingData === null) {
-      griefingData = {};
+    if (griefingData === null || griefingData[griefingAddress] === undefined) {
+      throw new Error(`Unable to find griefing: ${griefingAddress}`);
     }
-    if (griefingData[griefingAddress] === undefined) {
-      griefingData[griefingAddress] = {
-        currentStake: "0"
-      };
-    }
+
+    this.countdownGriefing.setAddress(griefingAddress);
+    const stake = await this.countdownGriefing.retrieveStake(recipient);
 
     griefingData[griefingAddress].currentStake = "0";
     await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
