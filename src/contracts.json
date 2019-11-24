@@ -1,6 +1,6 @@
 {
   "v1.1.0": {
-    "mainnet": {
+    "homestead": {
       "NMR": "0x1776e1F26f98b1A5dF9cD347953a26dd3Cb46671",
       "Erasure_Posts": "0x348FA9DcFf507B81C7A1d7981244eA92E8c6Af29",
       "Erasure_Agreements": "0xa6cf4Bf00feF8866e9F3f61C972bA7C687C6eDbF",

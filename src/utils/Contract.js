@@ -12,7 +12,7 @@ const accountChange = function() {
 
 const networkChange = function(network) {
   let address = null;
-  if (network === "mainnet" || network === "rinkeby") {
+  if (network === "homestead" || network === "rinkeby") {
     address = Contract.getAddress(this.contractName, network);
   }
 
