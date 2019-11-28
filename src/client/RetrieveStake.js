@@ -16,6 +16,15 @@ const RetrieveStake = async function({ griefingAddress, recipient }) {
       throw new Error(`Unable to find griefing: ${griefingAddress}`);
     }
 
+    const { griefingType } = griefingData[griefingAddress];
+    if (griefingType === "countdown") {
+      this.griefing = this.countdownGriefing;
+      this.griefingFactory = this.countdownGriefingFactory;
+    } else {
+      this.griefing = this.simpleGriefing;
+      this.griefingFactory = this.simpleGriefingFactory;
+    }
+
     this.griefing.setAddress(griefingAddress);
     const stake = await this.griefing.retrieveStake(recipient);
 

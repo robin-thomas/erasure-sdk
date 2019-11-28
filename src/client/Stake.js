@@ -22,6 +22,7 @@ const getData = (appName, version) => {
  * @param {string} config.stakeAmount - amount to be staked
  * @param {string} config.counterParty - party with whom the agreement to be made
  * @param {number} config.countdownLength - duration of the agreement in seconds
+ * @param {string} config.griefingType - "countdown" or "simple"
  * @param {string} [config.ratio] - griefing ratio
  * @param {number} [config.ratioType] - griefing ratio type
  * @returns {Promise} transaction receipts of griefing, approval and staking
@@ -30,10 +31,24 @@ const Stake = async function({
   stakeAmount,
   counterParty,
   countdownLength,
+  griefingType,
   ratio,
   ratioType
 }) {
   try {
+    // Validate griefing type.
+    if (!["countdown", "simple"].includes(griefingType)) {
+      throw new Error(`Griefing type ${griefingType} is not supported`);
+    }
+
+    if (griefingType === "countdown") {
+      this.griefing = this.countdownGriefing;
+      this.griefingFactory = this.countdownGriefingFactory;
+    } else {
+      this.griefing = this.simpleGriefing;
+      this.griefingFactory = this.simpleGriefingFactory;
+    }
+
     const data = getData(this.appName, this.version);
 
     let opts = {
@@ -72,6 +87,7 @@ const Stake = async function({
     griefingData[griefing.address] = {
       ratio,
       ratioType,
+      griefingType,
       counterParty,
       countdownLength,
       currentStake: Ethers.formatEther(stakeAmount).toString()

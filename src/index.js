@@ -139,6 +139,7 @@ class ErasureClient {
    * @param {string} config.stakeAmount - amount to be staked
    * @param {string} config.counterParty - party with whom the agreement to be made
    * @param {number} config.countdownLength - duration of the agreement in seconds
+   * @param {string} [config.griefingType] - accepts "countdown" or "simple" (with "countdown" as default)
    * @param {string} [config.ratio] - griefing ratio
    * @param {number} [config.ratioType] - griefing ratio type
    * @returns {Promise} transaction receipts of griefing, approval and staking
@@ -147,6 +148,7 @@ class ErasureClient {
     stakeAmount,
     counterParty,
     countdownLength,
+    griefingType = "countdown",
     ratio = "1",
     ratioType = 2
   }) {
@@ -155,6 +157,7 @@ class ErasureClient {
         stakeAmount,
         counterParty,
         countdownLength,
+        griefingType,
         ratio,
         ratioType
       });

@@ -70,64 +70,137 @@ describe("ErasureClient", () => {
     assert.ok(result === post);
   });
 
-  it("#stake", async () => {
-    const result = await client.stake({
-      stakeAmount,
-      counterParty: account,
-      countdownLength
-    });
-    griefingAddress = result.griefing.address;
-    assert.ok(Ethers.isAddress(griefingAddress));
-    console.log(`\tAgreement created at ${griefingAddress}`);
+  describe("Countdown Griefing", () => {
+    it("#stake", async () => {
+      const result = await client.stake({
+        stakeAmount,
+        griefingType: "countdown",
+        counterParty: account,
+        countdownLength
+      });
+      griefingAddress = result.griefing.address;
+      assert.ok(Ethers.isAddress(griefingAddress));
+      console.log(`\tAgreement created at ${griefingAddress}`);
 
-    let amount = "";
-    [currentStake, amount] = addStake(currentStake, result.stake.logs[0].data);
-    assert.ok(Number(amount).toString() === stakeAmount);
-  });
-
-  it("#reward", async () => {
-    const result = await client.reward({
-      griefingAddress,
-      rewardAmount
-    });
-
-    let amount = "";
-    [currentStake, amount] = addStake(currentStake, result.logs[0].data);
-    assert.ok(Number(amount).toString() === rewardAmount);
-  });
-
-  it("#punish", async () => {
-    const result = await client.punish({
-      punishAmount,
-      griefingAddress,
-      message: "This is a punishment"
+      let amount = "";
+      [currentStake, amount] = addStake(
+        currentStake,
+        result.stake.logs[0].data
+      );
+      assert.ok(Number(amount).toString() === stakeAmount);
     });
 
-    let amount = "";
-    [currentStake, amount] = subStake(currentStake, result.logs[1].data);
-    assert.ok(Number(amount).toString() === punishAmount);
-  });
+    it("#reward", async () => {
+      const result = await client.reward({
+        griefingAddress,
+        rewardAmount
+      });
 
-  it("#releaseStake", async () => {
-    const result = await client.releaseStake({
-      amountToRelease: punishAmount,
-      griefingAddress
+      let amount = "";
+      [currentStake, amount] = addStake(currentStake, result.logs[0].data);
+      assert.ok(Number(amount).toString() === rewardAmount);
     });
 
-    let amount = "";
-    [currentStake, amount] = subStake(currentStake, result.logs[0].data);
-    assert.ok(Number(amount).toString() === punishAmount);
-  });
+    it("#punish", async () => {
+      const result = await client.punish({
+        punishAmount,
+        griefingAddress,
+        message: "This is a punishment"
+      });
 
-  it("#retrieveStake", async () => {
-    try {
-      await client.retrieveStake({
-        recipient: Ethers.AddressZero(),
+      let amount = "";
+      [currentStake, amount] = subStake(currentStake, result.logs[1].data);
+      assert.ok(Number(amount).toString() === punishAmount);
+    });
+
+    it("#releaseStake", async () => {
+      const result = await client.releaseStake({
+        amountToRelease: punishAmount,
         griefingAddress
       });
-      assert.fail("0", "1", "Agreement deadline has not passed");
-    } catch (err) {
-      assert.ok(true);
-    }
+
+      let amount = "";
+      [currentStake, amount] = subStake(currentStake, result.logs[0].data);
+      assert.ok(Number(amount).toString() === punishAmount);
+    });
+
+    it("#retrieveStake", async () => {
+      try {
+        await client.retrieveStake({
+          recipient: Ethers.AddressZero(),
+          griefingAddress
+        });
+        assert.fail("0", "1", "Agreement deadline has not passed");
+      } catch (err) {
+        assert.ok(true);
+      }
+    });
+  });
+
+  describe("Simple Griefing", () => {
+    it("#stake", async () => {
+      const result = await client.stake({
+        stakeAmount,
+        griefingType: "simple",
+        counterParty: account,
+        countdownLength
+      });
+      griefingAddress = result.griefing.address;
+      assert.ok(Ethers.isAddress(griefingAddress));
+      console.log(`\tAgreement created at ${griefingAddress}`);
+
+      let amount = "";
+      [currentStake, amount] = addStake(
+        currentStake,
+        result.stake.logs[0].data
+      );
+      assert.ok(Number(amount).toString() === stakeAmount);
+    });
+
+    it("#reward", async () => {
+      const result = await client.reward({
+        griefingAddress,
+        rewardAmount
+      });
+
+      let amount = "";
+      [currentStake, amount] = addStake(currentStake, result.logs[0].data);
+      assert.ok(Number(amount).toString() === rewardAmount);
+    });
+
+    it("#punish", async () => {
+      const result = await client.punish({
+        punishAmount,
+        griefingAddress,
+        message: "This is a punishment"
+      });
+
+      let amount = "";
+      [currentStake, amount] = subStake(currentStake, result.logs[1].data);
+      assert.ok(Number(amount).toString() === punishAmount);
+    });
+
+    it("#releaseStake", async () => {
+      const result = await client.releaseStake({
+        amountToRelease: punishAmount,
+        griefingAddress
+      });
+
+      let amount = "";
+      [currentStake, amount] = subStake(currentStake, result.logs[0].data);
+      assert.ok(Number(amount).toString() === punishAmount);
+    });
+
+    it("#retrieveStake", async () => {
+      try {
+        await client.retrieveStake({
+          recipient: Ethers.AddressZero(),
+          griefingAddress
+        });
+        assert.fail("0", "1", "Agreement deadline has not passed");
+      } catch (err) {
+        assert.ok(true);
+      }
+    });
   });
 });

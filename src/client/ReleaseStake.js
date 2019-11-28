@@ -16,6 +16,15 @@ const ReleaseStake = async function({ amountToRelease, griefingAddress }) {
       throw new Error(`Unable to find griefing: ${griefingAddress}`);
     }
 
+    const { griefingType } = griefingData[griefingAddress];
+    if (griefingType === "countdown") {
+      this.griefing = this.countdownGriefing;
+      this.griefingFactory = this.countdownGriefingFactory;
+    } else {
+      this.griefing = this.simpleGriefing;
+      this.griefingFactory = this.simpleGriefingFactory;
+    }
+
     let currentStake = griefingData[griefingAddress].currentStake;
     currentStake = Ethers.parseEther(currentStake);
     amountToRelease = Ethers.parseEther(amountToRelease);
