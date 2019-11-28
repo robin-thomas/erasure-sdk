@@ -45,8 +45,8 @@ const Stake = async function({
     };
 
     // Create griefing agreement.
-    const griefing = await this.countdownGriefingFactory.create(opts);
-    this.countdownGriefing.setAddress(griefing.address);
+    const griefing = await this.griefingFactory.create(opts);
+    this.griefing.setAddress(griefing.address);
 
     // Mint some mock NMR for test purposes.
     const operator = await Ethers.getAccount();
@@ -62,7 +62,7 @@ const Stake = async function({
     // Approve and stake NMR.
     const approval = await this.nmr.changeApproval(griefing.address);
     stakeAmount = Ethers.parseEther(stakeAmount);
-    const stake = await this.countdownGriefing.increaseStake("0", stakeAmount);
+    const stake = await this.griefing.increaseStake("0", stakeAmount);
 
     // Save it to datastore.
     let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);

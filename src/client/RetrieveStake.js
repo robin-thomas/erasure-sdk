@@ -16,8 +16,8 @@ const RetrieveStake = async function({ griefingAddress, recipient }) {
       throw new Error(`Unable to find griefing: ${griefingAddress}`);
     }
 
-    this.countdownGriefing.setAddress(griefingAddress);
-    const stake = await this.countdownGriefing.retrieveStake(recipient);
+    this.griefing.setAddress(griefingAddress);
+    const stake = await this.griefing.retrieveStake(recipient);
 
     griefingData[griefingAddress].currentStake = "0";
     await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);

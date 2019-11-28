@@ -1,6 +1,8 @@
 import NMR from "./contracts/NMR";
 import Feed from "./contracts/Feed";
 import Feed_Factory from "./contracts/Feed_Factory";
+import SimpleGriefing from "./contracts/SimpleGriefing";
+import SimpleGriefing_Factory from "./contracts/SimpleGriefing_Factory";
 import CountdownGriefing from "./contracts/CountdownGriefing";
 import CountdownGriefing_Factory from "./contracts/CountdownGriefing_Factory";
 
@@ -42,8 +44,13 @@ class ErasureClient {
     this.nmr = new NMR(opts);
     this.feed = new Feed(opts);
     this.feedFactory = new Feed_Factory(opts);
+    this.simpleGriefing = new SimpleGriefing(opts);
+    this.simpleGriefingFactory = new SimpleGriefing_Factory(opts);
     this.countdownGriefing = new CountdownGriefing(opts);
     this.countdownGriefingFactory = new CountdownGriefing_Factory(opts);
+
+    this.griefing = this.countdownGriefing;
+    this.griefingFactory = this.countdownGriefingFactory;
   }
 
   /**

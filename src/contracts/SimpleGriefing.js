@@ -4,9 +4,9 @@ import IPFS from "../utils/IPFS";
 import Ethers from "../utils/Ethers";
 import Contract from "../utils/Contract";
 
-import contract from "../../artifacts/CountdownGriefing.json";
+import contract from "../../artifacts/SimpleGriefing.json";
 
-class CountdownGriefing {
+class SimpleGriefing {
   /**
    * CountdownGriefing
    *
@@ -17,7 +17,7 @@ class CountdownGriefing {
   constructor({ registry }) {
     this.contract = new Contract({
       abi: contract.abi,
-      contractName: "CountdownGriefing",
+      contractName: "SimpleGriefing",
       registry
     });
   }
@@ -52,6 +52,23 @@ class CountdownGriefing {
         currentStake,
         amountToAdd
       );
+
+      return await tx.wait();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Punish the user
+   *
+   * @param {BigNumber} currentStake - current staked amount
+   * @param {BigNumber} amountToAdd - amount to be rewarded
+   * @returns {Promise} receipt of the reward transaction
+   */
+  async reward(currentStake, amountToAdd) {
+    try {
+      const tx = await this.contract.contract.reward(currentStake, amountToAdd);
 
       return await tx.wait();
     } catch (err) {
@@ -100,21 +117,6 @@ class CountdownGriefing {
       throw err;
     }
   }
-
-  /**
-   * Retrieve the stake
-   *
-   * @param {string} recipient - recipient to receive the stake
-   * @returns {Promise} receipt of the retrieve stake transaction
-   */
-  async retrieveStake(recipient) {
-    try {
-      const tx = await this.contract.contract.retrieveStake(recipient);
-      return await tx.wait();
-    } catch (err) {
-      throw err;
-    }
-  }
 }
 
-export default CountdownGriefing;
+export default SimpleGriefing;

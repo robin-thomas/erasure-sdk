@@ -20,8 +20,8 @@ const ReleaseStake = async function({ amountToRelease, griefingAddress }) {
     currentStake = Ethers.parseEther(currentStake);
     amountToRelease = Ethers.parseEther(amountToRelease);
 
-    this.countdownGriefing.setAddress(griefingAddress);
-    const stake = await this.countdownGriefing.releaseStake(
+    this.griefing.setAddress(griefingAddress);
+    const stake = await this.griefing.releaseStake(
       currentStake,
       amountToRelease
     );

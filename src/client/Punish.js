@@ -21,8 +21,8 @@ const Punish = async function({ punishAmount, griefingAddress, message }) {
     currentStake = Ethers.parseEther(currentStake);
     punishAmount = Ethers.parseEther(punishAmount);
 
-    this.countdownGriefing.setAddress(griefingAddress);
-    const punishment = await this.countdownGriefing.punish(
+    this.griefing.setAddress(griefingAddress);
+    const punishment = await this.griefing.punish(
       currentStake,
       punishAmount,
       message

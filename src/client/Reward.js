@@ -20,11 +20,8 @@ const Reward = async function({ rewardAmount, griefingAddress }) {
     currentStake = Ethers.parseEther(currentStake);
     rewardAmount = Ethers.parseEther(rewardAmount);
 
-    this.countdownGriefing.setAddress(griefingAddress);
-    const stake = await this.countdownGriefing.increaseStake(
-      currentStake,
-      rewardAmount
-    );
+    this.griefing.setAddress(griefingAddress);
+    const stake = await this.griefing.increaseStake(currentStake, rewardAmount);
 
     griefingData[griefingAddress].currentStake = Ethers.formatEther(
       currentStake.add(rewardAmount)
