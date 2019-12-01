@@ -43,6 +43,7 @@ describe("ErasureClient", () => {
     registry = await Deployer();
 
     client = new ErasureClient({ version: "1.0.0", registry });
+    await client.createUser();
 
     account = await Ethers.getAccount();
     console.log(`\n\tUsing eth account: ${account}\n`);

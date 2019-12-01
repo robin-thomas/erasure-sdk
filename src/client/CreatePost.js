@@ -5,15 +5,14 @@ import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
 const crypto = async post => {
+  const keypair = await Box.getKeyPair();
+  if (keypair === null) {
+    throw new Error("Cannot find the keypair of this user!");
+  }
+
   const symmetricKey = Crypto.symmetric.genKey();
   const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
   const encryptedPostIpfsHash = await IPFS.add(encryptedPost);
-
-  let keypair = await Box.getKeyPair();
-  if (keypair === null) {
-    keypair = await Crypto.asymmetric.genKeyPair();
-    Box.setKeyPair(keypair);
-  }
 
   const nonce = Crypto.asymmetric.genNonce();
   const encryptedSymmetricKey = Crypto.asymmetric.encrypt(

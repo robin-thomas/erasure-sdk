@@ -1,6 +1,7 @@
 import NMR from "./contracts/NMR";
 import Feed from "./contracts/Feed";
 import Feed_Factory from "./contracts/Feed_Factory";
+import Erasure_Users from "./contracts/Erasure_Users";
 import SimpleGriefing from "./contracts/SimpleGriefing";
 import SimpleGriefing_Factory from "./contracts/SimpleGriefing_Factory";
 import CountdownGriefing from "./contracts/CountdownGriefing";
@@ -12,6 +13,7 @@ import Punish from "./client/Punish";
 import GetFeeds from "./client/GetFeeds";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
+import CreateUser from "./client/CreateUser";
 import RevealPost from "./client/RevealPost";
 import GetGriefings from "./client/GetGriefings";
 import ReleaseStake from "./client/ReleaseStake";
@@ -44,6 +46,7 @@ class ErasureClient {
     this.nmr = new NMR(opts);
     this.feed = new Feed(opts);
     this.feedFactory = new Feed_Factory(opts);
+    this.erasureUsers = new Erasure_Users(opts);
     this.simpleGriefing = new SimpleGriefing(opts);
     this.simpleGriefingFactory = new SimpleGriefing_Factory(opts);
     this.countdownGriefing = new CountdownGriefing(opts);
@@ -62,9 +65,26 @@ class ErasureClient {
       await this.nmr.login();
       await this.feed.login();
       await this.feedFactory.login();
+      await this.erasureUsers.login();
+      await this.simpleGriefing.login();
+      await this.simpleGriefingFactory.login();
       await this.countdownGriefing.login();
       await this.countdownGriefingFactory.login();
-      return true;
+
+      // Create a new user if not created and add it to Erasure_Users.
+      return await CreateUser.bind(this)();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Only for test purposes.
+  // So not adding it to sdk docs.
+  async createUser() {
+    try {
+      if (process.env.NODE_ENV === "test") {
+        return await CreateUser.bind(this)();
+      }
     } catch (err) {
       throw err;
     }

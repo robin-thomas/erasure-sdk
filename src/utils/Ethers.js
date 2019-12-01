@@ -65,7 +65,7 @@ const Ethers = {
   getNetworkName: networkId => {
     switch (networkId) {
       case 1:
-        return "mainnet";
+        return "homestead";
       case 4:
         return "rinkeby";
     }
@@ -89,6 +89,7 @@ const Ethers = {
   parseEther: ether => ethers.utils.parseEther(ether),
   formatEther: wei => ethers.utils.formatEther(wei),
   bigNumberify: value => ethers.utils.bigNumberify(value),
+  hexlify: value => ethers.utils.hexlify(value),
 
   getAccount: async () => {
     return await Ethers.getWallet().getAddress();
