@@ -276,6 +276,16 @@ class ErasureClient {
       throw err;
     }
   }
+
+  setGriefing(griefingType) {
+    if (griefingType === "countdown") {
+      this.griefing = this.countdownGriefing;
+      this.griefingFactory = this.countdownGriefingFactory;
+    } else {
+      this.griefing = this.simpleGriefing;
+      this.griefingFactory = this.simpleGriefingFactory;
+    }
+  }
 }
 
 export { Ethers };

@@ -14,6 +14,7 @@ const crypto = async post => {
   const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
   const encryptedPostIpfsHash = await IPFS.add(encryptedPost);
 
+  // Nonce is set per post.
   const nonce = Crypto.asymmetric.genNonce();
   const encryptedSymmetricKey = Crypto.asymmetric.encrypt(
     symmetricKey,

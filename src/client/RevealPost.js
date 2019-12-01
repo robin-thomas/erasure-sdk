@@ -1,5 +1,6 @@
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
+import Post from "../utils/Post";
 import Crypto from "../utils/Crypto";
 
 /**
@@ -11,33 +12,19 @@ import Crypto from "../utils/Crypto";
  */
 const RevealPost = async function(feedAddress, proofHash) {
   try {
-    let boxFeed = await Box.get(Box.DATASTORE_FEEDS);
-    if (boxFeed === null || boxFeed[feedAddress] === undefined) {
-      throw new Error(`Unable to find feed: ${feedAddress}`);
-    }
-    if (boxFeed[feedAddress].posts[proofHash] === undefined) {
-      throw new Error(
-        `Unable to find proofHas: ${proofHash} in feed: ${feedAddress}`
-      );
-    }
-
-    // Retrieve the proofHash details.
-    const staticMetadataB58 =
-      boxFeed[feedAddress].posts[proofHash].staticMetadataB58;
-    const metadata = await IPFS.get(staticMetadataB58);
-    let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = JSON.parse(
-      metadata
-    );
-    nonce = new Uint8Array(nonce.split(","));
-    encryptedSymmetricKey = new Uint8Array(encryptedSymmetricKey.split(","));
-
-    // Download the encryptedPost from ipfs
-    const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
-
     const keypair = await Box.getKeyPair();
     if (keypair === null) {
       throw new Error("Unable to retrieve the keypair");
     }
+
+    const {
+      nonce,
+      encryptedSymmetricKey,
+      encryptedPostIpfsHash
+    } = await Post.getMetadata(feedAddress, proofHash);
+
+    // Download the encryptedPost from ipfs
+    const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
 
     // Decrypt the content.
     const symmetricKey = Crypto.asymmetric.decrypt(
