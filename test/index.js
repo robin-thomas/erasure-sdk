@@ -65,12 +65,6 @@ describe("ErasureClient", () => {
     assert.ok(feeds[feedAddress].posts[proofHash].proofHash === proofHash);
   });
 
-  it("#revealPost", async () => {
-    const ipfsHash = await client.revealPost(feedAddress, proofHash);
-    const result = await IPFS.get(ipfsHash);
-    assert.ok(result === post);
-  });
-
   describe("Countdown Griefing", () => {
     it("#stake", async () => {
       const result = await client.stake({
@@ -166,6 +160,10 @@ describe("ErasureClient", () => {
       assert.ok(Number(amount).toString() === stakeAmount);
     });
 
+    it("#sellPost", async () => {
+      await client.sellPost(griefingAddress);
+    });
+
     it("#reward", async () => {
       const result = await client.reward({
         griefingAddress,
@@ -211,5 +209,11 @@ describe("ErasureClient", () => {
         assert.ok(true);
       }
     });
+  });
+
+  it("#revealPost", async () => {
+    const ipfsHash = await client.revealPost(feedAddress, proofHash);
+    const result = await IPFS.get(ipfsHash);
+    assert.ok(result === post);
   });
 });

@@ -17,9 +17,8 @@ const RetrieveStake = async function({ griefingAddress, recipient }) {
     }
 
     const { griefingType } = griefingData[griefingAddress];
-    this.setGriefing(griefingType);
+    this.setGriefing(griefingType, griefingAddress);
 
-    this.griefing.setAddress(griefingAddress);
     const stake = await this.griefing.retrieveStake(recipient);
 
     griefingData[griefingAddress].currentStake = "0";

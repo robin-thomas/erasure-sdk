@@ -65,12 +65,10 @@ const SellPost = async function(griefingAddress) {
     );
 
     // Submit the encryptedSymmetricKey to the griefing contract.
-    this.setGriefing(griefingType);
+    this.setGriefing(griefingType, griefingAddress);
     const metadata = JSON.parse(data);
     metadata.encryptedSymmetricKey = encryptedSymKey.toString();
-    await this.griefing.setMetadata(data);
-
-    await Griefing.getMetadata(griefingAddress);
+    await this.griefing.setMetadata(metadata);
   } catch (err) {
     throw err;
   }

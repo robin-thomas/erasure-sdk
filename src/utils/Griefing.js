@@ -18,12 +18,22 @@ const Griefing = {
       });
 
       const abiCoder = ethers.utils.defaultAbiCoder;
-      const data = abiCoder.decode(["bytes"], results[0].data)[0];
+      const data = abiCoder.decode(
+        ["bytes"],
+        results[results.length - 1].data
+      )[0];
       const hex = ethers.utils.toUtf8String(data);
       const ipfsHash = bs58.encode(Buffer.from(hex.substr(2), "hex"));
 
       const result = await IPFS.get(ipfsHash);
-      return JSON.parse(result);
+      const metadata = JSON.parse(result);
+
+      return {
+        ...metadata,
+        encryptedSymmetricKey: new Uint8Array(
+          metadata.encryptedSymmetricKey.split(",")
+        )
+      };
     } catch (err) {
       throw err;
     }

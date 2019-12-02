@@ -17,13 +17,12 @@ const ReleaseStake = async function({ amountToRelease, griefingAddress }) {
     }
 
     const { griefingType } = griefingData[griefingAddress];
-    this.setGriefing(griefingType);
+    this.setGriefing(griefingType, griefingAddress);
 
     let currentStake = griefingData[griefingAddress].currentStake;
     currentStake = Ethers.parseEther(currentStake);
     amountToRelease = Ethers.parseEther(amountToRelease);
 
-    this.griefing.setAddress(griefingAddress);
     const stake = await this.griefing.releaseStake(
       currentStake,
       amountToRelease

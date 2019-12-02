@@ -18,13 +18,12 @@ const Punish = async function({ punishAmount, griefingAddress, message }) {
     }
 
     const { griefingType } = griefingData[griefingAddress];
-    this.setGriefing(griefingType);
+    this.setGriefing(griefingType, griefingAddress);
 
     let currentStake = griefingData[griefingAddress].currentStake;
     currentStake = Ethers.parseEther(currentStake);
     punishAmount = Ethers.parseEther(punishAmount);
 
-    this.griefing.setAddress(griefingAddress);
     const punishment = await this.griefing.punish(
       currentStake,
       punishAmount,

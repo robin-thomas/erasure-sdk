@@ -298,7 +298,7 @@ class ErasureClient {
     }
   }
 
-  setGriefing(griefingType) {
+  setGriefing(griefingType, griefingAddress) {
     if (griefingType === "countdown") {
       this.griefing = this.countdownGriefing;
       this.griefingFactory = this.countdownGriefingFactory;
@@ -306,6 +306,8 @@ class ErasureClient {
       this.griefing = this.simpleGriefing;
       this.griefingFactory = this.simpleGriefingFactory;
     }
+
+    this.griefing.setAddress(griefingAddress);
   }
 }
 
