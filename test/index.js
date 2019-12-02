@@ -91,6 +91,11 @@ describe("ErasureClient", () => {
       await client.sellPost(griefingAddress);
     });
 
+    it("#buyPost", async () => {
+      const _post = await client.buyPost(griefingAddress);
+      assert(_post === post);
+    });
+
     it("#reward", async () => {
       const result = await client.reward({
         griefingAddress,
@@ -162,6 +167,11 @@ describe("ErasureClient", () => {
 
     it("#sellPost", async () => {
       await client.sellPost(griefingAddress);
+    });
+
+    it("#buyPost", async () => {
+      const _post = await client.buyPost(griefingAddress);
+      assert(_post === post);
     });
 
     it("#reward", async () => {

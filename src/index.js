@@ -11,6 +11,7 @@ import Stake from "./client/Stake";
 import Reward from "./client/Reward";
 import Punish from "./client/Punish";
 import GetFeeds from "./client/GetFeeds";
+import BuyPost from "./client/BuyPost";
 import SellPost from "./client/SellPost";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
@@ -288,11 +289,25 @@ class ErasureClient {
    * Sell a post
    *
    * @param {string} griefingAddress - contract address of the griefing agreement
-   * @returns {Promise} transaction receipt of retrieveStake
+   * @returns {Promise}
    */
   async sellPost(griefingAddress) {
     try {
       return await SellPost.bind(this)(griefingAddress);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Buy a post
+   *
+   * @param {string} griefingAddress - contract address of the griefing agreement
+   * @returns {Promise} post that is bought
+   */
+  async buyPost(griefingAddress) {
+    try {
+      return await BuyPost.bind(this)(griefingAddress);
     } catch (err) {
       throw err;
     }

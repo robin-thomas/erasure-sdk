@@ -26,10 +26,11 @@ const SellPost = async function(griefingAddress) {
     }
 
     const { data, feedAddress, proofHash } = griefingData[griefingAddress];
-    const { nonce, encryptedSymmetricKey } = await Post.getMetadata(
-      feedAddress,
-      proofHash
-    );
+    const {
+      nonce,
+      encryptedSymmetricKey,
+      encryptedPostIpfsHash
+    } = await Post.getMetadata(feedAddress, proofHash);
 
     // Decrypt the content.
     const symmetricKey = Crypto.asymmetric.decrypt(
@@ -44,11 +45,12 @@ const SellPost = async function(griefingAddress) {
       griefingAddress
     ];
     const account = await Ethers.getAccount();
-    const seller = account === operator ? counterParty : operator;
+    const seller = account === operator ? operator : counterParty;
+    const buyer = account === operator ? counterParty : operator;
 
     // Retrieve the seller publicKey
-    const sellerData = await this.erasureUsers.getUserData(seller);
-    const publicKey = Ethers.hexlify(sellerData);
+    const buyerData = await this.erasureUsers.getUserData(buyer);
+    const publicKey = Ethers.hexlify(buyerData);
 
     // construct the keypair: buyer publicKey, seller secretKey
     const newKeypair = {
@@ -66,9 +68,14 @@ const SellPost = async function(griefingAddress) {
 
     // Submit the encryptedSymmetricKey to the griefing contract.
     this.setGriefing(griefingType, griefingAddress);
-    const metadata = JSON.parse(data);
-    metadata.encryptedSymmetricKey = encryptedSymKey.toString();
-    await this.griefing.setMetadata(metadata);
+    await this.griefing.setMetadata({
+      ...JSON.parse(data),
+      seller,
+      buyer,
+      encryptedPostIpfsHash,
+      nonce: nonce.toString(),
+      encryptedSymmetricKey: encryptedSymKey.toString()
+    });
   } catch (err) {
     throw err;
   }

@@ -30,6 +30,7 @@ const Griefing = {
 
       return {
         ...metadata,
+        nonce: new Uint8Array(metadata.nonce.split(",")),
         encryptedSymmetricKey: new Uint8Array(
           metadata.encryptedSymmetricKey.split(",")
         )
