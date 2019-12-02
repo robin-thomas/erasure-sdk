@@ -42,7 +42,7 @@ describe("ErasureClient", () => {
     // Deploy all contracts to ganache.
     registry = await Deployer();
 
-    client = new ErasureClient({ version: "1.0.0", registry });
+    client = new ErasureClient({ version: "1.0.0", appName: "Test", registry });
     await client.createUser();
 
     account = await Ethers.getAccount();
@@ -75,6 +75,8 @@ describe("ErasureClient", () => {
     it("#stake", async () => {
       const result = await client.stake({
         stakeAmount,
+        proofHash,
+        feedAddress,
         griefingType: "countdown",
         counterParty: account,
         countdownLength
@@ -89,6 +91,10 @@ describe("ErasureClient", () => {
         result.stake.logs[0].data
       );
       assert.ok(Number(amount).toString() === stakeAmount);
+    });
+
+    it("#sellPost", async () => {
+      await client.sellPost(griefingAddress);
     });
 
     it("#reward", async () => {
@@ -142,6 +148,8 @@ describe("ErasureClient", () => {
     it("#stake", async () => {
       const result = await client.stake({
         stakeAmount,
+        proofHash,
+        feedAddress,
         griefingType: "simple",
         counterParty: account,
         countdownLength

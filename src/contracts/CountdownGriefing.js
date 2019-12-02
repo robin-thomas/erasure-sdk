@@ -115,6 +115,27 @@ class CountdownGriefing {
       throw err;
     }
   }
+
+  /**
+   * Update the agreement metadata
+   *
+   * @param {string} metadata
+   * @returns {Promise}
+   */
+  async setMetadata(metadata) {
+    try {
+      const data = JSON.stringify(metadata, null, 4);
+      const ipfsHash = await IPFS.add(data);
+      const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
+
+      const tx = await this.contract.contract.setMetadata(
+        Buffer.from(staticMetadata)
+      );
+      return await tx.wait();
+    } catch (err) {
+      throw err;
+    }
+  }
 }
 
 export default CountdownGriefing;

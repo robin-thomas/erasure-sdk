@@ -11,6 +11,7 @@ import Stake from "./client/Stake";
 import Reward from "./client/Reward";
 import Punish from "./client/Punish";
 import GetFeeds from "./client/GetFeeds";
+import SellPost from "./client/SellPost";
 import CreateFeed from "./client/CreateFeed";
 import CreatePost from "./client/CreatePost";
 import CreateUser from "./client/CreateUser";
@@ -156,6 +157,8 @@ class ErasureClient {
    * Stake your feed
    *
    * @param {Object} config - configuration for staking
+   * @param {string} config.feedAddress
+   * @param {string} config.proofHash
    * @param {string} config.stakeAmount - amount to be staked
    * @param {string} config.counterParty - party with whom the agreement to be made
    * @param {number} config.countdownLength - duration of the agreement in seconds
@@ -165,6 +168,8 @@ class ErasureClient {
    * @returns {Promise} transaction receipts of griefing, approval and staking
    */
   async stake({
+    feedAddress,
+    proofHash,
     stakeAmount,
     counterParty,
     countdownLength,
@@ -174,6 +179,8 @@ class ErasureClient {
   }) {
     try {
       return await Stake.bind(this)({
+        feedAddress,
+        proofHash,
         stakeAmount,
         counterParty,
         countdownLength,
@@ -272,6 +279,20 @@ class ErasureClient {
         recipient,
         griefingAddress
       });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Sell a post
+   *
+   * @param {string} griefingAddress - contract address of the griefing agreement
+   * @returns {Promise} transaction receipt of retrieveStake
+   */
+  async sellPost(griefingAddress) {
+    try {
+      return await SellPost.bind(this)(griefingAddress);
     } catch (err) {
       throw err;
     }
