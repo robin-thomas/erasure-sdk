@@ -74,7 +74,7 @@ const Stake = async function({
     // Approve and stake NMR.
     const approval = await this.nmr.changeApproval(griefing.address);
     stakeAmount = Ethers.parseEther(stakeAmount);
-    const stake = await this.griefing.increaseStake("0", stakeAmount);
+    const stake = await this.griefing.increaseStake(stakeAmount);
 
     // Save it to datastore.
     let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
@@ -90,8 +90,7 @@ const Stake = async function({
       griefingType,
       operator,
       counterParty,
-      countdownLength,
-      currentStake: Ethers.formatEther(stakeAmount).toString()
+      countdownLength
     };
     await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
 

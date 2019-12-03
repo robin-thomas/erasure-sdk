@@ -26,9 +26,9 @@ const subStake = (stake, amount) => {
 };
 
 describe("ErasureClient", () => {
-  const punishAmount = "1";
+  const punishAmount = "2";
   const rewardAmount = "10";
-  const stakeAmount = "1";
+  const stakeAmount = "11";
   const countdownLength = 100000000;
 
   let proofHash,
@@ -82,7 +82,7 @@ describe("ErasureClient", () => {
       let amount = "";
       [currentStake, amount] = addStake(
         currentStake,
-        result.stake.logs[0].data
+        result.stake.logs[1].data
       );
       assert.ok(Number(amount).toString() === stakeAmount);
     });
@@ -103,7 +103,7 @@ describe("ErasureClient", () => {
       });
 
       let amount = "";
-      [currentStake, amount] = addStake(currentStake, result.logs[0].data);
+      [currentStake, amount] = addStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === rewardAmount);
     });
 
@@ -126,7 +126,7 @@ describe("ErasureClient", () => {
       });
 
       let amount = "";
-      [currentStake, amount] = subStake(currentStake, result.logs[0].data);
+      [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
 
@@ -160,7 +160,7 @@ describe("ErasureClient", () => {
       let amount = "";
       [currentStake, amount] = addStake(
         currentStake,
-        result.stake.logs[0].data
+        result.stake.logs[1].data
       );
       assert.ok(Number(amount).toString() === stakeAmount);
     });
@@ -181,7 +181,7 @@ describe("ErasureClient", () => {
       });
 
       let amount = "";
-      [currentStake, amount] = addStake(currentStake, result.logs[0].data);
+      [currentStake, amount] = addStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === rewardAmount);
     });
 
@@ -204,7 +204,7 @@ describe("ErasureClient", () => {
       });
 
       let amount = "";
-      [currentStake, amount] = subStake(currentStake, result.logs[0].data);
+      [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
 

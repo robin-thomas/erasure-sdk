@@ -11,7 +11,7 @@ import Ethers from "../utils/Ethers";
  */
 const RetrieveStake = async function({ griefingAddress, recipient }) {
   try {
-    let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
+    const griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
     if (griefingData === null || griefingData[griefingAddress] === undefined) {
       throw new Error(`Unable to find griefing: ${griefingAddress}`);
     }
@@ -19,12 +19,7 @@ const RetrieveStake = async function({ griefingAddress, recipient }) {
     const { griefingType } = griefingData[griefingAddress];
     this.setGriefing(griefingType, griefingAddress);
 
-    const stake = await this.griefing.retrieveStake(recipient);
-
-    griefingData[griefingAddress].currentStake = "0";
-    await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
-
-    return stake;
+    return await this.griefing.retrieveStake(recipient);
   } catch (err) {
     throw err;
   }

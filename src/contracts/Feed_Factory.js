@@ -47,8 +47,8 @@ class Feed_Factory {
 
       const callData = Abi.abiEncodeWithSelector(
         "initialize",
-        ["address", "bytes", "bytes"],
-        [operator, staticMetadata, staticMetadata]
+        ["address", "bytes32", "bytes"],
+        [operator, IPFS.hexToSha256(staticMetadata), staticMetadata]
       );
 
       // Creates the contract.

@@ -64,7 +64,9 @@ const IPFS = {
     } catch (err) {
       throw err;
     }
-  }
+  },
+
+  hexToSha256: hash => `0x${hash.substr(6)}` // IPFS adds 0x1220 prefix
 };
 
 export default IPFS;

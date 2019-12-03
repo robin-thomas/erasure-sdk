@@ -4,7 +4,7 @@
   },
   "erasure": {
     "contract": {
-      "version": "v1.1.0"
+      "version": "v1.2.0"
     },
     "graph": {
       "api": "https://api.thegraph.com/subgraphs/name/jgeary/erasure",
