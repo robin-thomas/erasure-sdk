@@ -38,11 +38,10 @@ class SimpleGriefing_Factory {
    * @param {string} config.counterParty - party with whom the agreement to be made
    * @param {string} [config.ratio] - griefing ratio
    * @param {number} [config.ratioType] - griefing ratio type
-   * @param {string} [config.hash] - IPFS hash of ErasureAgreement version
-   * @param {string} [config.data] - data of ErasureAgreement version to be uploaded to IPFS
+   * @param {string} config.data - data of ErasureAgreement version to be uploaded to IPFS
    * @returns {Promise} ipfsHash, txHash and address of new feed
    */
-  async create({ counterParty, ratio, ratioType, hash, data = null }) {
+  async create({ counterParty, ratio, ratioType, data }) {
     try {
       const operator = await Ethers.getAccount();
 
@@ -51,10 +50,7 @@ class SimpleGriefing_Factory {
       }
 
       // Convert the ipfs hash to multihash hex code.
-      let ipfsHash = hash;
-      if (data) {
-        ipfsHash = await IPFS.add(data);
-      }
+      const ipfsHash = await IPFS.add(data);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
       const callData = Abi.abiEncodeWithSelector(

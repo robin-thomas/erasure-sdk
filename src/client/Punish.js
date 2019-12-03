@@ -1,5 +1,5 @@
-import Box from "../utils/3Box";
 import Ethers from "../utils/Ethers";
+import Griefing from "../utils/Griefing";
 
 /**
  * Punish a user
@@ -12,12 +12,7 @@ import Ethers from "../utils/Ethers";
  */
 const Punish = async function({ punishAmount, griefingAddress, message }) {
   try {
-    const griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
-    if (griefingData === null || griefingData[griefingAddress] === undefined) {
-      throw new Error(`Unable to find griefing: ${griefingAddress}`);
-    }
-
-    const { griefingType } = griefingData[griefingAddress];
+    const { griefingType } = await Griefing.getMetadata(griefingAddress);
     this.setGriefing(griefingType, griefingAddress);
 
     return await this.griefing.punish(Ethers.parseEther(punishAmount), message);

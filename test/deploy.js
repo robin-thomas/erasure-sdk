@@ -80,7 +80,8 @@ const deployNMR = async () => {
 const deploy = async () => {
   let contractRegistry = {};
 
-  const contracts = contractConfig["v1.1.0"]["homestead"];
+  const contracts =
+    contractConfig[appConfig.erasure.contract.version]["rinkeby"];
   for (const contractName of Object.keys(contracts)) {
     const contractAddress = contracts[contractName];
 

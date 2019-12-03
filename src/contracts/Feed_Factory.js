@@ -44,11 +44,12 @@ class Feed_Factory {
       // Convert the ipfs hash to multihash hex code.
       const staticMetadataB58 = await IPFS.add(data);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
+      const proofHash = IPFS.hexToSha256(staticMetadata);
 
       const callData = Abi.abiEncodeWithSelector(
         "initialize",
         ["address", "bytes32", "bytes"],
-        [operator, IPFS.hexToSha256(staticMetadata), staticMetadata]
+        [operator, proofHash, staticMetadata]
       );
 
       // Creates the contract.

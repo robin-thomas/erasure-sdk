@@ -14,7 +14,8 @@ const Griefing = {
 
       const results = await provider.getLogs({
         address: griefingAddress,
-        topics: [ethers.utils.id("MetadataSet(bytes)")]
+        topics: [ethers.utils.id("MetadataSet(bytes)")],
+        fromBlock: 0
       });
 
       const abiCoder = ethers.utils.defaultAbiCoder;

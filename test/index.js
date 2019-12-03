@@ -42,15 +42,15 @@ describe("ErasureClient", () => {
     // Deploy all contracts to ganache.
     registry = await Deployer();
 
+    account = await Ethers.getAccount();
+    console.log(`\n\tUsing eth account: ${account}\n`);
+
     client = new ErasureClient({
       appVersion: "1.0.0",
       appName: "Test",
       registry
     });
     await client.createUser();
-
-    account = await Ethers.getAccount();
-    console.log(`\n\tUsing eth account: ${account}\n`);
   });
 
   it("#createFeed", async () => {

@@ -16,9 +16,6 @@ const Post = {
 
       const staticMetadataB58 =
         boxFeed[feedAddress].posts[proofHash].staticMetadataB58;
-
-      console.log("address", staticMetadataB58);
-
       const metadata = await IPFS.get(staticMetadataB58);
       let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = JSON.parse(
         metadata

@@ -322,7 +322,9 @@ class ErasureClient {
       this.griefingFactory = this.simpleGriefingFactory;
     }
 
-    this.griefing.setAddress(griefingAddress);
+    if (Ethers.isAddress(griefingAddress)) {
+      this.griefing.setAddress(griefingAddress);
+    }
   }
 }
 

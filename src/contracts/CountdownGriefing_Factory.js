@@ -39,18 +39,10 @@ class CountdownGriefing_Factory {
    * @param {number} config.countdownLength - duration of the agreement in seconds
    * @param {string} [config.ratio] - griefing ratio
    * @param {number} [config.ratioType] - griefing ratio type
-   * @param {string} [config.hash] - IPFS hash of ErasureAgreement version
-   * @param {string} [config.data] - data of ErasureAgreement version to be uploaded to IPFS
+   * @param {string} config.data - data of ErasureAgreement version to be uploaded to IPFS
    * @returns {Promise} ipfsHash, txHash and address of new feed
    */
-  async create({
-    counterParty,
-    countdownLength,
-    ratio,
-    ratioType,
-    hash,
-    data = null
-  }) {
+  async create({ counterParty, countdownLength, ratio, ratioType, data }) {
     try {
       const operator = await Ethers.getAccount();
 
@@ -59,10 +51,7 @@ class CountdownGriefing_Factory {
       }
 
       // Convert the ipfs hash to multihash hex code.
-      let ipfsHash = hash;
-      if (data) {
-        ipfsHash = await IPFS.add(data);
-      }
+      const ipfsHash = await IPFS.add(data);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
       const callData = Abi.abiEncodeWithSelector(

@@ -8,9 +8,10 @@ import Ethers from "../utils/Ethers";
  * @param {string} appVersion
  * @returns {Promise}
  */
-const getData = (appName, appVersion) => {
+const getData = (appName, appVersion, griefingType) => {
   let data = {};
   data[`${appName}-Agreement`] = appVersion;
+  data.griefingType = griefingType;
 
   return JSON.stringify(data, null, 4);
 };
@@ -44,9 +45,8 @@ const Stake = async function({
     if (!["countdown", "simple"].includes(griefingType)) {
       throw new Error(`Griefing type ${griefingType} is not supported`);
     }
-    this.setGriefing(griefingType);
 
-    const data = getData(this.appName, this.appVersion);
+    const data = getData(this.appName, this.appVersion, griefingType);
 
     let opts = {
       ratio,
@@ -58,7 +58,7 @@ const Stake = async function({
 
     // Create griefing agreement.
     const griefing = await this.griefingFactory.create(opts);
-    this.griefing.setAddress(griefing.address);
+    this.setGriefing(griefingType, griefing.address);
 
     // Mint some mock NMR for test purposes.
     const operator = await Ethers.getAccount();

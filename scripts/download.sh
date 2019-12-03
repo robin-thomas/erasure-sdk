@@ -8,8 +8,11 @@ download_contracts() {
 
   declare -a contracts=(
     'CountdownGriefing'
+    'CountdownGriefingEscrow'
     'CountdownGriefing_Factory'
+    'CountdownGriefingEscrow_Factory'
     'Erasure_Agreements'
+    'Erasure_Escrows'
     'Erasure_Posts'
     'Erasure_Users'
     'Feed'
