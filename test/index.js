@@ -42,7 +42,11 @@ describe("ErasureClient", () => {
     // Deploy all contracts to ganache.
     registry = await Deployer();
 
-    client = new ErasureClient({ version: "1.0.0", appName: "Test", registry });
+    client = new ErasureClient({
+      appVersion: "1.0.0",
+      appName: "Test",
+      registry
+    });
     await client.createUser();
 
     account = await Ethers.getAccount();

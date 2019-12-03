@@ -51,7 +51,7 @@ const CreatePost = async function(post, feedAddress) {
       JSON.stringify({
         ...metadata,
         ipfsHash,
-        erasurePost: this.version
+        erasurePost: this.appVersion
       })
     );
     const proofHash = Utils.hash(staticMetadataB58);

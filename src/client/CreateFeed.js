@@ -7,9 +7,9 @@ import Box from "../utils/3Box";
  * @param {string} version
  * @returns {Promise} json string data
  */
-const getData = (appName, version) => {
+const getData = (appName, appVersion) => {
   let data = {};
-  data[`${appName}-Feed`] = version;
+  data[`${appName}-Feed`] = appVersion;
 
   return JSON.stringify(data, null, 4);
 };
@@ -21,7 +21,7 @@ const getData = (appName, version) => {
  */
 const CreateFeed = async function() {
   try {
-    const data = getData(this.appName, this.version);
+    const data = getData(this.appName, this.appVersion);
 
     // Create the new Feed contract.
     const feed = await this.feedFactory.create(data);

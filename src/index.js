@@ -31,13 +31,13 @@ class ErasureClient {
    *
    * @constructor
    * @param {Object} config - configuration for ErasureClient
-   * @param {string} config.version - version string for your ErasureClient
+   * @param {string} config.appVersion - version string for your ErasureClient
    * @param {Object} config.appName
    * @param {string} [config.registry] - for running tests
    */
-  constructor({ version, appName, registry }) {
-    this.version = version;
+  constructor({ appVersion, appName, registry }) {
     this.appName = appName;
+    this.appVersion = appVersion;
 
     // Create contract objects.
     let opts = {};

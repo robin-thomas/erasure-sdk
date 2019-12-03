@@ -5,12 +5,12 @@ import Ethers from "../utils/Ethers";
  * Create a new version string for Agreement (if required)
  *
  * @param {string} appName
- * @param {string} version - version string from ErasureClient
- * @returns {Promise} data, feed, hash
+ * @param {string} appVersion
+ * @returns {Promise}
  */
-const getData = (appName, version) => {
+const getData = (appName, appVersion) => {
   let data = {};
-  data[`${appName}-Agreement`] = version;
+  data[`${appName}-Agreement`] = appVersion;
 
   return JSON.stringify(data, null, 4);
 };
@@ -46,7 +46,7 @@ const Stake = async function({
     }
     this.setGriefing(griefingType);
 
-    const data = getData(this.appName, this.version);
+    const data = getData(this.appName, this.appVersion);
 
     let opts = {
       ratio,
