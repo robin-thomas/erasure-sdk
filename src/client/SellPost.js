@@ -19,13 +19,15 @@ const SellPost = async function(griefingAddress) {
       throw new Error("Unable to retrieve the keypair");
     }
 
-    // Get the seller address from Agreement.
-    let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
-    if (griefingData === null || griefingData[griefingAddress] === undefined) {
-      throw new Error(`Unable to find griefing: ${griefingAddress}`);
-    }
+    const data = await Griefing.getMetadata(griefingAddress);
+    const {
+      feedAddress,
+      proofHash,
+      operator,
+      counterParty,
+      griefingType
+    } = data;
 
-    const { data, feedAddress, proofHash } = griefingData[griefingAddress];
     const {
       nonce,
       encryptedSymmetricKey,
@@ -41,9 +43,6 @@ const SellPost = async function(griefingAddress) {
 
     // Retrieve the seller address.
     // Seller could be operator or counterParty.
-    const { operator, counterParty, griefingType } = griefingData[
-      griefingAddress
-    ];
     const account = await Ethers.getAccount();
     const seller = account === operator ? operator : counterParty;
     const buyer = account === operator ? counterParty : operator;
@@ -69,7 +68,7 @@ const SellPost = async function(griefingAddress) {
     // Submit the encryptedSymmetricKey to the griefing contract.
     this.setGriefing(griefingType, griefingAddress);
     await this.griefing.setMetadata({
-      ...JSON.parse(data),
+      ...data,
       seller,
       buyer,
       encryptedPostIpfsHash,

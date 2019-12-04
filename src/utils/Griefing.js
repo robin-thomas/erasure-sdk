@@ -18,23 +18,27 @@ const Griefing = {
         fromBlock: 0
       });
 
-      const abiCoder = ethers.utils.defaultAbiCoder;
-      const data = abiCoder.decode(
-        ["bytes"],
-        results[results.length - 1].data
-      )[0];
-      const hex = ethers.utils.toUtf8String(data);
-      const ipfsHash = bs58.encode(Buffer.from(hex.substr(2), "hex"));
+      // Didnt find any griefing.
+      if (!results || results.length === 0) {
+        return {};
+      }
 
-      const result = await IPFS.get(ipfsHash);
-      const metadata = JSON.parse(result);
+      const abiCoder = ethers.utils.defaultAbiCoder;
+      const result = results[results.length - 1];
+      const data = abiCoder.decode(["bytes"], result.data)[0];
+      const ipfsHash = bs58.encode(Buffer.from(data.substr(2), "hex"));
+
+      const ipfsData = await IPFS.get(ipfsHash);
+      const metadata = JSON.parse(ipfsData);
 
       return {
         ...metadata,
-        nonce: new Uint8Array(metadata.nonce.split(",")),
-        encryptedSymmetricKey: new Uint8Array(
-          metadata.encryptedSymmetricKey.split(",")
-        )
+        nonce: metadata.nonce
+          ? new Uint8Array(metadata.nonce.split(","))
+          : null,
+        encryptedSymmetricKey: metadata.encryptedSymmetricKey
+          ? new Uint8Array(metadata.encryptedSymmetricKey.split(","))
+          : null
       };
     } catch (err) {
       throw err;

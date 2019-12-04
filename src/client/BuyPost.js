@@ -31,7 +31,7 @@ const BuyPost = async function(griefingAddress) {
 
     const newKeypair = {
       key: {
-        publicKey: Uint8Array.from(Buffer.from(publicKey.substring(2), "hex")),
+        publicKey: Uint8Array.from(Buffer.from(publicKey.substr(2), "hex")),
         secretKey: keypair.key.secretKey
       }
     };

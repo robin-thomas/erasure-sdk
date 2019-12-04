@@ -9,7 +9,7 @@
     "prebuild": "npm run download",
     "build": "webpack --mode=production",
     "start": "webpack --watch",
-    "test": "npm run download && NODE_ENV=test mocha --require esm --exit test/index.js -t 1200000",
+    "test": "npm run download && NODE_ENV=test mocha --require esm --exit --bail test/index.js -t 1200000",
     "coverage": "nyc npm run test",
     "doc:generate": "jsdoc src/index.js --destination erasure -c jsdoc.json",
     "doc:deploy": "npm run doc:generate && now ./erasure",

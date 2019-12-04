@@ -48,7 +48,6 @@ class CountdownGriefing {
   async increaseStake(amountToAdd) {
     try {
       const tx = await this.contract.contract.increaseStake(amountToAdd);
-
       return await tx.wait();
     } catch (err) {
       throw err;
@@ -84,7 +83,6 @@ class CountdownGriefing {
   async releaseStake(amountToRelease) {
     try {
       const tx = await this.contract.contract.releaseStake(amountToRelease);
-
       return await tx.wait();
     } catch (err) {
       throw err;
@@ -114,13 +112,11 @@ class CountdownGriefing {
    */
   async setMetadata(metadata) {
     try {
-      const data = JSON.stringify(metadata, null, 4);
+      const data = JSON.stringify(metadata);
       const ipfsHash = await IPFS.add(data);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
-      const tx = await this.contract.contract.setMetadata(
-        Buffer.from(staticMetadata)
-      );
+      const tx = await this.contract.contract.setMetadata(staticMetadata);
       return await tx.wait();
     } catch (err) {
       throw err;

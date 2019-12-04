@@ -10,8 +10,7 @@ import Box from "../utils/3Box";
 const getData = (appName, appVersion) => {
   let data = {};
   data[`${appName}-Feed`] = appVersion;
-
-  return JSON.stringify(data, null, 4);
+  return JSON.stringify(data);
 };
 
 /**

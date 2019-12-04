@@ -31,9 +31,8 @@ class ErasureClient {
    *
    * @constructor
    * @param {Object} config - configuration for ErasureClient
-   * @param {string} config.appVersion - version string for your ErasureClient
-   * @param {Object} config.appName
-   * @param {string} [config.registry] - for running tests
+   * @param {string} config.appVersion - version of your app
+   * @param {string} config.appName - name of your app
    */
   constructor({ appVersion, appName, registry }) {
     this.appName = appName;
@@ -60,6 +59,7 @@ class ErasureClient {
 
   /**
    * To initialize the client.
+   * This ought to be called before calling any client functions.
    *
    */
   async login() {
@@ -109,7 +109,7 @@ class ErasureClient {
    * Get all feeds of a user.
    * if no user is supplied, feeds of current user will be returned.
    *
-   * @param {string} [user] - get all feeds of this user
+   * @param {address} [user] - get all feeds of this user
    * @returns {Promise} get all feeds of this user
    */
   async getFeeds(user = null) {
@@ -124,7 +124,7 @@ class ErasureClient {
    * Create a new Post
    *
    * @param {string} post - data to be posted
-   * @param {string} feedAddress - feed to where the post to be added
+   * @param {address} feedAddress - feed to where the post to be added
    * @returns {Promise} transaction receipt of new post
    */
   async createPost(post, feedAddress) {
@@ -142,7 +142,7 @@ class ErasureClient {
   /**
    * Reveal an encrypted post so that others can view it
    *
-   * @param {string} feedAddress
+   * @param {address} feedAddress
    * @param {string} proofHash
    * @returns {Promise} ipfs hash of the unencrypted post (after uploading)
    */
@@ -158,7 +158,7 @@ class ErasureClient {
    * Stake your feed
    *
    * @param {Object} config - configuration for staking
-   * @param {string} config.feedAddress
+   * @param {address} config.feedAddress
    * @param {string} config.proofHash
    * @param {string} config.stakeAmount - amount to be staked
    * @param {string} config.counterParty - party with whom the agreement to be made
@@ -174,9 +174,9 @@ class ErasureClient {
     stakeAmount,
     counterParty,
     countdownLength,
-    griefingType = "countdown",
-    ratio = "1",
-    ratioType = 2
+    griefingType,
+    ratio,
+    ratioType
   }) {
     try {
       return await Stake.bind(this)({
@@ -185,9 +185,9 @@ class ErasureClient {
         stakeAmount,
         counterParty,
         countdownLength,
-        griefingType,
-        ratio,
-        ratioType
+        griefingType: griefingType || "countdown",
+        ratio: ratio || "1",
+        ratioType: ratioType || 2
       });
     } catch (err) {
       throw err;
@@ -195,9 +195,9 @@ class ErasureClient {
   }
 
   /**
-   * Get all griefings of this user
+   * Get all griefings of current user
    *
-   * @returns {Promise} get all griefings of this user
+   * @returns {Promise} get all griefings of current user
    */
   async getGriefings() {
     try {
@@ -212,7 +212,7 @@ class ErasureClient {
    *
    * @param {Object} config - configuration for reward
    * @param {string} config.rewardAmount - amount to be rewarded
-   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @param {address} config.griefingAddress - contract address of the griefing agreement
    * @returns {Promise} transaction receipt of the reward
    */
   async reward({ rewardAmount, griefingAddress }) {
@@ -231,7 +231,7 @@ class ErasureClient {
    *
    * @param {Object} config - configuration for punishment
    * @param {string} config.punishAmount - amount to be punished
-   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @param {address} config.griefingAddress - contract address of the griefing agreement
    * @param {string} config.message - message
    * @returns {Promise} transaction receipt of the punishment
    */
@@ -252,7 +252,7 @@ class ErasureClient {
    *
    * @param {Object} config - configuration for releaseStake
    * @param {string} config.amountToRelease - amount to be released
-   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @param {address} config.griefingAddress - contract address of the griefing agreement
    * @returns {Promise} transaction receipt of staking
    */
   async releaseStake({ amountToRelease, griefingAddress }) {
@@ -270,8 +270,8 @@ class ErasureClient {
    * Retrieve the stake
    *
    * @param {Object} config - configuration for retrieveStake
-   * @param {string} config.recipient - recipient to receive the stake
-   * @param {string} config.griefingAddress - contract address of the griefing agreement
+   * @param {address} config.recipient - recipient to receive the stake
+   * @param {address} config.griefingAddress - contract address of the griefing agreement
    * @returns {Promise} transaction receipt of retrieveStake
    */
   async retrieveStake({ recipient, griefingAddress }) {
@@ -288,7 +288,7 @@ class ErasureClient {
   /**
    * Sell a post
    *
-   * @param {string} griefingAddress - contract address of the griefing agreement
+   * @param {address} griefingAddress - contract address of the griefing agreement
    * @returns {Promise}
    */
   async sellPost(griefingAddress) {
@@ -302,7 +302,7 @@ class ErasureClient {
   /**
    * Buy a post
    *
-   * @param {string} griefingAddress - contract address of the griefing agreement
+   * @param {address} griefingAddress - contract address of the griefing agreement
    * @returns {Promise} post that is bought
    */
   async buyPost(griefingAddress) {
@@ -324,6 +324,8 @@ class ErasureClient {
 
     if (Ethers.isAddress(griefingAddress)) {
       this.griefing.setAddress(griefingAddress);
+    } else if (griefingAddress !== null) {
+      throw new Error(`Invalid griefing address: ${griefingAddress}`);
     }
   }
 }

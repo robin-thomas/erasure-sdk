@@ -5,6 +5,7 @@ import config from "../config.json";
 
 const IPFS = {
   ipfs: null,
+  keystore: {},
 
   /**
    * create a new IPFS client
@@ -27,13 +28,23 @@ const IPFS = {
    * @param {string} data - data to be uploaded to ipfs
    * @returns {Promise} ipfs hash
    */
-  add: async data => {
+  add: async (data, retry = true) => {
     try {
-      const content = Ipfs.Buffer.from(data);
+      if (process.env.NODE_ENV === "test") {
+        const hash = await IPFS.getHash(data);
+        IPFS.keystore[hash] = data;
+        return hash;
+      }
+
+      const content = Buffer.from(data);
       const results = await IPFS.getClient().add(content);
       return results[0].hash;
     } catch (err) {
-      throw err;
+      if (retry) {
+        return await IPFS.add(data, false);
+      } else {
+        throw err;
+      }
     }
   },
 
@@ -43,12 +54,20 @@ const IPFS = {
    * @param {string} hash - download file from the ipfs hash
    * @returns {string} data downloaded from ipfs
    */
-  get: async hash => {
+  get: async (hash, retry = true) => {
     try {
+      if (process.env.NODE_ENV === "test") {
+        return IPFS.keystore[hash];
+      }
+
       const results = await IPFS.getClient().get(hash);
       return results[0].content.toString();
     } catch (err) {
-      throw err;
+      if (retry) {
+        return await IPFS.get(hash, false);
+      } else {
+        throw err;
+      }
     }
   },
 

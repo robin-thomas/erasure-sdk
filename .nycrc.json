@@ -1,3 +1,4 @@
 {
-  "exclude": ["test", "truffle-config.js"]
+  "check-coverage": false,
+  "exclude": ["test", "truffle-config.js", "src/utils"]
 }

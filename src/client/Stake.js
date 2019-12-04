@@ -8,12 +8,9 @@ import Ethers from "../utils/Ethers";
  * @param {string} appVersion
  * @returns {Promise}
  */
-const getData = (appName, appVersion, griefingType) => {
-  let data = {};
+const getData = (appName, appVersion, data) => {
   data[`${appName}-Agreement`] = appVersion;
-  data.griefingType = griefingType;
-
-  return JSON.stringify(data, null, 4);
+  return JSON.stringify(data);
 };
 
 /**
@@ -46,9 +43,16 @@ const Stake = async function({
       throw new Error(`Griefing type ${griefingType} is not supported`);
     }
 
-    const data = getData(this.appName, this.appVersion, griefingType);
+    const operator = await Ethers.getAccount();
+    const data = getData(this.appName, this.appVersion, {
+      griefingType,
+      proofHash,
+      feedAddress,
+      counterParty,
+      operator
+    });
 
-    let opts = {
+    const opts = {
       ratio,
       ratioType,
       counterParty,
@@ -57,11 +61,11 @@ const Stake = async function({
     };
 
     // Create griefing agreement.
+    this.setGriefing(griefingType, null);
     const griefing = await this.griefingFactory.create(opts);
     this.setGriefing(griefingType, griefing.address);
 
     // Mint some mock NMR for test purposes.
-    const operator = await Ethers.getAccount();
     if (process.env.NODE_ENV === "test") {
       await this.nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
     } else {
