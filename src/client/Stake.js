@@ -52,17 +52,15 @@ const Stake = async function({
       operator
     });
 
-    const opts = {
+    // Create griefing agreement.
+    this.setGriefing(griefingType, null);
+    const griefing = await this.griefingFactory.create({
       ratio,
       ratioType,
       counterParty,
       countdownLength,
       data
-    };
-
-    // Create griefing agreement.
-    this.setGriefing(griefingType, null);
-    const griefing = await this.griefingFactory.create(opts);
+    });
     this.setGriefing(griefingType, griefing.address);
 
     // Mint some mock NMR for test purposes.
@@ -83,19 +81,9 @@ const Stake = async function({
     // Save it to datastore.
     let griefingData = await Box.get(Box.DATASTORE_GRIEFINGS);
     if (griefingData === null) {
-      griefingData = {};
+      griefingData = [];
     }
-    griefingData[griefing.address] = {
-      feedAddress,
-      proofHash,
-      data,
-      ratio,
-      ratioType,
-      griefingType,
-      operator,
-      counterParty,
-      countdownLength
-    };
+    griefingData.push(griefing.address);
     await Box.set(Box.DATASTORE_GRIEFINGS, griefingData);
 
     return {

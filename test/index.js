@@ -145,6 +145,11 @@ describe("ErasureClient", () => {
         assert.ok(true);
       }
     });
+
+    it("#getGriefings", async () => {
+      const griefings = await client.getGriefings();
+      assert.ok(griefings.includes(griefingAddress));
+    });
   });
 
   describe("Simple Griefing", () => {
@@ -222,6 +227,11 @@ describe("ErasureClient", () => {
       } catch (err) {
         assert.ok(true);
       }
+    });
+
+    it("#getGriefings", async () => {
+      const griefings = await client.getGriefings();
+      assert.ok(griefings.includes(griefingAddress));
     });
   });
 
