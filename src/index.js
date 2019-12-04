@@ -161,7 +161,7 @@ class ErasureClient {
    * @param {address} config.feedAddress
    * @param {string} config.proofHash
    * @param {string} config.stakeAmount - amount to be staked
-   * @param {string} config.counterParty - party with whom the agreement to be made
+   * @param {address} config.counterParty - party with whom the agreement to be made
    * @param {number} config.countdownLength - duration of the agreement in seconds
    * @param {string} [config.griefingType] - accepts "countdown" or "simple" (with "countdown" as default)
    * @param {string} [config.ratio] - griefing ratio
@@ -232,7 +232,7 @@ class ErasureClient {
    * @param {Object} config - configuration for punishment
    * @param {string} config.punishAmount - amount to be punished
    * @param {address} config.griefingAddress - contract address of the griefing agreement
-   * @param {string} config.message - message
+   * @param {string} config.message - punishment message
    * @returns {Promise} transaction receipt of the punishment
    */
   async punish({ punishAmount, griefingAddress, message }) {
@@ -253,7 +253,7 @@ class ErasureClient {
    * @param {Object} config - configuration for releaseStake
    * @param {string} config.amountToRelease - amount to be released
    * @param {address} config.griefingAddress - contract address of the griefing agreement
-   * @returns {Promise} transaction receipt of staking
+   * @returns {Promise} transaction receipt of releaseStake
    */
   async releaseStake({ amountToRelease, griefingAddress }) {
     try {
