@@ -73,7 +73,7 @@ class Feed {
       for (const result of results) {
         posts.push({
           proofHash: result.data,
-          staticMetadataB58: IPFS.sha256ToHash(result.data)
+          ipfsMultihash: IPFS.sha256ToHash(result.data)
         });
       }
     }

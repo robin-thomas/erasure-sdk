@@ -18,7 +18,6 @@ const getData = (appName, appVersion, data) => {
  *
  * @param {Object} config - configuration for staking
  * @param {string} config.feedAddress
- * @param {string} config.proofHash
  * @param {string} config.stakeAmount - amount to be staked
  * @param {string} config.counterParty - party with whom the agreement to be made
  * @param {number} config.countdownLength - duration of the agreement in seconds
@@ -27,9 +26,8 @@ const getData = (appName, appVersion, data) => {
  * @param {number} [config.ratioType] - griefing ratio type
  * @returns {Promise} transaction receipts of griefing, approval and staking
  */
-const Stake = async function({
+const StakeFeed = async function({
   feedAddress,
-  proofHash,
   stakeAmount,
   counterParty,
   countdownLength,
@@ -46,7 +44,6 @@ const Stake = async function({
     const operator = await Ethers.getAccount();
     const data = getData(this.appName, this.appVersion, {
       griefingType,
-      proofHash,
       feedAddress,
       counterParty,
       operator
@@ -96,4 +93,4 @@ const Stake = async function({
   }
 };
 
-export default Stake;
+export default StakeFeed;

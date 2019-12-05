@@ -8,7 +8,6 @@ import Griefing from "../utils/Griefing";
 /**
  * Sell a post
  *
- * @param {string} feedAddress
  * @param {string} ipfsHash - ipfs hash of what the unencrypted post will be
  * @returns {Promise} ipfs hash of the unencrypted post
  */
@@ -20,19 +19,13 @@ const SellPost = async function(griefingAddress) {
     }
 
     const data = await Griefing.getMetadata(griefingAddress);
-    const {
-      feedAddress,
-      proofHash,
-      operator,
-      counterParty,
-      griefingType
-    } = data;
+    const { proofHash, operator, counterParty, griefingType } = data;
 
     const {
       nonce,
       encryptedSymmetricKey,
       encryptedPostIpfsHash
-    } = await Post.getMetadata(feedAddress, proofHash);
+    } = await Post.getMetadata(proofHash);
 
     // Decrypt the content.
     const symmetricKey = Crypto.asymmetric.decrypt(

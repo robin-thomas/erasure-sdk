@@ -55,15 +55,11 @@ class Feed_Factory {
 
       // Creates the contract.
       const tx = await this.contract.contract.create(callData);
-      const txReceipt = await tx.wait();
+      const receipt = await tx.wait();
 
       return {
-        id: txReceipt.logs[0].address,
-        creator: operator,
-        operator,
-        posts: {},
-        staticMetadataB58,
-        createdTimestamp: new Date().toISOString()
+        receipt,
+        address: receipt.logs[0].address
       };
     } catch (err) {
       throw err;
@@ -95,11 +91,11 @@ class Feed_Factory {
             data
           );
 
-          const id = Ethers.getAddress(result.topics[1]);
+          const address = Ethers.getAddress(result.topics[1]);
           feeds.push({
-            id,
+            address,
             operator: Ethers.getAddress(result.topics[2]),
-            staticMetadataB58: IPFS.hexToHash(callData[2])
+            ipfsMultihash: IPFS.hexToHash(callData[2])
           });
         }
       }

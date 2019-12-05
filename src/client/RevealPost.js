@@ -6,11 +6,10 @@ import Crypto from "../utils/Crypto";
 /**
  * Reveal an encrypted post so that others can view it
  *
- * @param {string} feedAddress
- * @param {string} ipfsHash - ipfs hash of what the unencrypted post will be
+ * @param {string} proofHash - ipfs hash of what the unencrypted post will be
  * @returns {Promise} ipfs hash of the unencrypted post
  */
-const RevealPost = async function(feedAddress, proofHash) {
+const RevealPost = async function(proofHash) {
   try {
     const keypair = await Box.getKeyPair();
     if (keypair === null) {
@@ -21,7 +20,7 @@ const RevealPost = async function(feedAddress, proofHash) {
       nonce,
       encryptedSymmetricKey,
       encryptedPostIpfsHash
-    } = await Post.getMetadata(feedAddress, proofHash);
+    } = await Post.getMetadata(proofHash);
 
     // Download the encryptedPost from ipfs
     const encryptedPost = await IPFS.get(encryptedPostIpfsHash);

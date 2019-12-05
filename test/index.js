@@ -56,13 +56,14 @@ describe("ErasureClient", () => {
 
   it("#createFeed", async () => {
     const result = await client.createFeed();
-    feedAddress = result.id;
+    feedAddress = result.address;
     assert.ok(Ethers.isAddress(feedAddress));
     console.log(`\tFeed created at ${feedAddress}`);
   });
 
   it("#createPost", async () => {
-    proofHash = await client.createPost(post, feedAddress);
+    const result = await client.createPost(post, feedAddress);
+    proofHash = result.proofHash;
   });
 
   describe("getFeeds", () => {
@@ -79,16 +80,15 @@ describe("ErasureClient", () => {
     it("User with atleast one feed without a post", async () => {
       const result = await client.createFeed();
       const feeds = await client.getFeeds(account);
-      assert.ok(Object.keys(feeds[result.id].posts).length === 0);
+      assert.ok(Object.keys(feeds[result.address].posts).length === 0);
     });
   });
 
   describe("Countdown Griefing", () => {
-    it("#stake", async () => {
-      const result = await client.stake({
+    it("#stakeFeed", async () => {
+      const result = await client.stakePost({
         stakeAmount,
         proofHash,
-        feedAddress,
         griefingType: "countdown",
         counterParty: account,
         countdownLength
@@ -167,11 +167,10 @@ describe("ErasureClient", () => {
   });
 
   describe("Simple Griefing", () => {
-    it("#stake", async () => {
-      const result = await client.stake({
+    it("#stakeFeed", async () => {
+      const result = await client.stakePost({
         stakeAmount,
         proofHash,
-        feedAddress,
         griefingType: "simple",
         counterParty: account,
         countdownLength
@@ -250,7 +249,7 @@ describe("ErasureClient", () => {
   });
 
   it("#revealPost", async () => {
-    const ipfsHash = await client.revealPost(feedAddress, proofHash);
+    const ipfsHash = await client.revealPost(proofHash);
     const result = await IPFS.get(ipfsHash);
     assert.ok(result === post);
   });

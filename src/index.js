@@ -7,14 +7,15 @@ import SimpleGriefing_Factory from "./contracts/SimpleGriefing_Factory";
 import CountdownGriefing from "./contracts/CountdownGriefing";
 import CountdownGriefing_Factory from "./contracts/CountdownGriefing_Factory";
 
-import Stake from "./client/Stake";
 import Reward from "./client/Reward";
 import Punish from "./client/Punish";
 import GetFeeds from "./client/GetFeeds";
 import BuyPost from "./client/BuyPost";
 import SellPost from "./client/SellPost";
 import CreateFeed from "./client/CreateFeed";
+import StakeFeed from "./client/StakeFeed";
 import CreatePost from "./client/CreatePost";
+import StakePost from "./client/StakePost";
 import CreateUser from "./client/CreateUser";
 import RevealPost from "./client/RevealPost";
 import GetGriefings from "./client/GetGriefings";
@@ -25,6 +26,28 @@ import Box from "./utils/3Box";
 import Crypto from "./utils/Crypto";
 import Ethers from "./utils/Ethers";
 
+/**
+ * @typedef {Object} Feed
+ * @property {address} address - feed contract address
+ * @property {address} operator - use who created this feed
+ * @property {string} ipfsMultihash - base58 encoded ipfs multihash
+ * @property {Object[]} posts - posts created in this feed
+ * @property {string} posts.proofHash - sha256 hash of raw post
+ * @property {string} posts.ipfsMultihash - base58 encoded ipfs multihash
+ */
+
+/**
+ * @typedef {Object} FeedReceipt
+ * @property {address} address - address of new feed
+ * @property {Object} receipt - transaction receipt of new feed
+ */
+
+/**
+ * @typedef {Object} PostReceipt
+ * @property {string} proofHash - sha256 hash of raw data
+ * @property {string} ipfsMultihash - base58 encoded ipfs multihash
+ * @property {Object} receipt - transaction receipt of new post
+ */
 class ErasureClient {
   /**
    * ErasureClient
@@ -63,6 +86,7 @@ class ErasureClient {
    * To initialize the client.
    * This ought to be called before calling any client functions.
    *
+   * @returns {Promise} receipt
    */
   async login() {
     try {
@@ -97,7 +121,7 @@ class ErasureClient {
   /**
    * Create a new Feed
    *
-   * @returns {Promise} transaction receipt of the new feed
+   * @returns {Promise<FeedReceipt>}
    */
   async createFeed() {
     try {
@@ -112,7 +136,7 @@ class ErasureClient {
    * if no user is supplied, feeds of current user will be returned.
    *
    * @param {address} [user] - get all feeds of this user
-   * @returns {Promise} get all feeds of this user
+   * @returns {Promise<Feed[]>} get all feeds of this user
    */
   async getFeeds(user = null) {
     try {
@@ -125,9 +149,9 @@ class ErasureClient {
   /**
    * Create a new Post
    *
-   * @param {string} post - data to be posted
-   * @param {address} feedAddress - feed to where the post to be added
-   * @returns {Promise} transaction receipt of new post
+   * @param {string} post - raw data to be posted
+   * @param {address} feedAddress - feed to where this post should be added
+   * @returns {Promise<PostReceipt>}
    */
   async createPost(post, feedAddress) {
     try {
@@ -144,34 +168,68 @@ class ErasureClient {
   /**
    * Reveal an encrypted post so that others can view it
    *
-   * @param {address} feedAddress
-   * @param {string} proofHash
-   * @returns {Promise} ipfs hash of the unencrypted post (after uploading)
+   * @param {string} proofHash - sha256 hash of raw data
+   * @returns {Promise<string>} sha256 hash of raw data
    */
-  async revealPost(feedAddress, proofHash) {
+  async revealPost(proofHash) {
     try {
-      return await RevealPost.bind(this)(feedAddress, proofHash);
+      return await RevealPost.bind(this)(proofHash);
     } catch (err) {
       throw err;
     }
   }
 
   /**
-   * Stake your feed
+   * Create a new agreement and deposit stake
    *
    * @param {Object} config - configuration for staking
    * @param {address} config.feedAddress
-   * @param {string} config.proofHash
    * @param {string} config.stakeAmount - amount to be staked
    * @param {address} config.counterParty - party with whom the agreement to be made
+   * @param {string} config.griefingType - accepts "countdown" or "simple"
    * @param {number} config.countdownLength - duration of the agreement in seconds
-   * @param {string} [config.griefingType] - accepts "countdown" or "simple" (with "countdown" as default)
    * @param {string} [config.ratio] - griefing ratio
    * @param {number} [config.ratioType] - griefing ratio type
    * @returns {Promise} transaction receipts of griefing, approval and staking
    */
-  async stake({
+  async stakeFeed({
     feedAddress,
+    stakeAmount,
+    counterParty,
+    countdownLength,
+    griefingType,
+    ratio,
+    ratioType
+  }) {
+    try {
+      return await StakeFeed.bind(this)({
+        feedAddress,
+        stakeAmount,
+        counterParty,
+        countdownLength,
+        griefingType: griefingType || "countdown",
+        ratio: ratio || "1",
+        ratioType: ratioType || 2
+      });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  /**
+   * Create a new agreement and deposit stake
+   *
+   * @param {Object} config - configuration for staking
+   * @param {address} config.proofHash
+   * @param {string} config.stakeAmount - amount to be staked
+   * @param {address} config.counterParty - party with whom the agreement to be made
+   * @param {string} config.griefingType - accepts "countdown" or "simple"
+   * @param {number} config.countdownLength - duration of the agreement in seconds
+   * @param {string} [config.ratio] - griefing ratio
+   * @param {number} [config.ratioType] - griefing ratio type
+   * @returns {Promise} transaction receipts of griefing, approval and staking
+   */
+  async stakePost({
     proofHash,
     stakeAmount,
     counterParty,
@@ -181,8 +239,7 @@ class ErasureClient {
     ratioType
   }) {
     try {
-      return await Stake.bind(this)({
-        feedAddress,
+      return await StakePost.bind(this)({
         proofHash,
         stakeAmount,
         counterParty,

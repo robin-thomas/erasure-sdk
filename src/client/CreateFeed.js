@@ -30,7 +30,7 @@ const CreateFeed = async function() {
     if (boxFeed === null) {
       boxFeed = {};
     }
-    boxFeed[feed.id] = feed;
+    boxFeed[feed.address] = feed;
     await Box.set(Box.DATASTORE_FEEDS, boxFeed);
 
     return feed;

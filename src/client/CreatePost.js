@@ -54,11 +54,14 @@ const CreatePost = async function(post, feedAddress) {
         erasurePost: this.appVersion
       })
     );
-    const proofHash = Utils.hash(staticMetadataB58);
+    const proofHash = IPFS.hashToSha256(staticMetadataB58);
 
     this.feed.setAddress(feedAddress);
-    await this.feed.submitHash(proofHash);
+    const receipt = await this.feed.submitHash(proofHash);
 
+    if (boxFeed[feedAddress].posts === undefined) {
+      boxFeed[feedAddress].posts = {};
+    }
     boxFeed[feedAddress].posts[proofHash] = {
       proofHash,
       staticMetadataB58,
@@ -67,7 +70,11 @@ const CreatePost = async function(post, feedAddress) {
     };
     await Box.set(Box.DATASTORE_FEEDS, boxFeed);
 
-    return proofHash;
+    return {
+      proofHash,
+      receipt,
+      ipfsMultihash: staticMetadataB58
+    };
   } catch (err) {
     throw err;
   }

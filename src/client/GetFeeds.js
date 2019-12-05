@@ -23,17 +23,17 @@ const GetFeeds = async function(user) {
       let feeds = {};
       if (results && results.length > 0) {
         for (const result of results) {
-          feeds[result.id] = {
+          feeds[result.address] = {
             ...result,
             posts: {}
           };
 
-          this.feed.setAddress(result.id);
+          this.feed.setAddress(result.address);
           const posts = await this.feed.getPosts();
 
           if (posts && posts.length > 0) {
             for (const post of posts) {
-              feeds[result.id].posts[post.proofHash] = { ...post };
+              feeds[result.address].posts[post.proofHash] = { ...post };
             }
           }
         }
