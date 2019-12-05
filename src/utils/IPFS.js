@@ -1,3 +1,4 @@
+import bs58 from "bs58";
 import Ipfs from "ipfs-http-client";
 import cryptoIpfs from "@erasure/crypto-ipfs";
 
@@ -85,7 +86,9 @@ const IPFS = {
     }
   },
 
-  hexToSha256: hash => `0x${hash.substr(6)}` // IPFS adds 0x1220 prefix
+  sha256ToHash: hex => IPFS.hexToHash(`0x1220${hex.substr(2)}`),
+  hexToHash: hex => bs58.encode(Buffer.from(hex.substr(2), "hex")),
+  hexToSha256: hex => `0x${hex.substr(6)}` // IPFS adds 0x1220 prefix
 };
 
 export default IPFS;

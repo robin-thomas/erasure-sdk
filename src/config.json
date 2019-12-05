@@ -7,8 +7,16 @@
       "version": "v1.2.0"
     },
     "graph": {
-      "api": "https://api.thegraph.com/subgraphs/name/jgeary/erasure",
-      "subscription": "wss://api.thegraph.com/subgraphs/name/jgeary/erasure"
+      "v1.2.0": {
+        "homestead": {
+          "api": "",
+          "subscription": ""
+        },
+        "rinkeby": {
+          "api": "https://api.thegraph.com/subgraphs/name/jgeary/erasure-rinkeby120",
+          "subscription": "wss://api.thegraph.com/subgraphs/name/jgeary/erasure-rinkeby120"
+        }
+      }
     }
   },
   "ipfs": {

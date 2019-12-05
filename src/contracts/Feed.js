@@ -1,6 +1,8 @@
+import { ethers } from "ethers";
 import CryptoIPFS from "@erasure/crypto-ipfs";
 
 import IPFS from "../utils/IPFS";
+import Ethers from "../utils/Ethers";
 import Contract from "../utils/Contract";
 
 import contract from "../../artifacts/Feed.json";
@@ -48,6 +50,35 @@ class Feed {
     // submits the new post hash
     const tx = await this.contract.contract.submitHash(proofHash);
     return await tx.wait();
+  }
+
+  async getPosts() {
+    let provider = Ethers.getProvider();
+    if (process.env.NODE_ENV === "test") {
+      provider = new ethers.providers.JsonRpcProvider();
+    }
+
+    let results = await provider.getLogs({
+      address: this.contract.getAddress(),
+      topics: [ethers.utils.id("HashSubmitted(bytes32)")],
+      fromBlock: 0
+    });
+
+    let posts = [];
+    if (results && results.length > 1) {
+      // First proofHash is that of feed creation.
+      // so we can ignore it.
+      results = results.slice(1);
+
+      for (const result of results) {
+        posts.push({
+          proofHash: result.data,
+          staticMetadataB58: IPFS.sha256ToHash(result.data)
+        });
+      }
+    }
+
+    return posts;
   }
 }
 

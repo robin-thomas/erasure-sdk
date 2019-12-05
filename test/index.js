@@ -1,4 +1,5 @@
 import assert from "assert";
+import { ethers } from "ethers";
 
 import Deployer from "./deploy";
 import ErasureClient from "../src";
@@ -64,9 +65,22 @@ describe("ErasureClient", () => {
     proofHash = await client.createPost(post, feedAddress);
   });
 
-  it("#getFeeds", async () => {
-    const feeds = await client.getFeeds();
-    assert.ok(feeds[feedAddress].posts[proofHash].proofHash === proofHash);
+  describe("#getFeeds", () => {
+    it("User without a feed", async () => {
+      const feeds = await client.getFeeds(ethers.constants.AddressZero);
+      assert.ok(Object.keys(feeds).length === 0);
+    });
+
+    it("User with feed(s) with atleast one post", async () => {
+      const feeds = await client.getFeeds();
+      assert.ok(feeds[feedAddress].posts[proofHash].proofHash === proofHash);
+    });
+
+    it("User with atleast one feed without a post", async () => {
+      const result = await client.createFeed();
+      const feeds = await client.getFeeds(account);
+      assert.ok(Object.keys(feeds[result.id].posts).length === 0);
+    });
   });
 
   describe("Countdown Griefing", () => {

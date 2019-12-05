@@ -7,9 +7,7 @@ const GET_FEEDS = gql`
       operator
       staticMetadataB58
       posts {
-        id
         proofHash
-        createdTimestamp
         staticMetadataB58
       }
     }

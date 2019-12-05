@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import bs58 from "bs58";
 
 import Ethers from "./Ethers";
 import IPFS from "./IPFS";
@@ -26,7 +25,7 @@ const Griefing = {
       const abiCoder = ethers.utils.defaultAbiCoder;
       const result = results[results.length - 1];
       const data = abiCoder.decode(["bytes"], result.data)[0];
-      const ipfsHash = bs58.encode(Buffer.from(data.substr(2), "hex"));
+      const ipfsHash = IPFS.hexToHash(data);
 
       const ipfsData = await IPFS.get(ipfsHash);
       const metadata = JSON.parse(ipfsData);

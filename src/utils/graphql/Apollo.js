@@ -40,14 +40,18 @@ const Apollo = {
       );
 
       let _feeds = {};
-      for (const feed of feeds) {
-        _feeds[feed.id] = {
-          ...feed,
-          posts: {}
-        };
+      if (feeds && feeds.length > 0) {
+        for (const feed of feeds) {
+          _feeds[feed.id] = {
+            ...feed,
+            posts: {}
+          };
 
-        for (const post of posts) {
-          _feeds[feed.id].posts[post.proofHash] = { ...post };
+          if (feed.posts !== undefined && feed.posts.length > 0) {
+            for (const post of feed.posts) {
+              _feeds[feed.id].posts[post.proofHash] = { ...post };
+            }
+          }
         }
       }
 

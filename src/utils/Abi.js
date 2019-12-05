@@ -19,6 +19,22 @@ const Abi = {
   },
 
   /**
+   * This function reflects the usage of abi.abiDecodeWithSelector in Solidity.
+   * It prepends the selector to the ABI-encoded values.
+   *
+   * @param {string} fnName
+   * @param {Array<string>} abiTypes
+   * @param {string} callData
+   */
+  abiDecodeWithSelector: (fnName, abiTypes, callData) => {
+    const selector = Abi.createSelector(fnName, abiTypes);
+    const data = callData.replace(selector.substr(2), "");
+
+    const abiEncoder = new ethers.utils.AbiCoder();
+    return abiEncoder.decode(abiTypes, data);
+  },
+
+  /**
    * createSelector
    *
    * @param {string} fnName

@@ -85,6 +85,14 @@ const Ethers = {
       return false;
     }
   },
+  getAddress: hex => {
+    const address = ethers.utils.hexStripZeros(hex);
+    if (address === "0x0") {
+      return hex;
+    }
+
+    return ethers.utils.getAddress(address);
+  },
 
   parseEther: ether => ethers.utils.parseEther(ether),
   formatEther: wei => ethers.utils.formatEther(wei),

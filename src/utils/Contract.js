@@ -105,6 +105,10 @@ class Contract {
     }
   }
 
+  getAddress() {
+    return this.address;
+  }
+
   /**
    * Creates a new ethers contract object
    *
