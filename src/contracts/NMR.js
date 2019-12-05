@@ -14,14 +14,15 @@ class NMR {
    * @param {Object} config - configuration for NMR
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry }) {
+  constructor({ registry, protocolVersion }) {
     this.contract = new Contract({
       abi: {
         rinkeby: mockContract.abi,
         mainnet: contract.abi
       },
       contractName: "NMR",
-      registry
+      registry,
+      protocolVersion
     });
   }
 

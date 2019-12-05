@@ -14,11 +14,12 @@ class CountdownGriefing {
    * @param {Object} config - configuration for CountdownGriefing
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry }) {
+  constructor({ registry, protocolVersion }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "CountdownGriefing",
-      registry
+      registry,
+      protocolVersion
     });
   }
 

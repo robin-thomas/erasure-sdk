@@ -14,11 +14,12 @@ const server = ganache.server({
 });
 server.listen("8545");
 
+const protocolVersion = "v1.2.0";
 const provider = new ethers.providers.JsonRpcProvider();
 
 const deployContract = async (contractName, params, signer) => {
   const contractAddress =
-    contractConfig[appConfig.erasure.contract.version]["rinkeby"][contractName];
+    contractConfig[protocolVersion]["rinkeby"][contractName];
 
   const artifact = require(`../artifacts/${contractName}.json`);
 
@@ -80,8 +81,7 @@ const deployNMR = async () => {
 const deploy = async () => {
   let contractRegistry = {};
 
-  const contracts =
-    contractConfig[appConfig.erasure.contract.version]["rinkeby"];
+  const contracts = contractConfig[protocolVersion]["rinkeby"];
   for (const contractName of Object.keys(contracts)) {
     const contractAddress = contracts[contractName];
 

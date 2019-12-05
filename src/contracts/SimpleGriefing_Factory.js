@@ -15,11 +15,12 @@ class SimpleGriefing_Factory {
    * @param {Object} config - configuration for SimpleGriefing_Factory
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry }) {
+  constructor({ registry, protocolVersion }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "SimpleGriefing_Factory",
-      registry
+      registry,
+      protocolVersion
     });
   }
 

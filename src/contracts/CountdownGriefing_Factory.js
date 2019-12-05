@@ -14,12 +14,14 @@ class CountdownGriefing_Factory {
    * @constructor
    * @param {Object} config - configuration for CountdownGriefing_Factory
    * @param {Object} [config.registry] - for testing purposes
+   * @param {Object} config.protocolVersion - erasure protocolVersion
    */
-  constructor({ registry }) {
+  constructor({ registry, protocolVersion }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "CountdownGriefing_Factory",
-      registry
+      registry,
+      protocolVersion
     });
   }
 

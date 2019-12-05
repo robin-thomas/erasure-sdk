@@ -47,8 +47,9 @@ describe("ErasureClient", () => {
     console.log(`\n\tUsing eth account: ${account}\n`);
 
     client = new ErasureClient({
-      appVersion: "1.0.0",
       appName: "Test",
+      appVersion: "1.0.0",
+      protocolVersion: "v1.2.0",
       registry
     });
     await client.createUser();

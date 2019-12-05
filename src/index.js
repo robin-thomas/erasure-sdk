@@ -64,7 +64,7 @@ class ErasureClient {
     this.protocolVersion = protocolVersion;
 
     // Create contract objects.
-    let opts = {};
+    let opts = { protocolVersion };
     if (process.env.NODE_ENV === "test") {
       opts.registry = registry;
     }

@@ -15,11 +15,12 @@ class Erasure_Users {
    * @param {Object} config - configuration for Erasure_Users
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry }) {
+  constructor({ registry, protocolVersion }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "Erasure_Users",
-      registry
+      registry,
+      protocolVersion
     });
   }
 

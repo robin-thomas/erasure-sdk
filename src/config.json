@@ -2,23 +2,6 @@
   "app": {
     "name": "erasure-client"
   },
-  "erasure": {
-    "contract": {
-      "version": "v1.2.0"
-    },
-    "graph": {
-      "v1.2.0": {
-        "homestead": {
-          "api": "",
-          "subscription": ""
-        },
-        "rinkeby": {
-          "api": "https://api.thegraph.com/subgraphs/name/jgeary/erasure-rinkeby120",
-          "subscription": "wss://api.thegraph.com/subgraphs/name/jgeary/erasure-rinkeby120"
-        }
-      }
-    }
-  },
   "ipfs": {
     "protocol": "https",
     "host": "ipfs.infura.io",

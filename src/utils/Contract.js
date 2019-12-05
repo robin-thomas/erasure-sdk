@@ -13,7 +13,11 @@ const accountChange = function() {
 const networkChange = function(network) {
   let address = null;
   if (network === "homestead" || network === "rinkeby") {
-    address = Contract.getAddress(this.contractName, network);
+    address = Contract.getAddress(
+      this.contractName,
+      network,
+      this.protocolVersion
+    );
   }
 
   if (address) {
@@ -30,12 +34,14 @@ class Contract {
    * @param {Object} config - configuration for Contract
    * @param {Object} config.abi - contract abi
    * @param {Object} [config.contractName] - new contract address
+   * @param {Object} config.protocolVersion - erasure protocolVersion
    * @param {Object} [config.registry] - for running tests
    */
-  constructor({ contractName, abi, registry }) {
+  constructor({ abi, contractName, protocolVersion, registry }) {
     this.abi = abi;
     this.wallet = Ethers.getWallet();
     this.contractName = contractName;
+    this.protocolVersion = protocolVersion;
 
     const onAccountChange = accountChange.bind(this);
     const onNetworkChange = networkChange.bind(this);
@@ -127,9 +133,9 @@ class Contract {
    * @param {string} network - eth network
    * @returns {Object} contract json artifact
    */
-  static getAddress(contract, network) {
+  static getAddress(contract, network, protocolVersion) {
     try {
-      return contracts[config.erasure.contract.version][network][contract];
+      return contracts[protocolVersion][network][contract];
     } catch (err) {
       throw new Error("This network is not supported!");
     }

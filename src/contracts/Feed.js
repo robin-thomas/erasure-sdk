@@ -15,11 +15,12 @@ class Feed {
    * @param {Object} config - configuration for Feed
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry }) {
+  constructor({ registry, protocolVersion }) {
     this.contract = new Contract({
       abi: contract.abi,
       contractName: "Feed",
-      registry
+      registry,
+      protocolVersion
     });
   }
 
