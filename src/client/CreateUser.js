@@ -1,4 +1,5 @@
 import Box from "../utils/3Box";
+import Crypto from "../utils/Crypto";
 
 /**
  * Creates a new user

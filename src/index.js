@@ -31,12 +31,14 @@ class ErasureClient {
    *
    * @constructor
    * @param {Object} config - configuration for ErasureClient
-   * @param {string} config.appVersion - version of your app
    * @param {string} config.appName - name of your app
+   * @param {string} config.appVersion - version of your app
+   * @param {string} config.protocolVersion - version of the erasure protocol
    */
-  constructor({ appVersion, appName, registry }) {
+  constructor({ appName, appVersion, protocolVersion, registry }) {
     this.appName = appName;
     this.appVersion = appVersion;
+    this.protocolVersion = protocolVersion;
 
     // Create contract objects.
     let opts = {};

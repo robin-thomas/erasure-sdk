@@ -65,7 +65,7 @@ describe("ErasureClient", () => {
     proofHash = await client.createPost(post, feedAddress);
   });
 
-  describe("#getFeeds", () => {
+  describe("getFeeds", () => {
     it("User without a feed", async () => {
       const feeds = await client.getFeeds(ethers.constants.AddressZero);
       assert.ok(Object.keys(feeds).length === 0);
