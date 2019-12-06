@@ -54,10 +54,7 @@ class Feed {
   }
 
   async getPosts() {
-    let provider = Ethers.getProvider();
-    if (process.env.NODE_ENV === "test") {
-      provider = new ethers.providers.JsonRpcProvider();
-    }
+    const provider = Ethers.getProvider();
 
     let results = await provider.getLogs({
       address: this.contract.getAddress(),

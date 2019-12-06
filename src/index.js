@@ -64,7 +64,7 @@ class ErasureClient {
     this.protocolVersion = protocolVersion;
 
     // Create contract objects.
-    let opts = { protocolVersion };
+    const opts = { protocolVersion };
     if (process.env.NODE_ENV === "test") {
       opts.registry = registry;
     }
@@ -77,9 +77,6 @@ class ErasureClient {
     this.simpleGriefingFactory = new SimpleGriefing_Factory(opts);
     this.countdownGriefing = new CountdownGriefing(opts);
     this.countdownGriefingFactory = new CountdownGriefing_Factory(opts);
-
-    this.griefing = this.countdownGriefing;
-    this.griefingFactory = this.countdownGriefingFactory;
   }
 
   /**
@@ -101,18 +98,6 @@ class ErasureClient {
 
       // Create a new user if not created and add it to Erasure_Users.
       return await CreateUser.bind(this)();
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  // Only for test purposes.
-  // So not adding it to sdk docs.
-  async createUser() {
-    try {
-      if (process.env.NODE_ENV === "test") {
-        return await CreateUser.bind(this)();
-      }
     } catch (err) {
       throw err;
     }

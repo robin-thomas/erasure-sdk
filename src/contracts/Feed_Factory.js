@@ -69,10 +69,7 @@ class Feed_Factory {
 
   async getFeeds() {
     try {
-      let provider = Ethers.getProvider();
-      if (process.env.NODE_ENV === "test") {
-        provider = new ethers.providers.JsonRpcProvider();
-      }
+      const provider = Ethers.getProvider();
 
       const results = await provider.getLogs({
         address: this.contract.getAddress(),

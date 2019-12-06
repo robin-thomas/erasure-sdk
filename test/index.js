@@ -52,19 +52,17 @@ describe("ErasureClient", () => {
       protocolVersion: "v1.2.0",
       registry
     });
-    await client.createUser();
+    await client.login();
   });
 
   it("#createFeed", async () => {
     const result = await client.createFeed();
     feedAddress = result.address;
     assert.ok(Ethers.isAddress(feedAddress));
-    console.log(`\tFeed created at ${feedAddress}`);
   });
 
   it("#createPost", async () => {
-    const result = await client.createPost(post, feedAddress);
-    proofHash = result.proofHash;
+    ({ proofHash } = await client.createPost(post, feedAddress));
   });
 
   describe("getFeeds", () => {
@@ -86,7 +84,7 @@ describe("ErasureClient", () => {
   });
 
   describe("Countdown Griefing", () => {
-    it("#stakeFeed", async () => {
+    it("#stakePost", async () => {
       const result = await client.stakePost({
         stakeAmount,
         proofHash,
@@ -96,7 +94,6 @@ describe("ErasureClient", () => {
       });
       griefingAddress = result.griefing.address;
       assert.ok(Ethers.isAddress(griefingAddress));
-      console.log(`\tAgreement created at ${griefingAddress}`);
 
       let amount = "";
       [currentStake, amount] = addStake(
@@ -168,7 +165,7 @@ describe("ErasureClient", () => {
   });
 
   describe("Simple Griefing", () => {
-    it("#stakeFeed", async () => {
+    it("#stakePost", async () => {
       const result = await client.stakePost({
         stakeAmount,
         proofHash,
@@ -178,7 +175,6 @@ describe("ErasureClient", () => {
       });
       griefingAddress = result.griefing.address;
       assert.ok(Ethers.isAddress(griefingAddress));
-      console.log(`\tAgreement created at ${griefingAddress}`);
 
       let amount = "";
       [currentStake, amount] = addStake(

@@ -91,6 +91,7 @@ const IPFS = {
       .decode(hash)
       .toString("hex")
       .replace("1220", "0x"),
+
   sha256ToHash: hex => IPFS.hexToHash(`0x1220${hex.substr(2)}`),
   hexToHash: hex => bs58.encode(Buffer.from(hex.substr(2), "hex")),
   hexToSha256: hex => `0x${hex.substr(6)}` // IPFS adds 0x1220 prefix

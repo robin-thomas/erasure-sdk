@@ -54,7 +54,7 @@ class Contract {
       Ethers.getNetworkSync(onNetworkChange);
 
       // Listen for any metamask changes.
-      if (window.ethereum) {
+      if (typeof window !== "undefined" && window.ethereum !== undefined) {
         window.ethereum.on("networkChanged", function(networkId) {
           const network = Ethers.getNetworkName(networkId);
           onNetworkChange(network);
@@ -69,7 +69,8 @@ class Contract {
    *
    */
   async login() {
-    if (window.ethereum) {
+    if (typeof window !== "undefined" && window.ethereum !== undefined) {
+      console.log("Logging you in");
       await window.ethereum.enable();
 
       const network = await Ethers.getProvider().getNetwork();
@@ -79,7 +80,7 @@ class Contract {
       } else {
         throw new Error("Only mainnet and rinkeby networks are supported!");
       }
-    } else {
+    } else if (process.env.NODE_ENV !== "test") {
       throw new Error("Metamask not detected!");
     }
   }

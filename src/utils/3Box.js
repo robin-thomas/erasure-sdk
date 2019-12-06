@@ -24,7 +24,7 @@ const Box = {
         const account = await Ethers.getAccount();
         box = await ThreeBox.openBox(account, window.ethereum);
       } else {
-        box = await ThreeBox.openBox(null, Ethers.getProvider());
+        box = await ThreeBox.openBox(null, Ethers.getProvider(true));
       }
 
       await box.syncDone;

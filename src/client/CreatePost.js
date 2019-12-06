@@ -1,6 +1,5 @@
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
-import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 

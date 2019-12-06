@@ -1,5 +1,4 @@
 {
-  "all": true,
   "check-coverage": false,
-  "exclude": ["test", "truffle-config.js", "src/utils", "webpack.config.js"]
+  "exclude": ["test"]
 }

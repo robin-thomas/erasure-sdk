@@ -6,10 +6,7 @@ import IPFS from "./IPFS";
 const Griefing = {
   getMetadata: async griefingAddress => {
     try {
-      let provider = Ethers.getProvider();
-      if (process.env.NODE_ENV === "test") {
-        provider = new ethers.providers.JsonRpcProvider();
-      }
+      const provider = Ethers.getProvider();
 
       const results = await provider.getLogs({
         address: griefingAddress,

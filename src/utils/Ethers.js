@@ -7,20 +7,24 @@ const Ethers = {
    *
    * @returns {Object} ethers provider
    */
-  getProvider: () => {
+  getProvider: (box = null) => {
     let provider = null;
 
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       window.ethereum.autoRefreshOnNetworkChange = false;
       provider = new ethers.providers.Web3Provider(window.ethereum);
     } else if (process.env.NODE_ENV === "test") {
-      const keys = require("../../test/test.json");
+      if (box === null) {
+        provider = new ethers.providers.JsonRpcProvider();
+      } else {
+        const keys = require("../../test/test.json");
 
-      const idWallet = new IdentityWallet(() => true /* getConsent */, {
-        seed: ethers.utils.HDNode.mnemonicToSeed(keys.metamask.mnemonic)
-      });
+        const idWallet = new IdentityWallet(() => true /* getConsent */, {
+          seed: ethers.utils.HDNode.mnemonicToSeed(keys.metamask.mnemonic)
+        });
 
-      provider = idWallet.get3idProvider();
+        provider = idWallet.get3idProvider();
+      }
     }
 
     return provider;
