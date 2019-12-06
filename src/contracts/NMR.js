@@ -14,24 +14,17 @@ class NMR {
    * @param {Object} config - configuration for NMR
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, protocolVersion }) {
+  constructor(opts) {
+    const contractName = "NMR";
+
     this.contract = new Contract({
       abi: {
         rinkeby: mockContract.abi,
-        mainnet: contract.abi
+        homestead: contract.abi
       },
-      contractName: "NMR",
-      registry,
-      protocolVersion
+      contractName,
+      ...opts
     });
-  }
-
-  /**
-   * Login to metamask
-   *
-   */
-  async login() {
-    return await this.contract.login();
   }
 
   /**

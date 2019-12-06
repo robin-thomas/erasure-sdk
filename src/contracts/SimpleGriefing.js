@@ -8,27 +8,19 @@ import contract from "../../artifacts/SimpleGriefing.json";
 
 class SimpleGriefing {
   /**
-   * CountdownGriefing
    *
    * @constructor
    * @param {Object} config - configuration for CountdownGriefing
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, protocolVersion }) {
+  constructor(opts) {
+    const contractName = "SimpleGriefing";
+
     this.contract = new Contract({
       abi: contract.abi,
-      contractName: "SimpleGriefing",
-      registry,
-      protocolVersion
+      contractName,
+      ...opts
     });
-  }
-
-  /**
-   * Login to metamask
-   *
-   */
-  async login() {
-    return await this.contract.login();
   }
 
   /**

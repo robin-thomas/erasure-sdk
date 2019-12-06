@@ -16,21 +16,14 @@ class CountdownGriefing_Factory {
    * @param {Object} [config.registry] - for testing purposes
    * @param {Object} config.protocolVersion - erasure protocolVersion
    */
-  constructor({ registry, protocolVersion }) {
+  constructor(opts) {
+    const contractName = "CountdownGriefing_Factory";
+
     this.contract = new Contract({
       abi: contract.abi,
-      contractName: "CountdownGriefing_Factory",
-      registry,
-      protocolVersion
+      contractName,
+      ...opts
     });
-  }
-
-  /**
-   * Login to metamask
-   *
-   */
-  async login() {
-    return await this.contract.login();
   }
 
   /**
@@ -56,7 +49,7 @@ class CountdownGriefing_Factory {
       const ipfsHash = await IPFS.add(data);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
-      const callData = Abi.abiEncodeWithSelector(
+      const callData = Abi.encodeWithSelector(
         "initialize",
         [
           "address",

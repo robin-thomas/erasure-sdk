@@ -15,21 +15,14 @@ class Feed {
    * @param {Object} config - configuration for Feed
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, protocolVersion }) {
+  constructor(opts) {
+    const contractName = "Feed";
+
     this.contract = new Contract({
       abi: contract.abi,
-      contractName: "Feed",
-      registry,
-      protocolVersion
+      contractName,
+      ...opts
     });
-  }
-
-  /**
-   * Login to metamask
-   *
-   */
-  async login() {
-    return await this.contract.login();
   }
 
   /**
@@ -57,7 +50,7 @@ class Feed {
     const provider = Ethers.getProvider();
 
     let results = await provider.getLogs({
-      address: this.contract.getAddress(),
+      address: this.contract.address,
       topics: [ethers.utils.id("HashSubmitted(bytes32)")],
       fromBlock: 0
     });

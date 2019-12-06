@@ -5,18 +5,19 @@ import IPFS from "../utils/IPFS";
 import Ethers from "../utils/Ethers";
 import Contract from "../utils/Contract";
 
-import contract from "../../artifacts/SimpleGriefing_Factory.json";
+import contract from "../../artifacts/CountdownGriefingEscrow_Factory.json";
 
-class SimpleGriefing_Factory {
+class CountdownGriefingEscrow_Factory {
   /**
-   * SimpleGriefing_Factory
+   * CountdownGriefing_Factory
    *
    * @constructor
-   * @param {Object} config - configuration for SimpleGriefing_Factory
+   * @param {Object} config - configuration for CountdownGriefing_Factory
    * @param {Object} [config.registry] - for testing purposes
+   * @param {Object} config.protocolVersion - erasure protocolVersion
    */
   constructor(opts) {
-    const contractName = "SimpleGriefing_Factory";
+    const contractName = "CountdownGriefingEscrow_Factory";
 
     this.contract = new Contract({
       abi: contract.abi,
@@ -26,16 +27,28 @@ class SimpleGriefing_Factory {
   }
 
   /**
-   * Create a SimpleGriefing contract using SimpleGriefing_Factory
+   * Create a CountdownGriefing contract using CountdownGriefing_Factory
    *
    * @param {Object} config - configuration for createExplicit
    * @param {string} config.counterParty - party with whom the agreement to be made
+   * @param {number} config.agreementCountdown - duration of the agreement in seconds
+   * @param {number} config.escrowCountdown - duration of the escrow in seconds
+   * @param {number} config.paymentAmount
+   * @param {number} config.stakeAmount
    * @param {string} [config.ratio] - griefing ratio
    * @param {number} [config.ratioType] - griefing ratio type
    * @param {string} config.data - data of ErasureAgreement version to be uploaded to IPFS
    * @returns {Promise} ipfsHash, txHash and address of new feed
    */
-  async create({ counterParty, ratio, ratioType, data }) {
+  async create({
+    counterParty,
+    agreementCountdown,
+    paymentAmount,
+    stakeAmount,
+    ratio,
+    ratioType,
+    data
+  }) {
     try {
       const operator = await Ethers.getAccount();
 
@@ -47,26 +60,41 @@ class SimpleGriefing_Factory {
       const ipfsHash = await IPFS.add(data);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
+      const agreementParams = Abi.encode(
+        ["uint256", "uint8", "uint256"],
+        [Ethers.parseEther(ratio), ratioType, agreementCountdown]
+      );
+
       const callData = Abi.encodeWithSelector(
         "initialize",
-        ["address", "address", "address", "uint256", "uint8", "bytes"],
+        [
+          "address",
+          "address",
+          "address",
+          "uint256",
+          "uint256",
+          "uint256",
+          "bytes",
+          "bytes"
+        ],
         [
           operator,
           operator,
           counterParty,
-          Ethers.parseEther(ratio),
-          ratioType,
-          staticMetadata
+          Ethers.parseEther(paymentAmount),
+          Ethers.parseEther(stakeAmount),
+          escrowCountdown,
+          staticMetadata,
+          agreementParams
         ]
       );
 
       const tx = await this.contract.contract.create(callData);
-      const txReceipt = await tx.wait();
+      const receipt = await tx.wait();
 
       return {
-        ipfsHash,
-        txHash: tx.hash,
-        address: txReceipt.logs[0].address
+        receipt,
+        address: receipt.logs[0].address
       };
     } catch (err) {
       throw err;
@@ -74,4 +102,4 @@ class SimpleGriefing_Factory {
   }
 }
 
-export default SimpleGriefing_Factory;
+export default CountdownGriefingEscrow_Factory;

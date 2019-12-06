@@ -6,6 +6,7 @@ import SimpleGriefing from "./contracts/SimpleGriefing";
 import SimpleGriefing_Factory from "./contracts/SimpleGriefing_Factory";
 import CountdownGriefing from "./contracts/CountdownGriefing";
 import CountdownGriefing_Factory from "./contracts/CountdownGriefing_Factory";
+import CountdownGriefingEscrow_Factory from "./contracts/CountdownGriefingEscrow_Factory";
 
 import Reward from "./client/Reward";
 import Punish from "./client/Punish";
@@ -25,6 +26,8 @@ import RetrieveStake from "./client/RetrieveStake";
 import Box from "./utils/3Box";
 import Crypto from "./utils/Crypto";
 import Ethers from "./utils/Ethers";
+
+import contracts from "./contracts.json";
 
 /**
  * @typedef {Object} Feed
@@ -61,22 +64,8 @@ class ErasureClient {
   constructor({ appName, appVersion, protocolVersion, registry }) {
     this.appName = appName;
     this.appVersion = appVersion;
+    this.registry = registry;
     this.protocolVersion = protocolVersion;
-
-    // Create contract objects.
-    const opts = { protocolVersion };
-    if (process.env.NODE_ENV === "test") {
-      opts.registry = registry;
-    }
-
-    this.nmr = new NMR(opts);
-    this.feed = new Feed(opts);
-    this.feedFactory = new Feed_Factory(opts);
-    this.erasureUsers = new Erasure_Users(opts);
-    this.simpleGriefing = new SimpleGriefing(opts);
-    this.simpleGriefingFactory = new SimpleGriefing_Factory(opts);
-    this.countdownGriefing = new CountdownGriefing(opts);
-    this.countdownGriefingFactory = new CountdownGriefing_Factory(opts);
   }
 
   /**
@@ -87,14 +76,26 @@ class ErasureClient {
    */
   async login() {
     try {
-      await this.nmr.login();
-      await this.feed.login();
-      await this.feedFactory.login();
-      await this.erasureUsers.login();
-      await this.simpleGriefing.login();
-      await this.simpleGriefingFactory.login();
-      await this.countdownGriefing.login();
-      await this.countdownGriefingFactory.login();
+      const opts = {
+        network: await Ethers.getNetworkName(),
+        registry:
+          process.env.NODE_ENV === "test"
+            ? this.registry
+            : contracts[protocolVersion]
+      };
+
+      // Create contract objects.
+      this.nmr = new NMR(opts);
+      this.feed = new Feed(opts);
+      this.feedFactory = new Feed_Factory(opts);
+      this.erasureUsers = new Erasure_Users(opts);
+      this.simpleGriefing = new SimpleGriefing(opts);
+      this.simpleGriefingFactory = new SimpleGriefing_Factory(opts);
+      this.countdownGriefing = new CountdownGriefing(opts);
+      this.countdownGriefingFactory = new CountdownGriefing_Factory(opts);
+      this.countdownGriefingEscrowFactory = new CountdownGriefingEscrow_Factory(
+        opts
+      );
 
       // Create a new user if not created and add it to Erasure_Users.
       return await CreateUser.bind(this)();
@@ -358,12 +359,21 @@ class ErasureClient {
   }
 
   setGriefing(griefingType, griefingAddress) {
-    if (griefingType === "countdown") {
-      this.griefing = this.countdownGriefing;
-      this.griefingFactory = this.countdownGriefingFactory;
-    } else {
-      this.griefing = this.simpleGriefing;
-      this.griefingFactory = this.simpleGriefingFactory;
+    switch (griefingType) {
+      case "countdown-escrow":
+        this.griefing = this.countdownGriefing;
+        this.griefingFactory = this.countdownGriefingEscrowFactory;
+        break;
+
+      case "countdown":
+        this.griefing = this.countdownGriefing;
+        this.griefingFactory = this.countdownGriefingFactory;
+        break;
+
+      case "simple":
+        this.griefing = this.simpleGriefing;
+        this.griefingFactory = this.simpleGriefingFactory;
+        break;
     }
 
     if (Ethers.isAddress(griefingAddress)) {

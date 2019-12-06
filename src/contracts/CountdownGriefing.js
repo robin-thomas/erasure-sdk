@@ -14,21 +14,14 @@ class CountdownGriefing {
    * @param {Object} config - configuration for CountdownGriefing
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, protocolVersion }) {
+  constructor(opts) {
+    const contractName = "CountdownGriefing";
+
     this.contract = new Contract({
       abi: contract.abi,
-      contractName: "CountdownGriefing",
-      registry,
-      protocolVersion
+      contractName,
+      ...opts
     });
-  }
-
-  /**
-   * Login to metamask
-   *
-   */
-  async login() {
-    return await this.contract.login();
   }
 
   /**

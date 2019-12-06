@@ -15,21 +15,14 @@ class Erasure_Users {
    * @param {Object} config - configuration for Erasure_Users
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, protocolVersion }) {
+  constructor(opts) {
+    const contractName = "Erasure_Users";
+
     this.contract = new Contract({
       abi: contract.abi,
-      contractName: "Erasure_Users",
-      registry,
-      protocolVersion
+      contractName,
+      ...opts
     });
-  }
-
-  /**
-   * Login to metamask
-   *
-   */
-  async login() {
-    return await this.contract.login();
   }
 
   /**

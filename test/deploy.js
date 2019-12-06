@@ -81,16 +81,20 @@ const deployNMR = async () => {
 const deploy = async () => {
   let contractRegistry = {};
 
-  const contracts = contractConfig[protocolVersion]["rinkeby"];
+  const contracts = contractConfig[protocolVersion].rinkeby;
   for (const contractName of Object.keys(contracts)) {
     const contractAddress = contracts[contractName];
 
     let contract = null;
     if (contractName.endsWith("_Factory")) {
       const name = contractName.replace("_Factory", "");
-      const registry = name.includes("Griefing")
-        ? contractRegistry["Erasure_Agreements"]
-        : contractRegistry["Erasure_Posts"];
+
+      let registry = contractRegistry.Erasure_Posts;
+      if (name.includes("Escrow")) {
+        registry = contractRegistry.Erasure_Escrows;
+      } else if (name.includes("Griefing")) {
+        registry = contractRegistry.Erasure_Agreements;
+      }
 
       const template = contractRegistry[name];
       contract = await deployFactory(contractName, registry, template);

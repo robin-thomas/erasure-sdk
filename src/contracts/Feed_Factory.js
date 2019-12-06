@@ -16,21 +16,14 @@ class Feed_Factory {
    * @param {Object} config - configuration for Feed_Factory
    * @param {Object} [config.registry] - for testing purposes
    */
-  constructor({ registry, protocolVersion }) {
+  constructor(opts) {
+    const contractName = "Feed_Factory";
+
     this.contract = new Contract({
       abi: contract.abi,
-      contractName: "Feed_Factory",
-      registry,
-      protocolVersion
+      contractName,
+      ...opts
     });
-  }
-
-  /**
-   * Login to metamask
-   *
-   */
-  async login() {
-    return await this.contract.login();
   }
 
   /**
@@ -48,7 +41,7 @@ class Feed_Factory {
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
       const proofHash = IPFS.hexToSha256(staticMetadata);
 
-      const callData = Abi.abiEncodeWithSelector(
+      const callData = Abi.encodeWithSelector(
         "initialize",
         ["address", "bytes32", "bytes"],
         [operator, proofHash, staticMetadata]
@@ -72,7 +65,7 @@ class Feed_Factory {
       const provider = Ethers.getProvider();
 
       const results = await provider.getLogs({
-        address: this.contract.getAddress(),
+        address: this.contract.address,
         topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")],
         fromBlock: 0
       });
@@ -83,7 +76,7 @@ class Feed_Factory {
 
         for (const result of results) {
           const data = abiCoder.decode(["bytes"], result.data)[0];
-          const callData = Abi.abiDecodeWithSelector(
+          const callData = Abi.decodeWithSelector(
             "initialize",
             ["address", "bytes32", "bytes"],
             data

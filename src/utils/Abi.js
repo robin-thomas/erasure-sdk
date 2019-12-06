@@ -9,13 +9,18 @@ const Abi = {
    * @param {Array<string>} abiTypes
    * @param {Array<any>} abiValues
    */
-  abiEncodeWithSelector: (fnName, abiTypes, abiValues) => {
+  encodeWithSelector: (fnName, abiTypes, abiValues) => {
     const abiEncoder = new ethers.utils.AbiCoder();
     const initData = abiEncoder.encode(abiTypes, abiValues);
     const selector = Abi.createSelector(fnName, abiTypes);
 
     const encoded = selector + initData.slice(2);
     return encoded;
+  },
+
+  encode: (abiTypes, abiValues) => {
+    const abiEncoder = new ethers.utils.AbiCoder();
+    return abiEncoder.encode(abiTypes, abiValues);
   },
 
   /**
@@ -26,7 +31,7 @@ const Abi = {
    * @param {Array<string>} abiTypes
    * @param {string} callData
    */
-  abiDecodeWithSelector: (fnName, abiTypes, callData) => {
+  decodeWithSelector: (fnName, abiTypes, callData) => {
     const selector = Abi.createSelector(fnName, abiTypes);
     const data = callData.replace(selector.substr(2), "");
 
