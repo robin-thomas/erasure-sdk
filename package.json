@@ -12,8 +12,8 @@
     "pretest": "npm run download",
     "test": "NODE_ENV=test mocha --require esm --exit --bail -t 1200000 test/index.js",
     "coverage": "nyc npm run test",
-    "doc:generate": "jsdoc src/index.js --destination erasure -c jsdoc.json",
-    "doc:deploy": "npm run doc:generate && now ./erasure",
+    "doc:generate": "jsdoc src/index.js --destination erasure-docs -c jsdoc.json",
+    "doc:deploy": "npm run doc:generate && now ./erasure-docs",
     "deploy": "npm run build && npm publish --access public"
   },
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
@@ -22,6 +22,7 @@
     "3box": "^1.14.0",
     "@babel/cli": "^7.7.4",
     "@babel/core": "^7.7.4",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-transform-runtime": "^7.7.4",
     "@babel/polyfill": "^7.7.0",
     "@babel/preset-env": "^7.7.4",

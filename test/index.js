@@ -26,17 +26,21 @@ const subStake = (stake, amount) => {
   return [Ethers.formatEther(stake), Ethers.formatEther(amount)];
 };
 
+const sleep = seconds => {
+  return new Promise(resolve => setTimeout(resolve, 1000 * seconds));
+};
+
 describe("ErasureClient", () => {
   const punishAmount = "2";
   const rewardAmount = "10";
   const stakeAmount = "11";
-  const countdownLength = 100000000;
+  const countdownLength = 1;
 
-  let proofHash,
-    feedAddress,
-    griefingAddress,
+  let post,
+    feed,
+    agreement,
     currentStake = "0";
-  const post = Math.random().toString(36);
+  const rawData = Math.random().toString(36);
 
   let client, account, registry;
   before(async () => {
@@ -56,67 +60,62 @@ describe("ErasureClient", () => {
   });
 
   it("#createFeed", async () => {
-    const result = await client.createFeed();
-    feedAddress = result.address;
-    assert.ok(Ethers.isAddress(feedAddress));
+    ({ feed } = await client.createFeed());
+    assert.ok(Ethers.isAddress(feed.address()));
   });
 
   it("#createPost", async () => {
-    ({ proofHash } = await client.createPost(post, feedAddress));
+    ({ post } = await feed.createPost(rawData));
+    const data = await IPFS.get(post.proofhash().multihash);
+    assert.ok(JSON.parse(data).ipfsHash === (await IPFS.getHash(rawData)));
   });
 
-  describe("getFeeds", () => {
-    it("User without a feed", async () => {
-      const feeds = await client.getFeeds(ethers.constants.AddressZero);
-      assert.ok(Object.keys(feeds).length === 0);
-    });
-
-    it("User with feed(s) with atleast one post", async () => {
-      const feeds = await client.getFeeds();
-      assert.ok(feeds[feedAddress].posts[proofHash].proofHash === proofHash);
+  describe("Get Posts of a Feed", () => {
+    let feed;
+    before(async () => {
+      ({ feed } = await client.createFeed());
+      assert.ok(Ethers.isAddress(feed.address()));
     });
 
     it("User with atleast one feed without a post", async () => {
-      const result = await client.createFeed();
-      const feeds = await client.getFeeds(account);
-      assert.ok(Object.keys(feeds[result.address].posts).length === 0);
+      const posts = await feed.getPosts();
+      assert.ok(posts.length === 0);
+    });
+
+    it("User with feed(s) with atleast one post", async () => {
+      await feed.createPost(rawData);
+      const posts = await feed.getPosts();
+      assert.ok(posts.length === 1);
+
+      const data = await IPFS.get(posts[0].proofhash().multihash);
+      assert.ok(JSON.parse(data).ipfsHash === (await IPFS.getHash(rawData)));
     });
   });
 
   describe("Countdown Griefing", () => {
-    it("#stakePost", async () => {
-      const result = await client.stakePost({
-        stakeAmount,
-        proofHash,
-        griefingType: "countdown",
-        counterParty: account,
+    let agreement;
+    before(async () => {
+      ({ agreement } = await client.createAgreement({
+        operator: account,
+        staker: account,
+        counterparty: account,
+        griefRatio: "1",
+        griefRatioType: 2,
         countdownLength
-      });
-      griefingAddress = result.griefing.address;
-      assert.ok(Ethers.isAddress(griefingAddress));
+      }));
+      assert.ok(Ethers.isAddress(agreement.address()));
+    });
+
+    it("#stake", async () => {
+      const result = await agreement.reward(stakeAmount);
 
       let amount = "";
-      [currentStake, amount] = addStake(
-        currentStake,
-        result.stake.logs[1].data
-      );
+      [currentStake, amount] = addStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === stakeAmount);
     });
 
-    it("#sellPost", async () => {
-      await client.sellPost(griefingAddress);
-    });
-
-    it("#buyPost", async () => {
-      const _post = await client.buyPost(griefingAddress);
-      assert(_post === post);
-    });
-
     it("#reward", async () => {
-      const result = await client.reward({
-        griefingAddress,
-        rewardAmount
-      });
+      const result = await agreement.reward(rewardAmount);
 
       let amount = "";
       [currentStake, amount] = addStake(currentStake, result.logs[1].data);
@@ -124,80 +123,69 @@ describe("ErasureClient", () => {
     });
 
     it("#punish", async () => {
-      const result = await client.punish({
+      const result = await agreement.punish(
         punishAmount,
-        griefingAddress,
-        message: "This is a punishment"
-      });
+        "This is a punishment"
+      );
 
       let amount = "";
       [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
 
-    it("#releaseStake", async () => {
-      const result = await client.releaseStake({
-        amountToRelease: punishAmount,
-        griefingAddress
-      });
+    it("#release", async () => {
+      const result = await agreement.release(punishAmount);
 
       let amount = "";
       [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
 
-    it("#retrieveStake", async () => {
-      try {
-        await client.retrieveStake({
-          recipient: Ethers.AddressZero(),
-          griefingAddress
-        });
-        assert.fail("0", "1", "Agreement deadline has not passed");
-      } catch (err) {
-        assert.ok(true);
-      }
-    });
+    describe("withdraw", () => {
+      it("withdraw before countdown should fail", async () => {
+        try {
+          await agreement.withdraw(account);
+          assert.fail("0", "1", "Agreement deadline has not passed");
+        } catch (err) {
+          assert.ok(true);
+        }
+      });
 
-    it("#getGriefings", async () => {
-      const griefings = await client.getGriefings();
-      assert.ok(griefings.includes(griefingAddress));
+      it("withdraw after countdown should pass", async () => {
+        try {
+          const receipt = await agreement.requestWithdraw();
+          await sleep(5 * countdownLength);
+          await agreement.withdraw(account);
+        } catch (err) {
+          assert.fail("0", "1", "Agreement deadline has passed");
+        }
+      });
     });
   });
 
   describe("Simple Griefing", () => {
-    it("#stakePost", async () => {
-      const result = await client.stakePost({
-        stakeAmount,
-        proofHash,
-        griefingType: "simple",
-        counterParty: account,
-        countdownLength
-      });
-      griefingAddress = result.griefing.address;
-      assert.ok(Ethers.isAddress(griefingAddress));
+    let agreement;
+    before(async () => {
+      ({ agreement } = await client.createAgreement({
+        operator: account,
+        staker: account,
+        counterparty: account,
+        griefRatio: "1",
+        griefRatioType: 2
+      }));
+      assert.ok(Ethers.isAddress(agreement.address()));
+    });
+
+    it("#stake", async () => {
+      const result = await agreement.reward(stakeAmount);
 
       let amount = "";
-      [currentStake, amount] = addStake(
-        currentStake,
-        result.stake.logs[1].data
-      );
+      [currentStake, amount] = addStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === stakeAmount);
     });
 
-    it("#sellPost", async () => {
-      await client.sellPost(griefingAddress);
-    });
-
-    it("#buyPost", async () => {
-      const _post = await client.buyPost(griefingAddress);
-      assert(_post === post);
-    });
-
     it("#reward", async () => {
-      const result = await client.reward({
-        griefingAddress,
-        rewardAmount
-      });
+      const result = await agreement.reward(rewardAmount);
 
       let amount = "";
       [currentStake, amount] = addStake(currentStake, result.logs[1].data);
@@ -205,49 +193,28 @@ describe("ErasureClient", () => {
     });
 
     it("#punish", async () => {
-      const result = await client.punish({
+      const result = await agreement.punish(
         punishAmount,
-        griefingAddress,
-        message: "This is a punishment"
-      });
+        "This is a punishment"
+      );
 
       let amount = "";
       [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
 
-    it("#releaseStake", async () => {
-      const result = await client.releaseStake({
-        amountToRelease: punishAmount,
-        griefingAddress
-      });
+    it("#release", async () => {
+      const result = await agreement.release(punishAmount);
 
       let amount = "";
       [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
-    });
-
-    it("#retrieveStake", async () => {
-      try {
-        await client.retrieveStake({
-          recipient: Ethers.AddressZero(),
-          griefingAddress
-        });
-        assert.fail("0", "1", "Agreement deadline has not passed");
-      } catch (err) {
-        assert.ok(true);
-      }
-    });
-
-    it("#getGriefings", async () => {
-      const griefings = await client.getGriefings();
-      assert.ok(griefings.includes(griefingAddress));
     });
   });
 
   it("#revealPost", async () => {
-    const ipfsHash = await client.revealPost(proofHash);
-    const result = await IPFS.get(ipfsHash);
-    assert.ok(result === post);
+    const ipfsHash = await post.reveal();
+    const result = await IPFS.getHash(rawData);
+    assert.ok(ipfsHash === result);
   });
 });

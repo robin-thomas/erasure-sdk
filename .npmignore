@@ -1,7 +1,7 @@
 .git
 .nyc_output
 artifacts
-erasure
+erasure-docs
 ipfs
 orbitdb
 scripts

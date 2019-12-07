@@ -60,6 +60,6 @@ typings/
 dist
 artifacts
 src/keys.json
-erasure
+erasure-docs
 ipfs
 orbitdb
