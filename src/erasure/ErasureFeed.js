@@ -35,6 +35,8 @@ const crypto = async post => {
 
 class ErasureFeed {
   #owner = null;
+  #numSold = 0;
+  #revealed = false;
   #contract = null;
   #feedAddress = null;
   #protocolVersion = "";
@@ -171,6 +173,99 @@ class ErasureFeed {
 
     return posts;
   };
+
+  /**
+   *
+   * Create a new CountdownGriefingEscrow and deposit stake
+   * - only called by feed owner
+   * - add feed address to metadata
+   * - add feed owner as staker
+   *
+   * @param {Object} config - configuration for escrow
+   * @param {string} [config.buyer]
+   * @param {string} config.paymentAmount
+   * @param {string} config.stakeAmount
+   * @param {number} config.escrowCountdown
+   * @param {string} config.ratio
+   * @param {number} config.ratioType
+   * @param {number} config.agreementCountdown
+   * @returns {Promise} address of the escrow
+   * @returns {Promise} address of the agreement
+   * @returns {Promise} transaction receipts
+   */
+  offerSell() {}
+
+  /** getSellOffers
+   *
+   * Get all escrows to sell this feed
+   *
+   * @returns {Promise} array of Escrow objects
+   */
+  getSellOffers() {}
+
+  /**
+   *
+   * Create a new CountdownGriefingEscrow and deposit payment
+   * - add feed address to metadata
+   * - add feed owner as staker
+   * - add caller as buyer
+   *
+   * @param {Object} config - configuration for escrow
+   * @param {string} config.paymentAmount
+   * @param {string} config.stakeAmount
+   * @param {number} config.escrowCountdown
+   * @param {string} config.ratio
+   * @param {number} config.ratioType
+   * @param {number} config.agreementCountdown
+   * @returns {Promise} address of the escrow
+   * @returns {Promise} address of the agreement
+   * @returns {Promise} transaction receipts
+   */
+  offerBuy() {}
+
+  /** getBuyOffers
+   *
+   * Get all escrows to buy this feed
+   *
+   * @returns {Promise} array of Escrow objects
+   */
+  getBuyOffers() {}
+
+  /**
+   * Deposit stake on this feed (WIP)
+   */
+  stake() {}
+
+  /**
+   * Reveal all posts in this feed publically
+   * - fetch symkey and upload to ipfs
+   *
+   * @returns {Promise} array of base58 multihash format of the ipfs address of the revealed keys
+   */
+  reveal = async () => {
+    const posts = await this.getPosts();
+
+    let hashes = [];
+    for (const post of posts) {
+      hashes.push(await post.reveal());
+    }
+    this.#revealed = true;
+
+    return hashes;
+  };
+
+  /**
+   * Get the status of the feed
+   *
+   * @returns {boolean} revealed bool true if the feed is revealed
+   * @returns {integer} numSold number of times the feed was sold
+   */
+  checkStatus() {
+    return {
+      revealed: this.#revealed,
+      numSold: this.#numSold
+    };
+  }
 }
 
 export default ErasureFeed;

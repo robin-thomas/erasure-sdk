@@ -223,7 +223,9 @@ class ErasureAgreement {
    *
    * @returns {Promise} object with all relevant data
    */
-  checkStatus = async () => {};
+  checkStatus = async () => {
+    return await this.contract().getAgreementStatus();
+  };
 }
 
 export default ErasureAgreement;

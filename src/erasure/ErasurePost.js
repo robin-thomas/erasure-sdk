@@ -7,6 +7,8 @@ import Ethers from "../utils/Ethers";
 
 class ErasurePost {
   #owner = null;
+  #numSold = 0;
+  #revealed = false;
   #proofhash = null;
   #feedAddress = null;
   #protocolVersion = "";
@@ -49,7 +51,7 @@ class ErasurePost {
     return this.#owner;
   };
 
-  metadata = async () => {
+  #metadata = async () => {
     const staticMetadataB58 = IPFS.sha256ToHash(this.#proofhash);
 
     const metadata = await IPFS.get(staticMetadataB58);
@@ -65,6 +67,67 @@ class ErasurePost {
       encryptedPostIpfsHash
     };
   };
+
+  /**
+   * Create a new CountdownGriefingEscrow and deposit stake
+   * - only called by owner of post
+   * - add proofhash to metadata
+   * - add Post owner as staker
+   *
+   * @param {Object} config - configuration for escrow
+   * @param {string} [config.buyer]
+   * @param {string} config.paymentAmount
+   * @param {string} config.stakeAmount
+   * @param {number} config.escrowCountdown
+   * @param {string} config.ratio
+   * @param {number} config.ratioType
+   * @param {number} config.agreementCountdown
+   * @returns {Promise} address of the escrow
+   * @returns {Promise} address of the agreement
+   * @returns {Promise} transaction receipts
+   */
+  offerSell() {}
+
+  /** getSellOffers
+   *
+   * Get all escrows to sell this Post
+   *
+   * @returns {Promise} array of Escrow objects
+   */
+  getSellOffers() {}
+
+  /** offerBuy
+   *
+   * Create a new CountdownGriefingEscrow and deposit payment
+   * - add proofhash to metadata
+   * - add Post owner as staker
+   * - add caller as buyer
+   *
+   * @param {Object} config - configuration for escrow
+   * @param {string} config.paymentAmount
+   * @param {string} config.stakeAmount
+   * @param {number} config.escrowCountdown
+   * @param {string} config.ratio
+   * @param {number} config.ratioType
+   * @param {number} config.agreementCountdown
+   * @returns {Promise} address of the escrow
+   * @returns {Promise} address of the agreement
+   * @returns {Promise} transaction receipts
+   */
+  offerBuy() {}
+
+  /** getBuyOffers
+   *
+   * Get all escrows to buy this Post
+   *
+   * @returns {Promise} array of Escrow objects
+   */
+  getBuyOffers() {}
+
+  /**
+   * Deposit stake on this post (WIP)
+   */
+  async stake() {}
 
   /**
    *
@@ -84,7 +147,7 @@ class ErasurePost {
         nonce,
         encryptedSymmetricKey,
         encryptedPostIpfsHash
-      } = await this.metadata();
+      } = await this.#metadata();
 
       // Download the encryptedPost from ipfs
       const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
@@ -97,6 +160,7 @@ class ErasurePost {
       );
 
       const post = Crypto.symmetric.decrypt(symmetricKey, encryptedPost);
+      this.#revealed = true;
 
       // Upload the decrypted data to ipfs.
       // Returns the IPFS hash.
@@ -105,6 +169,20 @@ class ErasurePost {
       throw err;
     }
   };
+
+  /**
+   *
+   * Get the status of the post
+   *
+   * @returns {boolean} revealed bool true if the post is revealed
+   * @returns {integer} numSold number of times the post was sold
+   */
+  checkStatus() {
+    return {
+      revealed: this.#revealed,
+      numSold: this.#numSold
+    };
+  }
 }
 
 export default ErasurePost;
