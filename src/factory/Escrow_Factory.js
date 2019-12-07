@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import CryptoIPFS from "@erasure/crypto-ipfs";
 
-import ErasureFeed from "../erasure/ErasureFeed";
+import ErasureEscrow from "../erasure/ErasureEscrow";
 
 import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
@@ -9,9 +9,9 @@ import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/Feed_Factory.json";
+import contract from "../../artifacts/CountdownGriefingEscrow_Factory.json";
 
-class Feed_Factory {
+class Escrow_Factory {
   #receipt = null;
   #registry = null;
   #network = null;
@@ -23,7 +23,7 @@ class Feed_Factory {
     this.#protocolVersion = protocolVersion;
 
     if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.Feed_Factory;
+      this.#registry = registry.CountdownGriefingEscrow_Factory;
       this.#contract = new ethers.Contract(
         this.#registry,
         contract.abi,
@@ -31,7 +31,7 @@ class Feed_Factory {
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
-        p[c] = registry[c].Feed_Factory;
+        p[c] = registry[c].CountdownGriefingEscrow_Factory;
         return p;
       }, {});
 
@@ -63,23 +63,65 @@ class Feed_Factory {
   }
 
   /**
-   * Create a Feed contract using Feed_Factory
+   * Create a new escrow
    *
-   * @param {address} operator
-   * @param {string} metadata
-   * @returns {Promise<Feed>}
+   * @param {Object} config
+   * @param {string} config.operator
+   * @param {string} config.buyer
+   * @param {string} config.seller
+   * @param {string} config.paymentAmount
+   * @param {string} config.stakeAmount
+   * @param {string} config.escrowCountdown
+   * @param {string} config.greifRatio
+   * @param {string} config.greifRatioType
+   * @param {string} config.agreementCountdown
+   * @param {string} config.metadata
+   * @returns {Promise<EscrowWithReceipt>}
    */
-  create = async ({ operator, metadata }) => {
+  create = async ({
+    operator,
+    buyer,
+    seller,
+    paymentAmount,
+    stakeAmount,
+    escrowCountdown,
+    griefRatio,
+    griefRatioType,
+    agreementCountdown,
+    metadata
+  }) => {
     try {
       // Convert the ipfs hash to multihash hex code.
       const staticMetadataB58 = await IPFS.add(metadata);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
-      const proofHash = IPFS.hexToSha256(staticMetadata);
+
+      const agreementParams = Abi.encode(
+        ["uint256", "uint8", "uint256"],
+        [Ethers.parseEther(griefRatio), griefRatioType, agreementCountdown]
+      );
 
       const callData = Abi.encodeWithSelector(
         "initialize",
-        ["address", "bytes32", "bytes"],
-        [operator, proofHash, staticMetadata]
+        [
+          "address",
+          "address",
+          "address",
+          "uint256",
+          "uint256",
+          "uint256",
+          "bytes",
+          "bytes"
+        ],
+        [
+          operator,
+          buyer,
+          seller,
+          Ethers.parseEther(paymentAmount),
+          Ethers.parseEther(stakeAmount),
+          escrowCountdown,
+          staticMetadata,
+          agreementParams
+        ]
       );
 
       // Creates the contract.
@@ -88,9 +130,8 @@ class Feed_Factory {
 
       return {
         receipt,
-        feed: new ErasureFeed({
-          owner: operator,
-          feedAddress: receipt.logs[0].address,
+        escrow: new ErasureEscrow({
+          escrowAddress: receipt.logs[0].address,
           protocolVersion: this.#protocolVersion
         })
       };
@@ -100,4 +141,4 @@ class Feed_Factory {
   };
 }
 
-export default Feed_Factory;
+export default Escrow_Factory;

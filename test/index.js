@@ -38,7 +38,6 @@ describe("ErasureClient", () => {
 
   let post,
     feed,
-    agreement,
     currentStake = "0";
   const rawData = Math.random().toString(36);
 
@@ -68,6 +67,25 @@ describe("ErasureClient", () => {
     ({ post } = await feed.createPost(rawData));
     const data = await IPFS.get(post.proofhash().multihash);
     assert.ok(JSON.parse(data).ipfsHash === (await IPFS.getHash(rawData)));
+  });
+
+  describe("Escrow", () => {
+    let escrow;
+
+    it("create an escrow", async () => {
+      ({ escrow } = await client.createEscrow({
+        operator: account,
+        buyer: account,
+        seller: account,
+        paymentAmount: stakeAmount,
+        stakeAmount: stakeAmount,
+        escrowCountdown: countdownLength,
+        griefRatio: "1",
+        griefRatioType: 2,
+        agreementCountdown: countdownLength
+      }));
+      assert.ok(Ethers.isAddress(escrow.address()));
+    });
   });
 
   describe("Get Posts of a Feed", () => {

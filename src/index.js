@@ -1,6 +1,7 @@
 import Erasure_Users from "./registry/Erasure_Users";
 
 import Feed_Factory from "./factory/Feed_Factory";
+import Escrow_Factory from "./factory/Escrow_Factory";
 import Agreement_Factory from "./factory/Agreement_Factory";
 
 import Ethers from "./utils/Ethers";
@@ -43,6 +44,7 @@ class ErasureClient {
 
   #feedFactory = null;
   #erasureUsers = null;
+  #escrowFactory = null;
   #agreementFactory = null;
 
   /**
@@ -81,6 +83,7 @@ class ErasureClient {
 
       this.#feedFactory = new Feed_Factory(opts);
       this.#erasureUsers = new Erasure_Users(opts);
+      this.#escrowFactory = new Escrow_Factory(opts);
       this.#agreementFactory = new Agreement_Factory(opts);
 
       return await this.#erasureUsers.registerUser();
@@ -117,14 +120,63 @@ class ErasureClient {
       throw new Error(`Operator ${operator} is not an address`);
     }
 
-    if (metadata === undefined) {
-      metadata = "";
-    }
+    metadata = metadata || "";
 
     // TODO: validate proofhash.
 
     return await this.#feedFactory.create({
       operator,
+      metadata
+    });
+  }
+
+  /**
+   *
+   * Create a new escrow
+   *
+   * @param {Object} config
+   * @param {string} [config.operator]
+   * @param {string} [config.buyer]
+   * @param {string} [config.seller]
+   * @param {string} config.paymentAmount
+   * @param {string} config.stakeAmount
+   * @param {string} config.escrowCountdown
+   * @param {string} config.griefRatio
+   * @param {string} config.griefRatioType
+   * @param {string} config.agreementCountdown
+   * @param {string} [config.metadata]
+   * @returns {Promise<EscrowWithReceipt>}
+   */
+  async createEscrow({
+    operator,
+    buyer,
+    seller,
+    paymentAmount,
+    stakeAmount,
+    escrowCountdown,
+    griefRatio,
+    griefRatioType,
+    agreementCountdown,
+    metadata
+  }) {
+    operator = operator || (await Ethers.getAccount());
+    if (!Ethers.isAddress(operator)) {
+      throw new Error(`Operator ${operator} is not an address`);
+    }
+
+    buyer = buyer || operator;
+    metadata = metadata || "";
+
+    return await this.#escrowFactory.create({
+      operator,
+      buyer,
+      seller,
+      paymentAmount,
+      stakeAmount,
+      escrowCountdown,
+      griefRatio,
+      griefRatioType,
+      agreementCountdown,
       metadata
     });
   }
