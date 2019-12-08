@@ -44,9 +44,6 @@ class ErasureFeed {
   #escrowFactory = null;
   #protocolVersion = "";
 
-  #buyEscrows = [];
-  #sellEscrows = [];
-
   /**
    * @constructor
    * @param {Object} config
@@ -76,9 +73,6 @@ class ErasureFeed {
         );
       });
     }
-
-    // TODO:
-    // load sellEscrows and buyEscrows
   }
 
   /**
@@ -243,22 +237,47 @@ class ErasureFeed {
       metadata: JSON.stringify({ feedAddress: this.address() })
     });
 
-    this.#sellEscrows.push(escrow);
-
     return escrow;
   };
 
   /**
    * Get all escrows to sell this feed
    *
-   * @returns {<ErasureEscrow[]>} array of Escrow objects
+   * @returns {Promise<ErasureEscrow[]>} array of Escrow objects
    */
-  getSellOffers = () => {
-    return this.#sellEscrows;
+  getSellOffers = async () => {
+    const results = await Ethers.getProvider().getLogs({
+      address: this.#escrowFactory.address(),
+      fromBlock: 0,
+      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
+    });
+
+    let escrows = [];
+    if (results && results.length > 0) {
+      for (const result of results) {
+        const creator = Ethers.getAddress(result.topics[2]);
+        const escrowAddress = Ethers.getAddress(result.topics[1]);
+
+        if (creator === this.owner()) {
+          const data = this.#escrowFactory.decodeParams(result.data);
+
+          let metadata = await IPFS.get(data.metadata);
+          metadata = JSON.parse(metadata);
+
+          if (
+            metadata.feedAddress !== undefined &&
+            metadata.feedAddress === this.address()
+          ) {
+            escrows.push(this.#escrowFactory.createClone(escrowAddress));
+          }
+        }
+      }
+    }
+
+    return escrows;
   };
 
   /**
-   *
    * Create a new CountdownGriefingEscrow and deposit payment
    * - add feed address to metadata
    * - add feed owner as staker
@@ -299,19 +318,44 @@ class ErasureFeed {
       metadata: JSON.stringify({ feedAddress: this.address() })
     });
 
-    this.#buyEscrows.push(escrow);
-
     return escrow;
   };
 
-  /** getBuyOffers
-   *
+  /**
    * Get all escrows to buy this feed
    *
    * @returns {Promise} array of Escrow objects
    */
-  getBuyOffers = () => {
-    return this.#buyEscrows;
+  getBuyOffers = async () => {
+    const results = await Ethers.getProvider().getLogs({
+      address: this.#escrowFactory.address(),
+      fromBlock: 0,
+      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
+    });
+
+    let escrows = [];
+    if (results && results.length > 0) {
+      for (const result of results) {
+        const escrowAddress = Ethers.getAddress(result.topics[1]);
+        const { counterparty, metadata } = this.#escrowFactory.decodeParams(
+          result.data
+        );
+
+        if (counterparty === this.owner()) {
+          metadata = await IPFS.get(metadata);
+          metadata = JSON.parse(metadata);
+
+          if (
+            metadata.feedAddress !== undefined &&
+            metadata.feedAddress === this.address()
+          ) {
+            escrows.push(this.#escrowFactory.createClone(escrowAddress));
+          }
+        }
+      }
+    }
+
+    return escrows;
   };
 
   /**

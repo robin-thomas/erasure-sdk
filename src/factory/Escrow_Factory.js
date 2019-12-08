@@ -62,6 +62,10 @@ class Escrow_Factory {
     }
   }
 
+  address = () => {
+    return this.#contract.address;
+  };
+
   /**
    * Create a new escrow
    *
@@ -147,6 +151,34 @@ class Escrow_Factory {
       escrowAddress,
       protocolVersion: this.#protocolVersion
     });
+  };
+
+  decodeParams = data => {
+    const result = Abi.decode(
+      [
+        "address",
+        "address",
+        "address",
+        "uint256",
+        "uint256",
+        "uint256",
+        "bytes",
+        "bytes"
+      ],
+      data
+    );
+
+    return {
+      operator: result[0],
+      staker: result[1],
+      counterparty: result[2],
+      paymentAmount: Ethers.formatEther(result[3]).toString(),
+      stakeAmount: Ethers.formatEther(result[4]).toString(),
+      griefRatio: Ethers.formatEther(result[5].toString()),
+      griefRatioType: result[6],
+      countdownLength: result[7].toNumber(),
+      metadata: IPFS.hexToHash(result[8])
+    };
   };
 }
 
