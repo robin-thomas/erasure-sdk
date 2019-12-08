@@ -94,7 +94,13 @@ const IPFS = {
 
   sha256ToHash: hex => IPFS.hexToHash(`0x1220${hex.substr(2)}`),
   hexToHash: hex => bs58.encode(Buffer.from(hex.substr(2), "hex")),
-  hexToSha256: hex => `0x${hex.substr(6)}` // IPFS adds 0x1220 prefix
+  hexToSha256: hex => `0x${hex.substr(6)}`, // IPFS adds 0x1220 prefix
+
+  isProofhash: hash =>
+    hash !== null &&
+    hash !== undefined &&
+    hash.length === 66 &&
+    /[a-f0-9]/.test(hash.substr(2))
 };
 
 export default IPFS;

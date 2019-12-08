@@ -18,6 +18,12 @@ const Abi = {
     return encoded;
   },
 
+  /**
+   * This function reflects the usage of abi.encode in Solidity.
+   *
+   * @param {Array<string>} abiTypes
+   * @param {Array<any>} abiValues
+   */
   encode: (abiTypes, abiValues) => {
     const abiEncoder = new ethers.utils.AbiCoder();
     return abiEncoder.encode(abiTypes, abiValues);
@@ -37,6 +43,17 @@ const Abi = {
 
     const abiEncoder = new ethers.utils.AbiCoder();
     return abiEncoder.decode(abiTypes, data);
+  },
+
+  /**
+   * This function reflects the usage of abi.decode in Solidity.
+   *
+   * @param {Array<string>} abiTypes
+   * @param {string} callData
+   */
+  decode: (abiTypes, callData) => {
+    const abiEncoder = new ethers.utils.AbiCoder();
+    return abiEncoder.decode(abiTypes, callData);
   },
 
   /**

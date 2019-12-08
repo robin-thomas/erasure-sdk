@@ -139,6 +139,13 @@ class Escrow_Factory {
       throw err;
     }
   };
+
+  createClone = escrowAddress => {
+    return new ErasureEscrow({
+      escrowAddress,
+      protocolVersion: this.#protocolVersion
+    });
+  };
 }
 
 export default Escrow_Factory;

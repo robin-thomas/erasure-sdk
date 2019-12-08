@@ -121,9 +121,36 @@ class Agreement_Factory {
           agreementType === "CountdownGriefing_Factory"
             ? "countdown"
             : "simple",
-        protocolVersion: this.protocolVersion,
+        protocolVersion: this.#protocolVersion,
         agreementAddress: receipt.logs[0].address
       })
+    };
+  };
+
+  createClone = (agreementAddress, type, staker, counterparty) => {
+    return new ErasureAgreement({
+      staker,
+      counterparty,
+      type,
+      agreementAddress,
+      protocolVersion: this.#protocolVersion
+    });
+  };
+
+  decodeParams = data => {
+    const result = Abi.decode(
+      ["address", "address", "address", "uint256", "uint8", "uint256", "bytes"],
+      data
+    );
+
+    return {
+      operator: result[0],
+      staker: result[1],
+      counterparty: result[2],
+      griefRatio: Ethers.formatEther(result[3].toString()),
+      griefRatioType: result[4],
+      countdownLength: result[5].toNumber(),
+      metadata: IPFS.hexToHash(result[6])
     };
   };
 }

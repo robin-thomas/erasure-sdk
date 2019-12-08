@@ -141,6 +141,15 @@ class ErasureFeed {
     }
   };
 
+  createClone = async proofhash => {
+    return new ErasurePost({
+      proofhash,
+      owner: this.owner(),
+      feedAddress: this.address(),
+      protocolVersion: this.#protocolVersion
+    });
+  };
+
   /**
    * Get all the posts submitted to this feed
    *

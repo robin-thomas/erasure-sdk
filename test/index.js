@@ -61,12 +61,20 @@ describe("ErasureClient", () => {
   it("#createFeed", async () => {
     ({ feed } = await client.createFeed());
     assert.ok(Ethers.isAddress(feed.address()));
+
+    const _feed = await client.getObject(feed.address());
+    assert.ok(feed.address() === _feed.address());
   });
 
   it("#createPost", async () => {
     ({ post } = await feed.createPost(rawData));
     const data = await IPFS.get(post.proofhash().multihash);
     assert.ok(JSON.parse(data).ipfsHash === (await IPFS.getHash(rawData)));
+
+    const _post = await client.getObject(post.proofhash().proofhash);
+    assert.ok(
+      JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+    );
   });
 
   describe("Escrow", () => {
@@ -85,6 +93,9 @@ describe("ErasureClient", () => {
         agreementCountdown: countdownLength
       }));
       assert.ok(Ethers.isAddress(escrow.address()));
+
+      const _escrow = await client.getObject(escrow.address());
+      assert.ok(escrow.address() === _escrow.address());
     });
   });
 
@@ -122,6 +133,9 @@ describe("ErasureClient", () => {
         countdownLength
       }));
       assert.ok(Ethers.isAddress(agreement.address()));
+
+      const _countdown = await client.getObject(agreement.address());
+      assert.ok(agreement.address() === _countdown.address());
     });
 
     it("#stake", async () => {

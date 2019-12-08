@@ -98,6 +98,66 @@ class Feed_Factory {
       throw err;
     }
   };
+
+  createClone = async address => {
+    const logs = await Ethers.getProvider().getLogs({
+      address,
+      fromBlock: 0,
+      topics: [ethers.utils.id("OperatorUpdated(address)")]
+    });
+    const owner = Ethers.getAddress(logs[logs.length - 1].data);
+
+    return new ErasureFeed({
+      owner,
+      feedAddress: address,
+      protocolVersion: this.#protocolVersion
+    });
+  };
+
+  getFeeds = async (user = null) => {
+    try {
+      const provider = Ethers.getProvider();
+
+      const results = await provider.getLogs({
+        address: this.#contract.address,
+        topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")],
+        fromBlock: 0
+      });
+
+      let feeds = [];
+      if (results && results.length > 0) {
+        const abiCoder = ethers.utils.defaultAbiCoder;
+
+        for (const result of results) {
+          const data = abiCoder.decode(["bytes"], result.data)[0];
+          const callData = Abi.decodeWithSelector(
+            "initialize",
+            ["address", "bytes32", "bytes"],
+            data
+          );
+
+          const owner = Ethers.getAddress(result.topics[2]);
+          const feedAddress = Ethers.getAddress(result.topics[1]);
+
+          if (user !== null && owner !== Ethers.getAddress(user)) {
+            continue;
+          }
+
+          feeds.push(
+            new ErasureFeed({
+              owner,
+              feedAddress,
+              protocolVersion: this.#protocolVersion
+            })
+          );
+        }
+      }
+
+      return feeds;
+    } catch (err) {
+      throw err;
+    }
+  };
 }
 
 export default Feed_Factory;

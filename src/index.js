@@ -1,9 +1,12 @@
+import { ethers } from "ethers";
+
 import Erasure_Users from "./registry/Erasure_Users";
 
 import Feed_Factory from "./factory/Feed_Factory";
 import Escrow_Factory from "./factory/Escrow_Factory";
 import Agreement_Factory from "./factory/Agreement_Factory";
 
+import IPFS from "./utils/IPFS";
 import Ethers from "./utils/Ethers";
 
 import contracts from "./contracts.json";
@@ -96,11 +99,77 @@ class ErasureClient {
    * Get the Erasure object associated with a given address
    *
    * @param {string} address - address to fetch
-   * @returns {(ErasureFeed|ErasurePost|ErasureAgreement)} Erasure object
+   * @returns {Promise<(ErasureFeed|ErasurePost|ErasureEscrow|ErasureAgreement)>} Erasure object
    */
-  getObject(address) {
-    // detect address is of Feed, Post, Escrow or Agreement.
-    // return the correct Erasure object.
+  async getObject(address) {
+    try {
+      // Check if address is proofhash. If yes, then its ErasurePost.
+      if (IPFS.isProofhash(address)) {
+        const feeds = await this.#feedFactory.getFeeds();
+        if (feeds && feeds.length > 0) {
+          for (const feed of feeds) {
+            const posts = await feed.getPosts();
+            const _posts = posts.reduce((p, post) => {
+              p[post.proofhash().proofhash] = post;
+              return p;
+            }, {});
+
+            if (address in _posts) {
+              return feed.createClone(address);
+            }
+          }
+        }
+      }
+
+      const init = {
+        feed: "Initialized(address,bytes32,bytes)",
+        escrow:
+          "Initialized(address,address,address,uint256,uint256,uint256,bytes,bytes)",
+        simple: "Initialized(address,address,address,uint256,uint8,bytes)",
+        countdown:
+          "Initialized(address,address,address,uint256,uint8,uint256,bytes)"
+      };
+
+      for (const type of Object.keys(init)) {
+        // Get the contract creation transaction.
+        const results = await Ethers.getProvider().getLogs({
+          address,
+          fromBlock: 0,
+          topics: [ethers.utils.id(init[type])]
+        });
+
+        // Found the type.
+        if (results.length > 0) {
+          switch (type) {
+            case "feed":
+              return this.#feedFactory.createClone(address);
+
+            case "escrow":
+              return this.#escrowFactory.createClone(address);
+
+            case "simple":
+            case "countdown":
+              const {
+                staker,
+                counterparty
+              } = this.#agreementFactory.decodeParams(results[0].data);
+              return this.#agreementFactory.createClone(
+                address,
+                type,
+                staker,
+                counterparty
+              );
+          }
+        }
+      }
+
+      // Didnt find the type.
+      throw new Error(
+        `Address ${address} is not feed, post, escrow or agreement type!`
+      );
+    } catch (err) {
+      throw err;
+    }
   }
 
   /**
