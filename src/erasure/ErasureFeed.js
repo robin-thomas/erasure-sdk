@@ -1,10 +1,12 @@
 import { ethers } from "ethers";
 
+import ErasurePost from "./ErasurePost";
+import Escrow_Factory from "../factory/Escrow_Factory";
+
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
-import ErasurePost from "./ErasurePost";
 
 import contract from "../../artifacts/Feed.json";
 
@@ -39,7 +41,11 @@ class ErasureFeed {
   #revealed = false;
   #contract = null;
   #feedAddress = null;
+  #escrowFactory = null;
   #protocolVersion = "";
+
+  #buyEscrows = [];
+  #sellEscrows = [];
 
   /**
    * @constructor
@@ -48,9 +54,10 @@ class ErasureFeed {
    * @param {string} config.feedAddress
    * @param {string} config.protocolVersion
    */
-  constructor({ owner, feedAddress, protocolVersion }) {
+  constructor({ owner, feedAddress, protocolVersion, escrowFactory }) {
     this.#owner = owner;
     this.#feedAddress = feedAddress;
+    this.#escrowFactory = escrowFactory;
     this.#protocolVersion = protocolVersion;
 
     this.#contract = new ethers.Contract(
@@ -69,6 +76,9 @@ class ErasureFeed {
         );
       });
     }
+
+    // TODO:
+    // load sellEscrows and buyEscrows
   }
 
   /**
@@ -108,7 +118,7 @@ class ErasureFeed {
       const operator = await Ethers.getAccount();
       if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
         throw new Error(
-          `Post can only be created by the owner: ${this.owner()}`
+          `createPost() can only be called by the owner: ${this.owner()}`
         );
       }
 
@@ -197,22 +207,55 @@ class ErasureFeed {
    * @param {string} config.paymentAmount
    * @param {string} config.stakeAmount
    * @param {number} config.escrowCountdown
-   * @param {string} config.ratio
-   * @param {number} config.ratioType
+   * @param {string} config.griefRatio
+   * @param {number} config.griefRatioType
    * @param {number} config.agreementCountdown
    * @returns {Promise} address of the escrow
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
    */
-  offerSell() {}
+  offerSell = async ({
+    buyer,
+    paymentAmount,
+    stakeAmount,
+    escrowCountdown,
+    griefRatio,
+    griefRatioType,
+    agreementCountdown
+  }) => {
+    const operator = await Ethers.getAccount();
+    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
+      throw new Error(
+        `offerSell() can only be called by the owner: ${this.owner()}`
+      );
+    }
 
-  /** getSellOffers
-   *
+    const escrow = await this.#escrowFactory.create({
+      operator,
+      buyer,
+      seller: this.owner(),
+      paymentAmount,
+      stakeAmount,
+      escrowCountdown,
+      griefRatio,
+      griefRatioType,
+      agreementCountdown,
+      metadata: JSON.stringify({ feedAddress: this.address() })
+    });
+
+    this.#sellEscrows.push(escrow);
+
+    return escrow;
+  };
+
+  /**
    * Get all escrows to sell this feed
    *
-   * @returns {Promise} array of Escrow objects
+   * @returns {<ErasureEscrow[]>} array of Escrow objects
    */
-  getSellOffers() {}
+  getSellOffers = () => {
+    return this.#sellEscrows;
+  };
 
   /**
    *
@@ -225,14 +268,41 @@ class ErasureFeed {
    * @param {string} config.paymentAmount
    * @param {string} config.stakeAmount
    * @param {number} config.escrowCountdown
-   * @param {string} config.ratio
-   * @param {number} config.ratioType
+   * @param {string} config.griefRatio
+   * @param {number} config.griefRatioType
    * @param {number} config.agreementCountdown
    * @returns {Promise} address of the escrow
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
    */
-  offerBuy() {}
+  offerBuy = async ({
+    paymentAmount,
+    stakeAmount,
+    escrowCountdown,
+    griefRatio,
+    griefRatioType,
+    agreementCountdown
+  }) => {
+    const buyer = await Ethers.getAccount();
+    const seller = this.owner();
+
+    const escrow = await this.#escrowFactory.create({
+      operator: buyer,
+      buyer,
+      seller,
+      paymentAmount,
+      stakeAmount,
+      escrowCountdown,
+      griefRatio,
+      griefRatioType,
+      agreementCountdown,
+      metadata: JSON.stringify({ feedAddress: this.address() })
+    });
+
+    this.#buyEscrows.push(escrow);
+
+    return escrow;
+  };
 
   /** getBuyOffers
    *
@@ -240,7 +310,9 @@ class ErasureFeed {
    *
    * @returns {Promise} array of Escrow objects
    */
-  getBuyOffers() {}
+  getBuyOffers = () => {
+    return this.#buyEscrows;
+  };
 
   /**
    * Deposit stake on this feed (WIP)
@@ -271,12 +343,12 @@ class ErasureFeed {
    * @returns {boolean} revealed bool true if the feed is revealed
    * @returns {integer} numSold number of times the feed was sold
    */
-  checkStatus() {
+  checkStatus = () => {
     return {
       revealed: this.#revealed,
       numSold: this.#numSold
     };
-  }
+  };
 }
 
 export default ErasureFeed;

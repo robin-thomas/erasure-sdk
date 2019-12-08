@@ -84,9 +84,12 @@ class ErasureClient {
         protocolVersion: this.#protocolVersion
       };
 
-      this.#feedFactory = new Feed_Factory(opts);
-      this.#erasureUsers = new Erasure_Users(opts);
       this.#escrowFactory = new Escrow_Factory(opts);
+      this.#feedFactory = new Feed_Factory({
+        ...opts,
+        escrowFactory: this.#escrowFactory
+      });
+      this.#erasureUsers = new Erasure_Users(opts);
       this.#agreementFactory = new Agreement_Factory(opts);
 
       return await this.#erasureUsers.registerUser();

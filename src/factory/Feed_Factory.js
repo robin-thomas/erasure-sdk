@@ -16,10 +16,12 @@ class Feed_Factory {
   #registry = null;
   #network = null;
   #contract = null;
+  #escrowFactory = null;
   #protocolVersion = "";
 
-  constructor({ registry, network, protocolVersion }) {
+  constructor({ registry, network, protocolVersion, escrowFactory }) {
     this.#network = network;
+    this.#escrowFactory = escrowFactory;
     this.#protocolVersion = protocolVersion;
 
     if (process.env.NODE_ENV === "test") {
@@ -91,6 +93,7 @@ class Feed_Factory {
         feed: new ErasureFeed({
           owner: operator,
           feedAddress: receipt.logs[0].address,
+          escrowFactory: this.#escrowFactory,
           protocolVersion: this.#protocolVersion
         })
       };
@@ -110,6 +113,7 @@ class Feed_Factory {
     return new ErasureFeed({
       owner,
       feedAddress: address,
+      escrowFactory: this.#escrowFactory,
       protocolVersion: this.#protocolVersion
     });
   };
@@ -147,6 +151,7 @@ class Feed_Factory {
             new ErasureFeed({
               owner,
               feedAddress,
+              escrowFactory: this.#escrowFactory,
               protocolVersion: this.#protocolVersion
             })
           );

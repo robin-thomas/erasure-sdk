@@ -91,6 +91,8 @@ class Escrow_Factory {
     metadata
   }) => {
     try {
+      metadata = metadata || "";
+
       // Convert the ipfs hash to multihash hex code.
       const staticMetadataB58 = await IPFS.add(metadata);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
