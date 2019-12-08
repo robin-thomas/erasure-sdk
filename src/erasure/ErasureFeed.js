@@ -103,7 +103,7 @@ class ErasureFeed {
    * @param {string} data - raw data to be posted
    * @returns {Promise<PostWithReceipt>}
    */
-  createPost = async data => {
+  createPost = async (data, proofhash = null) => {
     try {
       const operator = await Ethers.getAccount();
       if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
@@ -115,14 +115,16 @@ class ErasureFeed {
       // Get the IPFS hash of the post without uploading it to IPFS.
       const ipfsHash = await IPFS.getHash(data);
 
-      const metadata = await crypto(data);
-      const staticMetadataB58 = await IPFS.add(
-        JSON.stringify({
-          ...metadata,
-          ipfsHash
-        })
-      );
-      const proofhash = IPFS.hashToSha256(staticMetadataB58);
+      if (proofhash === null) {
+        const metadata = await crypto(data);
+        const staticMetadataB58 = await IPFS.add(
+          JSON.stringify({
+            ...metadata,
+            ipfsHash
+          })
+        );
+        proofhash = IPFS.hashToSha256(staticMetadataB58);
+      }
 
       const tx = await this.contract().submitHash(proofhash);
       const receipt = await tx.wait();

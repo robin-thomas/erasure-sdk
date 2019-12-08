@@ -153,6 +153,7 @@ class ErasureClient {
                 staker,
                 counterparty
               } = this.#agreementFactory.decodeParams(results[0].data);
+
               return this.#agreementFactory.createClone(
                 address,
                 type,
@@ -191,12 +192,21 @@ class ErasureClient {
 
     metadata = metadata || "";
 
-    // TODO: validate proofhash.
+    if (proofhash !== undefined && !IPFS.isProofhash(proofhash)) {
+      throw new Error(`Invalid proofhash: ${proofhash}`);
+    }
 
-    return await this.#feedFactory.create({
+    const feed = await this.#feedFactory.create({
       operator,
       metadata
     });
+
+    // Create optional post.
+    if (proofhash !== undefined) {
+      await feed.createPost(null, proofhash);
+    }
+
+    return feed;
   }
 
   /**
