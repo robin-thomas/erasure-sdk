@@ -78,8 +78,36 @@ describe("ErasureClient", () => {
   });
 
   describe("Escrow", () => {
+    describe("createEscrow -> cancel", () => {
+      let escrow;
+
+      it("create an escrow", async () => {
+        ({ escrow } = await client.createEscrow({
+          operator: account,
+          buyer: account,
+          seller: account,
+          paymentAmount: stakeAmount,
+          stakeAmount: stakeAmount,
+          escrowCountdown: countdownLength,
+          griefRatio: "1",
+          griefRatioType: 2,
+          agreementCountdown: countdownLength
+        }));
+        assert.ok(Ethers.isAddress(escrow.address()));
+
+        const _escrow = await client.getObject(escrow.address());
+        assert.ok(escrow.address() === _escrow.address());
+      });
+
+      it("#cancel", async () => {
+        const receipt = await escrow.cancel();
+        assert.ok(receipt.events[0].event === "Cancelled");
+      });
+    });
+
     describe("createEscrow -> stake -> depositPayment -> finalize", () => {
       let escrow;
+      // const escrowCountdown = 100;
 
       it("create an escrow", async () => {
         ({ escrow } = await client.createEscrow({
@@ -122,11 +150,6 @@ describe("ErasureClient", () => {
         const receipt = await escrow.finalize();
         console.log(receipt);
       });
-    });
-
-    xit("#cancel", async () => {
-      const receipt = await escrow.cancel();
-      assert.ok(receipt.events[0].event === "Cancelled");
     });
   });
 

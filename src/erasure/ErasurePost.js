@@ -11,6 +11,7 @@ class ErasurePost {
   #revealed = false;
   #proofhash = null;
   #feedAddress = null;
+  #escrowFactory = null;
   #protocolVersion = "";
 
   /**
@@ -21,10 +22,17 @@ class ErasurePost {
    * @param {address} config.feedAddress
    * @param {string} config.protocolVersion
    */
-  constructor({ owner, proofhash, feedAddress, protocolVersion }) {
+  constructor({
+    owner,
+    proofhash,
+    feedAddress,
+    escrowFactory,
+    protocolVersion
+  }) {
     this.#owner = owner;
     this.#proofhash = proofhash;
     this.#feedAddress = feedAddress;
+    this.#escrowFactory = escrowFactory;
     this.#protocolVersion = protocolVersion;
   }
 
@@ -79,14 +87,44 @@ class ErasurePost {
    * @param {string} config.paymentAmount
    * @param {string} config.stakeAmount
    * @param {number} config.escrowCountdown
-   * @param {string} config.ratio
-   * @param {number} config.ratioType
+   * @param {string} config.griefRatio
+   * @param {number} config.griefRatioType
    * @param {number} config.agreementCountdown
    * @returns {Promise} address of the escrow
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
    */
-  offerSell() {}
+  offerSell = async ({
+    buyer,
+    paymentAmount,
+    stakeAmount,
+    escrowCountdown,
+    griefRatio,
+    griefRatioType,
+    agreementCountdown
+  }) => {
+    const operator = await Ethers.getAccount();
+    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
+      throw new Error(
+        `offerSell() can only be called by the owner: ${this.owner()}`
+      );
+    }
+
+    const escrow = await this.#escrowFactory.create({
+      operator,
+      buyer,
+      seller: this.owner(),
+      paymentAmount,
+      stakeAmount,
+      escrowCountdown,
+      griefRatio,
+      griefRatioType,
+      agreementCountdown,
+      metadata: JSON.stringify({ proofhash: this.proofhash().proofhash })
+    });
+
+    return escrow;
+  };
 
   /** getSellOffers
    *
@@ -94,7 +132,51 @@ class ErasurePost {
    *
    * @returns {Promise} array of Escrow objects
    */
-  getSellOffers() {}
+  getSellOffers = async () => {
+    const results = await Ethers.getProvider().getLogs({
+      address: this.#escrowFactory.address(),
+      fromBlock: 0,
+      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
+    });
+
+    let escrows = [];
+    if (results && results.length > 0) {
+      for (const result of results) {
+        const creator = Ethers.getAddress(result.topics[2]);
+        const escrowAddress = Ethers.getAddress(result.topics[1]);
+
+        if (creator === this.owner()) {
+          const {
+            buyer,
+            seller,
+            paymentAmount,
+            stakeAmount,
+            metadata
+          } = this.#escrowFactory.decodeParams(result.data);
+
+          metadata = await IPFS.get(metadata);
+          metadata = JSON.parse(metadata);
+
+          if (
+            metadata.proofhash !== undefined &&
+            metadata.proofhash === this.proofhash().proofhash
+          ) {
+            escrows.push(
+              this.#escrowFactory.createClone({
+                escrowAddress,
+                buyer,
+                seller,
+                stakeAmount,
+                paymentAmount
+              })
+            );
+          }
+        }
+      }
+    }
+
+    return escrows;
+  };
 
   /** offerBuy
    *
@@ -114,7 +196,32 @@ class ErasurePost {
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
    */
-  offerBuy() {}
+  offerBuy = async ({
+    paymentAmount,
+    stakeAmount,
+    escrowCountdown,
+    griefRatio,
+    griefRatioType,
+    agreementCountdown
+  }) => {
+    const buyer = await Ethers.getAccount();
+    const seller = this.owner();
+
+    const escrow = await this.#escrowFactory.create({
+      operator: buyer,
+      buyer,
+      seller,
+      paymentAmount,
+      stakeAmount,
+      escrowCountdown,
+      griefRatio,
+      griefRatioType,
+      agreementCountdown,
+      metadata: JSON.stringify({ proofhash: this.proofhash().proofhash })
+    });
+
+    return escrow;
+  };
 
   /** getBuyOffers
    *
@@ -122,7 +229,49 @@ class ErasurePost {
    *
    * @returns {Promise} array of Escrow objects
    */
-  getBuyOffers() {}
+  getBuyOffers = async () => {
+    const results = await Ethers.getProvider().getLogs({
+      address: this.#escrowFactory.address(),
+      fromBlock: 0,
+      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
+    });
+
+    let escrows = [];
+    if (results && results.length > 0) {
+      for (const result of results) {
+        const escrowAddress = Ethers.getAddress(result.topics[1]);
+        const {
+          buyer,
+          seller,
+          paymentAmount,
+          stakeAmount,
+          metadata
+        } = this.#escrowFactory.decodeParams(result.data);
+
+        if (seller === this.owner()) {
+          metadata = await IPFS.get(metadata);
+          metadata = JSON.parse(metadata);
+
+          if (
+            metadata.proofhash !== undefined &&
+            metadata.proofhash === this.proofhash().proofhash
+          ) {
+            escrows.push(
+              this.#escrowFactory.createClone({
+                escrowAddress,
+                buyer,
+                seller,
+                stakeAmount,
+                paymentAmount
+              })
+            );
+          }
+        }
+      }
+    }
+
+    return escrows;
+  };
 
   /**
    * Deposit stake on this post (WIP)

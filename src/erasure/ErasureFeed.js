@@ -139,6 +139,7 @@ class ErasureFeed {
           proofhash,
           owner: this.owner(),
           feedAddress: this.address(),
+          escrowFactory: this.#escrowFactory,
           protocolVersion: this.#protocolVersion
         })
       };
@@ -152,6 +153,7 @@ class ErasureFeed {
       proofhash,
       owner: this.owner(),
       feedAddress: this.address(),
+      escrowFactory: this.#escrowFactory,
       protocolVersion: this.#protocolVersion
     });
   };
@@ -180,6 +182,7 @@ class ErasureFeed {
             owner: this.owner(),
             proofhash: result.data,
             feedAddress: this.address(),
+            escrowFactory: this.#escrowFactory,
             protocolVersion: this.#protocolVersion
           })
         );
@@ -259,16 +262,30 @@ class ErasureFeed {
         const escrowAddress = Ethers.getAddress(result.topics[1]);
 
         if (creator === this.owner()) {
-          const data = this.#escrowFactory.decodeParams(result.data);
+          const {
+            buyer,
+            seller,
+            paymentAmount,
+            stakeAmount,
+            metadata
+          } = this.#escrowFactory.decodeParams(result.data);
 
-          let metadata = await IPFS.get(data.metadata);
+          metadata = await IPFS.get(metadata);
           metadata = JSON.parse(metadata);
 
           if (
             metadata.feedAddress !== undefined &&
             metadata.feedAddress === this.address()
           ) {
-            escrows.push(this.#escrowFactory.createClone(escrowAddress));
+            escrows.push(
+              this.#escrowFactory.createClone({
+                escrowAddress,
+                buyer,
+                seller,
+                stakeAmount,
+                paymentAmount
+              })
+            );
           }
         }
       }
@@ -337,11 +354,15 @@ class ErasureFeed {
     if (results && results.length > 0) {
       for (const result of results) {
         const escrowAddress = Ethers.getAddress(result.topics[1]);
-        const { counterparty, metadata } = this.#escrowFactory.decodeParams(
-          result.data
-        );
+        const {
+          buyer,
+          seller,
+          paymentAmount,
+          stakeAmount,
+          metadata
+        } = this.#escrowFactory.decodeParams(result.data);
 
-        if (counterparty === this.owner()) {
+        if (seller === this.owner()) {
           metadata = await IPFS.get(metadata);
           metadata = JSON.parse(metadata);
 
@@ -349,7 +370,15 @@ class ErasureFeed {
             metadata.feedAddress !== undefined &&
             metadata.feedAddress === this.address()
           ) {
-            escrows.push(this.#escrowFactory.createClone(escrowAddress));
+            escrows.push(
+              this.#escrowFactory.createClone({
+                escrowAddress,
+                buyer,
+                seller,
+                stakeAmount,
+                paymentAmount
+              })
+            );
           }
         }
       }
