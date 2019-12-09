@@ -74,6 +74,21 @@ class NMR {
    * @param {string} spender - griefing instance address
    * @returns {Promise} receipt of the changeApproval transaction
    */
+  approve = async (spender, value) => {
+    try {
+      const tx = await this.#contract.approve(spender, value);
+      return await tx.wait();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  /**
+   * Change the approval so that NMR could be staked
+   *
+   * @param {string} spender - griefing instance address
+   * @returns {Promise} receipt of the changeApproval transaction
+   */
   changeApproval = async (
     spender,
     oldValue = 0,

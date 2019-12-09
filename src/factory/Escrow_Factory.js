@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import CryptoIPFS from "@erasure/crypto-ipfs";
 
+import NMR from "../erasure/NMR";
 import ErasureEscrow from "../erasure/ErasureEscrow";
 
 import Abi from "../utils/Abi";
@@ -12,6 +13,7 @@ import Ethers from "../utils/Ethers";
 import contract from "../../artifacts/CountdownGriefingEscrow_Factory.json";
 
 class Escrow_Factory {
+  #nmr = null;
   #receipt = null;
   #registry = null;
   #network = null;
@@ -21,6 +23,8 @@ class Escrow_Factory {
   constructor({ registry, network, protocolVersion }) {
     this.#network = network;
     this.#protocolVersion = protocolVersion;
+
+    this.#nmr = new NMR({ registry, network, protocolVersion });
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.CountdownGriefingEscrow_Factory;
@@ -137,6 +141,11 @@ class Escrow_Factory {
       return {
         receipt,
         escrow: new ErasureEscrow({
+          buyer,
+          seller,
+          stakeAmount,
+          paymentAmount,
+          nmr: this.#nmr,
           escrowAddress: receipt.logs[0].address,
           protocolVersion: this.#protocolVersion
         })
@@ -146,9 +155,20 @@ class Escrow_Factory {
     }
   };
 
-  createClone = escrowAddress => {
+  createClone = ({
+    escrowAddress,
+    buyer,
+    seller,
+    stakeAmount,
+    paymentAmount
+  }) => {
     return new ErasureEscrow({
       escrowAddress,
+      buyer,
+      seller,
+      stakeAmount,
+      paymentAmount,
+      nmr: this.#nmr,
       protocolVersion: this.#protocolVersion
     });
   };
@@ -168,16 +188,24 @@ class Escrow_Factory {
       data
     );
 
+    const agreementParams = Abi.decode(
+      ["uint256", "uint8", "uint256"],
+      result[7]
+    );
+
     return {
-      operator: result[0],
-      staker: result[1],
-      counterparty: result[2],
+      operator: Ethers.getAddress(result[0]),
+      buyer: Ethers.getAddress(result[1]),
+      seller: Ethers.getAddress(result[2]),
       paymentAmount: Ethers.formatEther(result[3]).toString(),
       stakeAmount: Ethers.formatEther(result[4]).toString(),
-      griefRatio: Ethers.formatEther(result[5].toString()),
-      griefRatioType: result[6],
-      countdownLength: result[7].toNumber(),
-      metadata: IPFS.hexToHash(result[8])
+      escrowCountdown: Ethers.formatEther(result[5].toString()),
+      staticMetadataB58: IPFS.hexToHash(result[6]),
+      agreementParams: {
+        griefRatio: Ethers.formatEther(agreementParams[0]).toString(),
+        griefRatioType: agreementParams[1],
+        agreementCountdown: agreementParams[2]
+      }
     };
   };
 }

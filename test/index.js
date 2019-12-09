@@ -78,24 +78,55 @@ describe("ErasureClient", () => {
   });
 
   describe("Escrow", () => {
-    let escrow;
+    describe("createEscrow -> stake -> depositPayment -> finalize", () => {
+      let escrow;
 
-    it("create an escrow", async () => {
-      ({ escrow } = await client.createEscrow({
-        operator: account,
-        buyer: account,
-        seller: account,
-        paymentAmount: stakeAmount,
-        stakeAmount: stakeAmount,
-        escrowCountdown: countdownLength,
-        griefRatio: "1",
-        griefRatioType: 2,
-        agreementCountdown: countdownLength
-      }));
-      assert.ok(Ethers.isAddress(escrow.address()));
+      it("create an escrow", async () => {
+        ({ escrow } = await client.createEscrow({
+          operator: account,
+          buyer: account,
+          seller: account,
+          paymentAmount: stakeAmount,
+          stakeAmount: stakeAmount,
+          escrowCountdown: countdownLength,
+          griefRatio: "1",
+          griefRatioType: 2,
+          agreementCountdown: countdownLength
+        }));
+        assert.ok(Ethers.isAddress(escrow.address()));
 
-      const _escrow = await client.getObject(escrow.address());
-      assert.ok(escrow.address() === _escrow.address());
+        const _escrow = await client.getObject(escrow.address());
+        assert.ok(escrow.address() === _escrow.address());
+      });
+
+      it("#depositStake", async () => {
+        const receipt = await escrow.depositStake();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("StakeAdded"));
+        assert.ok(events.includes("StakeDeposited"));
+      });
+
+      it("#depositPayment", async () => {
+        const receipt = await escrow.depositPayment();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("PaymentDeposited"));
+        assert.ok(events.includes("DeadlineSet"));
+
+        assert.ok((await escrow.contract().getEscrowStatus()) === 3);
+        assert.ok((await escrow.contract().getCountdownStatus()) === 2);
+      });
+
+      it("#finalize", async () => {
+        const receipt = await escrow.finalize();
+        console.log(receipt);
+      });
+    });
+
+    xit("#cancel", async () => {
+      const receipt = await escrow.cancel();
+      assert.ok(receipt.events[0].event === "Cancelled");
     });
   });
 

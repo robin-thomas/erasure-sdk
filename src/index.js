@@ -148,7 +148,20 @@ class ErasureClient {
               return this.#feedFactory.createClone(address);
 
             case "escrow":
-              return this.#escrowFactory.createClone(address);
+              const {
+                buyer,
+                seller,
+                stakeAmount,
+                paymentAmount
+              } = this.#escrowFactory.decodeParams(results[0].data);
+
+              return this.#escrowFactory.createClone({
+                escrowAddress: address,
+                buyer,
+                seller,
+                stakeAmount,
+                paymentAmount
+              });
 
             case "simple":
             case "countdown":
