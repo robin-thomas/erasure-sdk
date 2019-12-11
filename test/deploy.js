@@ -44,7 +44,12 @@ const deployContract = async (contractName, params, signer) => {
   return contract;
 };
 
-const deployFactory = async (contractName, registry, template) => {
+const deployFactory = async (
+  contractName,
+  registry,
+  template,
+  factory = null
+) => {
   const signer = provider.getSigner();
   const factoryContract = await deployContract(
     contractName,
@@ -52,7 +57,13 @@ const deployFactory = async (contractName, registry, template) => {
     signer
   );
 
-  const tx = await registry.addFactory(factoryContract.address, "0x");
+  let tx;
+  if (factory !== null) {
+    tx = await registry.addFactory(factoryContract.address, "0x", factory);
+  } else {
+    tx = await registry.addFactory(factoryContract.address, "0x");
+  }
+
   const receipt = await provider.getTransactionReceipt(tx.hash);
   console.log(
     `\taddFactory() | ${contractName} | ${receipt.gasUsed.toString()} gas`
@@ -89,15 +100,17 @@ const deploy = async () => {
     if (contractName.endsWith("_Factory")) {
       const name = contractName.replace("_Factory", "");
 
+      let factory = null;
       let registry = contractRegistry.Erasure_Posts;
       if (name.includes("Escrow")) {
+        factory = contractRegistry.CountdownGriefing_Factory;
         registry = contractRegistry.Erasure_Escrows;
       } else if (name.includes("Griefing")) {
         registry = contractRegistry.Erasure_Agreements;
       }
 
       const template = contractRegistry[name];
-      contract = await deployFactory(contractName, registry, template);
+      contract = await deployFactory(contractName, registry, template, factory);
     } else {
       if (contractName === "NMR") {
         contract = await deployNMR();
