@@ -1,4 +1,3 @@
 {
-  "check-coverage": false,
-  "exclude": ["test"]
+  "check-coverage": false
 }

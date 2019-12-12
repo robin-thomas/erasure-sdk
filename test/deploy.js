@@ -16,6 +16,7 @@ server.listen("8545");
 
 const protocolVersion = "v1.2.0";
 const provider = new ethers.providers.JsonRpcProvider();
+const abiEncoder = new ethers.utils.AbiCoder();
 
 const deployContract = async (contractName, params, signer) => {
   const contractAddress =
@@ -59,7 +60,10 @@ const deployFactory = async (
 
   let tx;
   if (factory !== null) {
-    tx = await registry.addFactory(factoryContract.address, "0x", factory);
+    tx = await registry.addFactory(
+      factoryContract.address,
+      abiEncoder.encode(["address"], [factory.address])
+    );
   } else {
     tx = await registry.addFactory(factoryContract.address, "0x");
   }

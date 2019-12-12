@@ -388,11 +388,6 @@ class ErasureFeed {
   };
 
   /**
-   * Deposit stake on this feed (WIP)
-   */
-  stake() {}
-
-  /**
    * Reveal all posts in this feed publically
    * - fetch symkey and upload to ipfs
    *

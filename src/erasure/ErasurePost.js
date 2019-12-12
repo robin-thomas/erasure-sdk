@@ -274,11 +274,6 @@ class ErasurePost {
   };
 
   /**
-   * Deposit stake on this post (WIP)
-   */
-  async stake() {}
-
-  /**
    *
    * Reveal this post publically
    * - fetch symkey and upload to ipfs

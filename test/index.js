@@ -148,7 +148,8 @@ describe("ErasureClient", () => {
 
       it("#finalize", async () => {
         const receipt = await escrow.finalize();
-        console.log(receipt);
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("Finalized"));
       });
     });
   });
