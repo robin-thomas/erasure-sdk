@@ -13,37 +13,25 @@ import Ethers from "./utils/Ethers";
 import contracts from "./contracts.json";
 
 /**
- * @typedef {Object} Feed
- * @property {address} address - feed contract address
- * @property {address} operator - use who created this feed
- * @property {string} ipfsMultihash - base58 encoded ipfs multihash
- * @property {Object[]} posts - posts created in this feed
- * @property {string} posts.proofHash - sha256 hash of raw post
- * @property {string} posts.ipfsMultihash - base58 encoded ipfs multihash
+ * @typedef {Object} ErasureFeedWithReceipt
+ * @property {ErasureFeed} feed
+ * @property {Receipt} receipt
  */
 
 /**
- * @typedef {Object} FeedReceipt
- * @property {address} address - address of new feed
- * @property {Object} receipt - transaction receipt of new feed
+ * @typedef {Object} ErasureEscrowWithReceipt
+ * @property {ErasureFeed} escrow
+ * @property {Receipt} receipt
  */
 
 /**
- * @typedef {Object} FeedWithReceipt
- * @property {Feed} feed
- * @property {FeedReceipt} receipt
+ * @typedef {Object} ErasureAgreementWithReceipt
+ * @property {ErasureAgreement} agreement
+ * @property {Receipt} receipt
  */
 
-/**
- * @typedef {Object} PostReceipt
- * @property {string} proofHash - sha256 hash of raw data
- * @property {string} ipfsMultihash - base58 encoded ipfs multihash
- * @property {Object} receipt - transaction receipt of new post
- */
 class ErasureClient {
   #registry = {};
-  #appName = "";
-  #appVersion = "";
   #protocolVersion = "";
 
   #feedFactory = null;
@@ -56,13 +44,9 @@ class ErasureClient {
    *
    * @constructor
    * @param {Object} config - configuration for ErasureClient
-   * @param {string} config.appName - name of your app
-   * @param {string} config.appVersion - version of your app
    * @param {string} config.protocolVersion - version of the erasure protocol
    */
-  constructor({ appName, appVersion, protocolVersion, registry }) {
-    this.#appName = appName;
-    this.#appVersion = appVersion;
+  constructor({ protocolVersion, registry }) {
     this.#protocolVersion = protocolVersion;
 
     this.#registry =
@@ -75,7 +59,7 @@ class ErasureClient {
    * To initialize the client.
    * This ought to be called before calling any client functions.
    *
-   * @returns {Promise} receipt of createUser
+   * @returns {Promise} receipt of registerUser
    */
   async login() {
     try {
@@ -205,7 +189,7 @@ class ErasureClient {
    * @param {string} [config.proofhash] optional initial post
    * @param {string} [config.data] optional initial post raw data
    * @param {string} [config.metadata] optional metadata
-   * @returns {Promise<Feed>}
+   * @returns {Promise<ErasureFeedWithReceipt>}
    */
   async createFeed(opts) {
     let { operator, data, proofhash, metadata } = opts || {};
@@ -221,7 +205,7 @@ class ErasureClient {
       throw new Error(`Invalid proofhash: ${proofhash}`);
     }
 
-    const feed = await this.#feedFactory.create({
+    const { feed, receipt } = await this.#feedFactory.create({
       operator,
       metadata
     });
@@ -233,7 +217,10 @@ class ErasureClient {
       await feed.createPost(data, null);
     }
 
-    return feed;
+    return {
+      feed,
+      receipt
+    };
   }
 
   /**
@@ -251,7 +238,7 @@ class ErasureClient {
    * @param {string} config.griefRatioType
    * @param {string} config.agreementCountdown
    * @param {string} [config.metadata]
-   * @returns {Promise<EscrowWithReceipt>}
+   * @returns {Promise<ErasureEscrowWithReceipt>}
    */
   async createEscrow({
     operator,
@@ -297,7 +284,7 @@ class ErasureClient {
    * @param {string} config.griefRatioType
    * @param {string} [config.countdownLength] - creates a simple griefing agreement if not set
    * @param {string} [config.metadata]
-   * @returns {Promise<AgreementWithReceipt>}
+   * @returns {Promise<ErasureAgreementWithReceipt>}
    */
   async createAgreement({
     operator,
@@ -323,10 +310,6 @@ class ErasureClient {
       if (!Ethers.isAddress(counterparty)) {
         throw new Error(`Counterparty ${counterparty} is not an address`);
       }
-
-      // // Convert the ipfs hash to multihash hex code.
-      // const ipfsHash = await IPFS.add(metadata);
-      // const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
 
       return await this.#agreementFactory.create({
         operator,

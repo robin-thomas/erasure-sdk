@@ -36,9 +36,7 @@ describe("ErasureClient", () => {
   const stakeAmount = "11";
   const countdownLength = 1;
 
-  let post,
-    feed,
-    currentStake = "0";
+  let post, feed;
   const rawData = Math.random().toString(36);
 
   let client, account, registry;
@@ -106,6 +104,52 @@ describe("ErasureClient", () => {
       });
     });
 
+    describe("createEscrow -> depositPayment -> stake", () => {
+      let escrow;
+      // const escrowCountdown = 100;
+
+      it("create an escrow", async () => {
+        ({ escrow } = await client.createEscrow({
+          operator: account,
+          buyer: account,
+          seller: account,
+          paymentAmount: stakeAmount,
+          stakeAmount: stakeAmount,
+          escrowCountdown: countdownLength,
+          griefRatio: "1",
+          griefRatioType: 2,
+          agreementCountdown: countdownLength,
+          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
+        }));
+        assert.ok(Ethers.isAddress(escrow.address()));
+
+        const _escrow = await client.getObject(escrow.address());
+        assert.ok(escrow.address() === _escrow.address());
+      });
+
+      it("#depositPayment", async () => {
+        const receipt = await escrow.depositPayment();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("PaymentDeposited"));
+
+        assert.ok((await escrow.contract().getEscrowStatus()) === 2);
+        assert.ok((await escrow.contract().getCountdownStatus()) === 1);
+      });
+
+      it("#depositStake", async () => {
+        const { receipt, agreementAddress } = await escrow.depositStake();
+
+        assert.ok(Ethers.isAddress(agreementAddress));
+
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("StakeAdded"));
+        assert.ok(events.includes("StakeDeposited"));
+        assert.ok(events.includes("DeadlineSet"));
+      });
+    });
+
     describe("createEscrow -> stake -> depositPayment -> finalize", () => {
       let escrow;
       // const escrowCountdown = 100;
@@ -130,7 +174,7 @@ describe("ErasureClient", () => {
       });
 
       it("#depositStake", async () => {
-        const receipt = await escrow.depositStake();
+        const { receipt } = await escrow.depositStake();
         const events = receipt.events.map(e => e.event);
         assert.ok(events.includes("DepositIncreased"));
         assert.ok(events.includes("StakeAdded"));
@@ -180,7 +224,9 @@ describe("ErasureClient", () => {
   });
 
   describe("Countdown Griefing", () => {
-    let agreement;
+    let agreement,
+      currentStake = "0";
+
     before(async () => {
       ({ agreement } = await client.createAgreement({
         operator: account,
@@ -244,8 +290,12 @@ describe("ErasureClient", () => {
       it("withdraw after countdown should pass", async () => {
         try {
           const { receipt } = await agreement.requestWithdraw();
-          await sleep(5 * countdownLength);
-          await agreement.withdraw(account);
+          await sleep(countdownLength);
+          const { amountWithdrawn } = await agreement.withdraw(account);
+          assert.ok(
+            Number(currentStake).toString() ===
+              Number(amountWithdrawn).toString()
+          );
         } catch (err) {
           assert.fail("0", "1", "Agreement deadline has passed");
         }
@@ -254,7 +304,9 @@ describe("ErasureClient", () => {
   });
 
   describe("Simple Griefing", () => {
-    let agreement;
+    let agreement,
+      currentStake = "0";
+
     before(async () => {
       ({ agreement } = await client.createAgreement({
         operator: account,

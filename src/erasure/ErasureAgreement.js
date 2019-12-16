@@ -1,8 +1,3 @@
-/**
- * ErasureAgreement
- * @module ErasureAgreement
- */
-
 import { ethers } from "ethers";
 
 import Abi from "../utils/Abi";
@@ -26,7 +21,6 @@ class ErasureAgreement {
   #agreementAddress = null;
 
   /**
-   * @constructor
    * @param {Object} config
    * @param {('simple'|'countdown')} config.type
    * @param {address} config.staker
@@ -242,8 +236,9 @@ class ErasureAgreement {
   /**
    * Called by staker to withdraw the stake
    *
+   * @param {address} recipient
    * @returns {Promise} amount withdrawn
-   * @returns {Promise} transaction receipts
+   * @returns {Promise} transaction receipt
    */
   withdraw = async recipient => {
     if (this.type() !== "countdown") {
@@ -251,7 +246,25 @@ class ErasureAgreement {
     }
 
     const tx = await this.contract().retrieveStake(recipient);
-    return await tx.wait();
+    const receipt = await tx.wait();
+
+    // get the agreement address.
+    const results = await Ethers.getProvider().getLogs({
+      address: this.address(),
+      topics: [ethers.utils.id("StakeTaken(address,address,uint256)")],
+      fromBlock: 0
+    });
+    const amountWithdrawn = Ethers.formatEther(
+      Abi.decode(
+        ["address", "address", "uint256"],
+        results[results.length - 1].data
+      )[2]
+    );
+
+    return {
+      receipt,
+      amountWithdrawn
+    };
   };
 
   /**

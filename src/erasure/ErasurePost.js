@@ -8,7 +8,6 @@ import Ethers from "../utils/Ethers";
 
 class ErasurePost {
   #owner = null;
-  #numSold = 0;
   #revealed = false;
   #proofhash = null;
   #feedAddress = null;
@@ -167,8 +166,7 @@ class ErasurePost {
     return escrows;
   };
 
-  /** offerBuy
-   *
+  /**
    * Create a new CountdownGriefingEscrow and deposit payment
    * - add proofhash to metadata
    * - add Post owner as staker
@@ -212,8 +210,7 @@ class ErasurePost {
     return escrow;
   };
 
-  /** getBuyOffers
-   *
+  /**
    * Get all escrows to buy this Post
    *
    * @returns {Promise} array of Escrow objects
@@ -263,8 +260,7 @@ class ErasurePost {
   };
 
   /**
-   *
-   * Reveal this post publically
+   * Reveal this post publicly
    * - fetch symkey and upload to ipfs
    * - should be called by feed creator
    *
@@ -303,12 +299,22 @@ class ErasurePost {
    * @returns {boolean} revealed bool true if the post is revealed
    * @returns {integer} numSold number of times the post was sold
    */
-  checkStatus() {
+  checkStatus = async () => {
+    let posts = [];
+    posts.push(...(await this.getBuyOffers()));
+    posts.push(...(await this.getSellOffers()));
+
+    let numSold = 0;
+    for (const post of posts) {
+      // Check the number of finalized escrows.
+      numSold += (await this.contract().getEscrowStatus()) === 3 ? 1 : 0;
+    }
+
     return {
-      revealed: this.#revealed,
-      numSold: this.#numSold
+      numSold,
+      revealed: this.#revealed
     };
-  }
+  };
 }
 
 export default ErasurePost;

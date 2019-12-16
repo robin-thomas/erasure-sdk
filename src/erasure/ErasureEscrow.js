@@ -23,8 +23,13 @@ class ErasureEscrow {
   /**
    * @constructor
    * @param {Object} config
-   * @param {string} config.protocolVersion
+   * @param {string} config.buyer
+   * @param {string} config.seller
+   * @param {string} config.proofhash
+   * @param {string} config.stakeAmount
+   * @param {string} config.paymentAmount
    * @param {string} config.escrowAddress
+   * @param {string} config.protocolVersion
    */
   constructor({
     nmr,
@@ -68,6 +73,8 @@ class ErasureEscrow {
 
   /**
    * Access the web3 contract class
+   *
+   * @returns {Object} contract object
    */
   contract = () => {
     return this.#contract;
@@ -105,7 +112,7 @@ class ErasureEscrow {
    * - If the payment is already deposited, also send the encrypted symkey
    *
    * @returns {Promise} address of the agreement
-   * @returns {Promise} transaction receipts
+   * @returns {Promise} transaction receipt
    */
   depositStake = async () => {
     const operator = await Ethers.getAccount();
@@ -127,13 +134,25 @@ class ErasureEscrow {
     await this.#nmr.approve(this.address(), this.#stakeAmount);
 
     const tx = await this.contract().depositStake();
-    return await tx.wait();
+    const receipt = await tx.wait();
+
+    // If the payment is already deposited, also send the encrypted symkey
+    let agreementAddress = null;
+    const isDeposited = (await this.contract().getEscrowStatus()) === 4;
+    if (isDeposited) {
+      ({ agreementAddress } = await this.finalize(true /* finalized */));
+    }
+
+    return {
+      receipt,
+      ...(agreementAddress ? { agreementAddress } : {})
+    };
   };
 
   /**
    * Called by buyer to deposit the payment
    *
-   * @returns {Promise} transaction receipts
+   * @returns {Promise} transaction receipt
    */
   depositPayment = async () => {
     const operator = await Ethers.getAccount();
@@ -164,7 +183,7 @@ class ErasureEscrow {
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
    */
-  finalize = async () => {
+  finalize = async (finalized = false) => {
     const keypair = await Box.getKeyPair();
     if (keypair === null) {
       throw new Error("Cannot find the keypair of this user!");
@@ -188,8 +207,11 @@ class ErasureEscrow {
     );
 
     // Finalize.
-    const tx = await this.contract().finalize();
-    const receipt = await tx.wait();
+    let receipt;
+    if (!finalized) {
+      const tx = await this.contract().finalize();
+      receipt = await tx.wait();
+    }
 
     // get the agreement address.
     const results = await Ethers.getProvider().getLogs({
@@ -203,7 +225,7 @@ class ErasureEscrow {
     )[0];
 
     // Submit the encrypted SymKey
-    const _tx = await this.contract().submitData(
+    const tx = await this.contract().submitData(
       Buffer.from(
         JSON.stringify({
           nonce: nonce.toString(),
@@ -211,7 +233,7 @@ class ErasureEscrow {
         })
       )
     );
-    await _tx.wait();
+    await tx.wait();
 
     return {
       receipt,
@@ -222,20 +244,12 @@ class ErasureEscrow {
   /**
    * Called by seller or buyer to attempt to cancel the escrow
    *
-   * @returns {Promise} bool true if the cancel succeeded
-   * @returns {Promise} transaction receipts
+   * @returns {Promise} transaction receipt
    */
   cancel = async () => {
     const tx = await this.contract().cancel();
     return await tx.wait();
   };
-
-  /**
-   * Get the status of the escrow
-   *
-   * @returns {Promise} object with all relevant data
-   */
-  checkStatus() {}
 }
 
 export default ErasureEscrow;

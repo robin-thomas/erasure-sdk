@@ -81,7 +81,8 @@ class ErasureFeed {
    * - can only called by feed owner
    *
    * @param {string} data - raw data to be posted
-   * @returns {Promise<PostWithReceipt>}
+   * @param {string} [proofhash]
+   * @returns {Promise<ErasurePostWithReceipt>}
    * {@link https://github.com/erasureprotocol/erasure-protocol#track-record-through-posts-and-feeds}
    */
   createPost = async (data, proofhash = null) => {
