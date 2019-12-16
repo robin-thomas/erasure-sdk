@@ -74,8 +74,7 @@ class Erasure_Users {
     const data = await this.getUserData(address);
 
     if (data === null || data === undefined || data === "0x") {
-      const hex = Ethers.hexlify(`0x${publicKey}`);
-      const tx = await this.#contract.registerUser(hex);
+      const tx = await this.#contract.registerUser(`0x${publicKey}`);
       return await tx.wait();
     }
   };

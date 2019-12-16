@@ -6,6 +6,7 @@ import ErasureFeed from "../erasure/ErasureFeed";
 import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
@@ -76,7 +77,7 @@ class Feed_Factory {
       // Convert the ipfs hash to multihash hex code.
       const staticMetadataB58 = await IPFS.add(metadata);
       const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
-      const proofHash = IPFS.hexToSha256(staticMetadata);
+      const proofHash = Utils.hexToSha256(staticMetadata);
 
       const callData = Abi.encodeWithSelector(
         "initialize",

@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 
+import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
@@ -12,8 +13,10 @@ class ErasureEscrow {
   #buyer = null;
   #seller = null;
   #contract = null;
+  #proofhash = null;
   #stakeAmount = null;
   #paymentAmount = null;
+  #erasureUsers = null;
   #escrowAddress = null;
   #protocolVersion = "";
 
@@ -27,17 +30,22 @@ class ErasureEscrow {
     nmr,
     buyer,
     seller,
+    proofhash,
     stakeAmount,
     paymentAmount,
     escrowAddress,
+    erasureUsers,
     protocolVersion
   }) {
     this.#nmr = nmr;
     this.#buyer = buyer;
     this.#seller = seller;
+    this.#proofhash = proofhash;
     this.#stakeAmount = Ethers.parseEther(stakeAmount);
     this.#paymentAmount = Ethers.parseEther(paymentAmount);
     this.#escrowAddress = escrowAddress;
+
+    this.#erasureUsers = erasureUsers;
     this.#protocolVersion = protocolVersion;
 
     this.#contract = new ethers.Contract(
@@ -157,8 +165,58 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipts
    */
   finalize = async () => {
+    const keypair = await Box.getKeyPair();
+    if (keypair === null) {
+      throw new Error("Cannot find the keypair of this user!");
+    }
+
+    const symKey = await Box.getSymKey(this.#proofhash);
+    const publicKey = await this.#erasureUsers.getUserData(this.buyer());
+    const buyerKeypair = {
+      key: {
+        publicKey: Uint8Array.from(Buffer.from(publicKey.substr(2), "hex")),
+        secretKey: keypair.key.secretKey
+      }
+    };
+
+    // Encrypt the symKey
+    const nonce = Crypto.asymmetric.genNonce();
+    const encryptedSymKey = Crypto.asymmetric.encrypt(
+      symKey,
+      nonce,
+      buyerKeypair
+    );
+
+    // Finalize.
     const tx = await this.contract().finalize();
-    return await tx.wait();
+    const receipt = await tx.wait();
+
+    // get the agreement address.
+    const results = await Ethers.getProvider().getLogs({
+      address: this.address(),
+      topics: [ethers.utils.id("Finalized(address)")],
+      fromBlock: 0
+    });
+    const agreementAddress = Abi.decode(
+      ["address"],
+      results[results.length - 1].data
+    )[0];
+
+    // Submit the encrypted SymKey
+    const _tx = await this.contract().submitData(
+      Buffer.from(
+        JSON.stringify({
+          nonce: nonce.toString(),
+          encryptedSymKey: encryptedSymKey.toString()
+        })
+      )
+    );
+    await _tx.wait();
+
+    return {
+      receipt,
+      agreementAddress
+    };
   };
 
   /**

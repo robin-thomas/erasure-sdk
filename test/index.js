@@ -69,7 +69,7 @@ describe("ErasureClient", () => {
   it("#createPost", async () => {
     ({ post } = await feed.createPost(rawData));
     const data = await IPFS.get(post.proofhash().multihash);
-    assert.ok(JSON.parse(data).ipfsHash === (await IPFS.getHash(rawData)));
+    assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
 
     const _post = await client.getObject(post.proofhash().proofhash);
     assert.ok(
@@ -91,7 +91,8 @@ describe("ErasureClient", () => {
           escrowCountdown: countdownLength,
           griefRatio: "1",
           griefRatioType: 2,
-          agreementCountdown: countdownLength
+          agreementCountdown: countdownLength,
+          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
 
@@ -119,7 +120,8 @@ describe("ErasureClient", () => {
           escrowCountdown: countdownLength,
           griefRatio: "1",
           griefRatioType: 2,
-          agreementCountdown: countdownLength
+          agreementCountdown: countdownLength,
+          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
 
@@ -147,9 +149,10 @@ describe("ErasureClient", () => {
       });
 
       it("#finalize", async () => {
-        const receipt = await escrow.finalize();
+        const { agreementAddress, receipt } = await escrow.finalize();
         const events = receipt.events.map(e => e.event);
         assert.ok(events.includes("Finalized"));
+        assert.ok(Ethers.isAddress(agreementAddress));
       });
     });
   });
@@ -172,7 +175,7 @@ describe("ErasureClient", () => {
       assert.ok(posts.length === 1);
 
       const data = await IPFS.get(posts[0].proofhash().multihash);
-      assert.ok(JSON.parse(data).ipfsHash === (await IPFS.getHash(rawData)));
+      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
     });
   });
 
@@ -210,13 +213,13 @@ describe("ErasureClient", () => {
     });
 
     it("#punish", async () => {
-      const result = await agreement.punish(
+      const { receipt } = await agreement.punish(
         punishAmount,
         "This is a punishment"
       );
 
       let amount = "";
-      [currentStake, amount] = subStake(currentStake, result.logs[1].data);
+      [currentStake, amount] = subStake(currentStake, receipt.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
 
@@ -240,7 +243,7 @@ describe("ErasureClient", () => {
 
       it("withdraw after countdown should pass", async () => {
         try {
-          const receipt = await agreement.requestWithdraw();
+          const { receipt } = await agreement.requestWithdraw();
           await sleep(5 * countdownLength);
           await agreement.withdraw(account);
         } catch (err) {
@@ -280,13 +283,13 @@ describe("ErasureClient", () => {
     });
 
     it("#punish", async () => {
-      const result = await agreement.punish(
+      const { receipt } = await agreement.punish(
         punishAmount,
         "This is a punishment"
       );
 
       let amount = "";
-      [currentStake, amount] = subStake(currentStake, result.logs[1].data);
+      [currentStake, amount] = subStake(currentStake, receipt.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
 
@@ -300,8 +303,8 @@ describe("ErasureClient", () => {
   });
 
   it("#revealPost", async () => {
-    const ipfsHash = await post.reveal();
-    const result = await IPFS.getHash(rawData);
-    assert.ok(ipfsHash === result);
+    const keyhash = await post.reveal();
+    const metadata = await IPFS.get(post.proofhash().multihash);
+    assert.ok(keyhash === JSON.parse(metadata).keyhash);
   });
 });

@@ -5,35 +5,11 @@ import Escrow_Factory from "../factory/Escrow_Factory";
 
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
 import contract from "../../artifacts/Feed.json";
-
-const crypto = async post => {
-  const keypair = await Box.getKeyPair();
-  if (keypair === null) {
-    throw new Error("Cannot find the keypair of this user!");
-  }
-
-  const symmetricKey = Crypto.symmetric.genKey();
-  const encryptedPost = Crypto.symmetric.encrypt(symmetricKey, post);
-  const encryptedPostIpfsHash = await IPFS.add(encryptedPost);
-
-  // Nonce is set per post.
-  const nonce = Crypto.asymmetric.genNonce();
-  const encryptedSymmetricKey = Crypto.asymmetric.encrypt(
-    symmetricKey,
-    nonce,
-    keypair
-  );
-
-  return {
-    nonce: nonce.toString(),
-    encryptedSymmetricKey: encryptedSymmetricKey.toString(),
-    encryptedPostIpfsHash
-  };
-};
 
 class ErasureFeed {
   #owner = null;
@@ -106,6 +82,7 @@ class ErasureFeed {
    *
    * @param {string} data - raw data to be posted
    * @returns {Promise<PostWithReceipt>}
+   * {@link https://github.com/erasureprotocol/erasure-protocol#track-record-through-posts-and-feeds}
    */
   createPost = async (data, proofhash = null) => {
     try {
@@ -117,17 +94,27 @@ class ErasureFeed {
       }
 
       // Get the IPFS hash of the post without uploading it to IPFS.
-      const ipfsHash = await IPFS.getHash(data);
+      const datahash = await IPFS.getHash(data);
 
       if (proofhash === null) {
-        const metadata = await crypto(data);
+        const symKey = Crypto.symmetric.genKey();
+        const keyhash = await IPFS.getHash(symKey);
+
+        // Store the symKey in the keystore.
+        await Box.setSymKey(keyhash, symKey);
+
+        const encryptedPost = Crypto.symmetric.encrypt(symKey, data);
+        const encryptedDatahash = await IPFS.add(encryptedPost);
+
         const staticMetadataB58 = await IPFS.add(
           JSON.stringify({
-            ...metadata,
-            ipfsHash
+            creator: operator,
+            datahash,
+            keyhash,
+            encryptedDatahash
           })
         );
-        proofhash = IPFS.hashToSha256(staticMetadataB58);
+        proofhash = Utils.hashToSha256(staticMetadataB58);
       }
 
       const tx = await this.contract().submitHash(proofhash);
@@ -193,201 +180,6 @@ class ErasureFeed {
   };
 
   /**
-   *
-   * Create a new CountdownGriefingEscrow and deposit stake
-   * - only called by feed owner
-   * - add feed address to metadata
-   * - add feed owner as staker
-   *
-   * @param {Object} config - configuration for escrow
-   * @param {string} [config.buyer]
-   * @param {string} config.paymentAmount
-   * @param {string} config.stakeAmount
-   * @param {number} config.escrowCountdown
-   * @param {string} config.griefRatio
-   * @param {number} config.griefRatioType
-   * @param {number} config.agreementCountdown
-   * @returns {Promise} address of the escrow
-   * @returns {Promise} address of the agreement
-   * @returns {Promise} transaction receipts
-   */
-  offerSell = async ({
-    buyer,
-    paymentAmount,
-    stakeAmount,
-    escrowCountdown,
-    griefRatio,
-    griefRatioType,
-    agreementCountdown
-  }) => {
-    const operator = await Ethers.getAccount();
-    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
-      throw new Error(
-        `offerSell() can only be called by the owner: ${this.owner()}`
-      );
-    }
-
-    const escrow = await this.#escrowFactory.create({
-      operator,
-      buyer,
-      seller: this.owner(),
-      paymentAmount,
-      stakeAmount,
-      escrowCountdown,
-      griefRatio,
-      griefRatioType,
-      agreementCountdown,
-      metadata: JSON.stringify({ feedAddress: this.address() })
-    });
-
-    return escrow;
-  };
-
-  /**
-   * Get all escrows to sell this feed
-   *
-   * @returns {Promise<ErasureEscrow[]>} array of Escrow objects
-   */
-  getSellOffers = async () => {
-    const results = await Ethers.getProvider().getLogs({
-      address: this.#escrowFactory.address(),
-      fromBlock: 0,
-      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
-    });
-
-    let escrows = [];
-    if (results && results.length > 0) {
-      for (const result of results) {
-        const creator = Ethers.getAddress(result.topics[2]);
-        const escrowAddress = Ethers.getAddress(result.topics[1]);
-
-        if (creator === this.owner()) {
-          const {
-            buyer,
-            seller,
-            paymentAmount,
-            stakeAmount,
-            metadata
-          } = this.#escrowFactory.decodeParams(result.data);
-
-          metadata = await IPFS.get(metadata);
-          metadata = JSON.parse(metadata);
-
-          if (
-            metadata.feedAddress !== undefined &&
-            metadata.feedAddress === this.address()
-          ) {
-            escrows.push(
-              this.#escrowFactory.createClone({
-                escrowAddress,
-                buyer,
-                seller,
-                stakeAmount,
-                paymentAmount
-              })
-            );
-          }
-        }
-      }
-    }
-
-    return escrows;
-  };
-
-  /**
-   * Create a new CountdownGriefingEscrow and deposit payment
-   * - add feed address to metadata
-   * - add feed owner as staker
-   * - add caller as buyer
-   *
-   * @param {Object} config - configuration for escrow
-   * @param {string} config.paymentAmount
-   * @param {string} config.stakeAmount
-   * @param {number} config.escrowCountdown
-   * @param {string} config.griefRatio
-   * @param {number} config.griefRatioType
-   * @param {number} config.agreementCountdown
-   * @returns {Promise} address of the escrow
-   * @returns {Promise} address of the agreement
-   * @returns {Promise} transaction receipts
-   */
-  offerBuy = async ({
-    paymentAmount,
-    stakeAmount,
-    escrowCountdown,
-    griefRatio,
-    griefRatioType,
-    agreementCountdown
-  }) => {
-    const buyer = await Ethers.getAccount();
-    const seller = this.owner();
-
-    const escrow = await this.#escrowFactory.create({
-      operator: buyer,
-      buyer,
-      seller,
-      paymentAmount,
-      stakeAmount,
-      escrowCountdown,
-      griefRatio,
-      griefRatioType,
-      agreementCountdown,
-      metadata: JSON.stringify({ feedAddress: this.address() })
-    });
-
-    return escrow;
-  };
-
-  /**
-   * Get all escrows to buy this feed
-   *
-   * @returns {Promise} array of Escrow objects
-   */
-  getBuyOffers = async () => {
-    const results = await Ethers.getProvider().getLogs({
-      address: this.#escrowFactory.address(),
-      fromBlock: 0,
-      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
-    });
-
-    let escrows = [];
-    if (results && results.length > 0) {
-      for (const result of results) {
-        const escrowAddress = Ethers.getAddress(result.topics[1]);
-        const {
-          buyer,
-          seller,
-          paymentAmount,
-          stakeAmount,
-          metadata
-        } = this.#escrowFactory.decodeParams(result.data);
-
-        if (seller === this.owner()) {
-          metadata = await IPFS.get(metadata);
-          metadata = JSON.parse(metadata);
-
-          if (
-            metadata.feedAddress !== undefined &&
-            metadata.feedAddress === this.address()
-          ) {
-            escrows.push(
-              this.#escrowFactory.createClone({
-                escrowAddress,
-                buyer,
-                seller,
-                stakeAmount,
-                paymentAmount
-              })
-            );
-          }
-        }
-      }
-    }
-
-    return escrows;
-  };
-
-  /**
    * Reveal all posts in this feed publically
    * - fetch symkey and upload to ipfs
    *
@@ -409,12 +201,10 @@ class ErasureFeed {
    * Get the status of the feed
    *
    * @returns {boolean} revealed bool true if the feed is revealed
-   * @returns {integer} numSold number of times the feed was sold
    */
   checkStatus = () => {
     return {
-      revealed: this.#revealed,
-      numSold: this.#numSold
+      revealed: this.#revealed
     };
   };
 }

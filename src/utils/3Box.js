@@ -10,6 +10,7 @@ const Box = {
   DATASTORE_FEEDS: "feeds",
   DATASTORE_GRIEFINGS: "griefings",
 
+  KEYSTORE_SYMMETRIC: "symmetric",
   KEYSTORE_ASYMMETRIC: "asymmetric",
 
   /**
@@ -98,6 +99,26 @@ const Box = {
         secretKey: keypair.key.secretKey.toString()
       }
     });
+  },
+
+  getSymKey: async keyhash => {
+    const keystore = await Box.get(Box.KEYSTORE_SYMMETRIC);
+    if (keystore === null || keystore[keyhash] === undefined) {
+      return null;
+    }
+
+    return keystore[keyhash];
+  },
+
+  setSymKey: async (keyhash, key) => {
+    let keystore = await Box.get(Box.KEYSTORE_SYMMETRIC);
+    if (keystore === null) {
+      keystore = {};
+    }
+
+    keystore[keyhash] = key;
+
+    await Box.set(Box.KEYSTORE_SYMMETRIC, keystore);
   }
 };
 

@@ -7,6 +7,7 @@ import ErasureEscrow from "../erasure/ErasureEscrow";
 import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
@@ -18,10 +19,12 @@ class Escrow_Factory {
   #registry = null;
   #network = null;
   #contract = null;
+  #erasureUsers = null;
   #protocolVersion = "";
 
-  constructor({ registry, network, protocolVersion }) {
+  constructor({ registry, network, erasureUsers, protocolVersion }) {
     this.#network = network;
+    this.#erasureUsers = erasureUsers;
     this.#protocolVersion = protocolVersion;
 
     this.#nmr = new NMR({ registry, network, protocolVersion });
@@ -146,6 +149,8 @@ class Escrow_Factory {
           stakeAmount,
           paymentAmount,
           nmr: this.#nmr,
+          proofhash: JSON.parse(metadata).proofhash,
+          erasureUsers: this.#erasureUsers,
           escrowAddress: receipt.logs[0].address,
           protocolVersion: this.#protocolVersion
         })
@@ -159,6 +164,7 @@ class Escrow_Factory {
     escrowAddress,
     buyer,
     seller,
+    proofhash,
     stakeAmount,
     paymentAmount
   }) => {
@@ -166,9 +172,11 @@ class Escrow_Factory {
       escrowAddress,
       buyer,
       seller,
+      proofhash,
       stakeAmount,
       paymentAmount,
       nmr: this.#nmr,
+      erasureUsers: this.#erasureUsers,
       protocolVersion: this.#protocolVersion
     });
   };
@@ -200,7 +208,7 @@ class Escrow_Factory {
       paymentAmount: Ethers.formatEther(result[3]).toString(),
       stakeAmount: Ethers.formatEther(result[4]).toString(),
       escrowCountdown: Ethers.formatEther(result[5].toString()),
-      staticMetadataB58: IPFS.hexToHash(result[6]),
+      staticMetadataB58: Utils.hexToHash(result[6]),
       agreementParams: {
         griefRatio: Ethers.formatEther(agreementParams[0]).toString(),
         griefRatioType: agreementParams[1],

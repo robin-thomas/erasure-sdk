@@ -3,6 +3,7 @@ import CryptoIPFS from "@erasure/crypto-ipfs";
 
 import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
 import Ethers from "../utils/Ethers";
 
 import NMR from "../erasure/NMR";
@@ -150,7 +151,7 @@ class Agreement_Factory {
       griefRatio: Ethers.formatEther(result[3].toString()),
       griefRatioType: result[4],
       countdownLength: result[5].toNumber(),
-      metadata: IPFS.hexToHash(result[6])
+      metadata: Utils.hexToHash(result[6])
     };
   };
 }

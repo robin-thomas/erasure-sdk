@@ -7,6 +7,7 @@ import Escrow_Factory from "./factory/Escrow_Factory";
 import Agreement_Factory from "./factory/Agreement_Factory";
 
 import IPFS from "./utils/IPFS";
+import Utils from "./utils/Utils";
 import Ethers from "./utils/Ethers";
 
 import contracts from "./contracts.json";
@@ -84,12 +85,15 @@ class ErasureClient {
         protocolVersion: this.#protocolVersion
       };
 
-      this.#escrowFactory = new Escrow_Factory(opts);
+      this.#erasureUsers = new Erasure_Users(opts);
+      this.#escrowFactory = new Escrow_Factory({
+        ...opts,
+        erasureUsers: this.#erasureUsers
+      });
       this.#feedFactory = new Feed_Factory({
         ...opts,
         escrowFactory: this.#escrowFactory
       });
-      this.#erasureUsers = new Erasure_Users(opts);
       this.#agreementFactory = new Agreement_Factory(opts);
 
       return await this.#erasureUsers.registerUser();
@@ -107,7 +111,7 @@ class ErasureClient {
   async getObject(address) {
     try {
       // Check if address is proofhash. If yes, then its ErasurePost.
-      if (IPFS.isProofhash(address)) {
+      if (Utils.isProofhash(address)) {
         const feeds = await this.#feedFactory.getFeeds();
         if (feeds && feeds.length > 0) {
           for (const feed of feeds) {
@@ -152,13 +156,17 @@ class ErasureClient {
                 buyer,
                 seller,
                 stakeAmount,
-                paymentAmount
+                paymentAmount,
+                staticMetadataB58
               } = this.#escrowFactory.decodeParams(results[0].data);
+
+              const metadata = await IPFS.get(staticMetadataB58);
 
               return this.#escrowFactory.createClone({
                 escrowAddress: address,
                 buyer,
                 seller,
+                proofhash: JSON.parse(metadata).proofhash,
                 stakeAmount,
                 paymentAmount
               });
@@ -195,11 +203,12 @@ class ErasureClient {
    * @param {Object} config
    * @param {string} [config.operator] optional operator
    * @param {string} [config.proofhash] optional initial post
+   * @param {string} [config.data] optional initial post raw data
    * @param {string} [config.metadata] optional metadata
    * @returns {Promise<Feed>}
    */
   async createFeed(opts) {
-    let { operator, proofhash, metadata } = opts || {};
+    let { operator, data, proofhash, metadata } = opts || {};
 
     operator = operator || (await Ethers.getAccount());
     if (!Ethers.isAddress(operator)) {
@@ -208,7 +217,7 @@ class ErasureClient {
 
     metadata = metadata || "";
 
-    if (proofhash !== undefined && !IPFS.isProofhash(proofhash)) {
+    if (proofhash !== undefined && !Utils.isProofhash(proofhash)) {
       throw new Error(`Invalid proofhash: ${proofhash}`);
     }
 
@@ -220,6 +229,8 @@ class ErasureClient {
     // Create optional post.
     if (proofhash !== undefined) {
       await feed.createPost(null, proofhash);
+    } else if (data !== undefined && data !== null) {
+      await feed.createPost(data, null);
     }
 
     return feed;
@@ -260,7 +271,6 @@ class ErasureClient {
     }
 
     buyer = buyer || operator;
-    metadata = metadata || "";
 
     return await this.#escrowFactory.create({
       operator,

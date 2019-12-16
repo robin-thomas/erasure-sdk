@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
@@ -45,7 +46,7 @@ class ErasurePost {
   proofhash = () => {
     return {
       proofhash: this.#proofhash,
-      multihash: IPFS.sha256ToHash(this.#proofhash)
+      multihash: Utils.sha256ToHash(this.#proofhash)
     };
   };
 
@@ -60,20 +61,9 @@ class ErasurePost {
   };
 
   #metadata = async () => {
-    const staticMetadataB58 = IPFS.sha256ToHash(this.#proofhash);
-
+    const staticMetadataB58 = Utils.sha256ToHash(this.proofhash().proofhash);
     const metadata = await IPFS.get(staticMetadataB58);
-    let { nonce, encryptedSymmetricKey, encryptedPostIpfsHash } = JSON.parse(
-      metadata
-    );
-    nonce = new Uint8Array(nonce.split(","));
-    encryptedSymmetricKey = new Uint8Array(encryptedSymmetricKey.split(","));
-
-    return {
-      nonce,
-      encryptedSymmetricKey,
-      encryptedPostIpfsHash
-    };
+    return JSON.parse(metadata);
   };
 
   /**
@@ -126,8 +116,7 @@ class ErasurePost {
     return escrow;
   };
 
-  /** getSellOffers
-   *
+  /**
    * Get all escrows to sell this Post
    *
    * @returns {Promise} array of Escrow objects
@@ -277,6 +266,7 @@ class ErasurePost {
    *
    * Reveal this post publically
    * - fetch symkey and upload to ipfs
+   * - should be called by feed creator
    *
    * @returns {Promise} base58 multihash format of the ipfs address of the revealed key
    */
@@ -287,28 +277,20 @@ class ErasurePost {
         throw new Error("Unable to retrieve the keypair");
       }
 
-      const {
-        nonce,
-        encryptedSymmetricKey,
-        encryptedPostIpfsHash
-      } = await this.#metadata();
+      const { keyhash, encryptedDatahash } = await this.#metadata();
+      const symKey = await Box.getSymKey(keyhash);
 
       // Download the encryptedPost from ipfs
-      const encryptedPost = await IPFS.get(encryptedPostIpfsHash);
+      const encryptedPost = await IPFS.get(encryptedDatahash);
 
-      // Decrypt the content.
-      const symmetricKey = Crypto.asymmetric.decrypt(
-        encryptedSymmetricKey,
-        nonce,
-        keypair
-      );
-
-      const post = Crypto.symmetric.decrypt(symmetricKey, encryptedPost);
+      const post = Crypto.symmetric.decrypt(symKey, encryptedPost);
       this.#revealed = true;
 
-      // Upload the decrypted data to ipfs.
-      // Returns the IPFS hash.
-      return await IPFS.add(post);
+      // Upload the decrypted ost data to ipfs.
+      await IPFS.add(post);
+
+      // Upload the symKey & return the ipfshash.
+      return await IPFS.add(symKey);
     } catch (err) {
       throw err;
     }

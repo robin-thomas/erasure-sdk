@@ -1,5 +1,11 @@
+/**
+ * ErasureAgreement
+ * @module ErasureAgreement
+ */
+
 import { ethers } from "ethers";
 
+import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
@@ -26,7 +32,7 @@ class ErasureAgreement {
    * @param {address} config.staker
    * @param {address} config.counterparty
    * @param {string} config.protocolVersion
-   * @param {string} config.agreementAddress
+   * @param {address} config.agreementAddress
    */
   constructor({
     type,
@@ -87,7 +93,7 @@ class ErasureAgreement {
    *
    * Get the type of this agreement (simple | countdown)
    *
-   * @returns {string} type of the agreement
+   * @returns {('simple'|'countdown')} type of the agreement
    */
   type = () => {
     return this.#type;
@@ -115,8 +121,8 @@ class ErasureAgreement {
   /**
    * Called by staker to increase the stake
    *
-   * @param {string} amount by which to increase the stake
-   * @returns {Promise} transaction receipts
+   * @param {string} amount - amount by which to increase the stake
+   * @returns {Promise} transaction receipt
    */
   stake = async amount => {
     const operator = await Ethers.getAccount();
@@ -131,7 +137,7 @@ class ErasureAgreement {
   /**
    * Called by counterparty to increase the stake
    *
-   * @param {string} amount amount by which to increase the stake (in NMR)
+   * @param {string} amount - amount by which to increase the stake (in NMR)
    * @returns {Promise} transaction receipt
    */
   reward = async amount => {
@@ -154,7 +160,7 @@ class ErasureAgreement {
    * @param {string} amount - punishment amount to burn from the stake (in NMR)
    * @param {string} message - message to indicate reason for the punishment
    * @returns {Promise} amount it cost to punish
-   * @returns {Promise} transaction receipts
+   * @returns {Promise} transaction receipt
    */
   punish = async (amount, message) => {
     const operator = await Ethers.getAccount();
@@ -170,14 +176,30 @@ class ErasureAgreement {
       Ethers.parseEther(amount),
       Buffer.from(message)
     );
+    const receipt = await tx.wait();
 
-    return await tx.wait();
+    const events = receipt.events.reduce((p, c) => {
+      p[c.event] = c;
+      return p;
+    }, {});
+
+    const cost = Ethers.formatEther(
+      Abi.decode(
+        ["address", "address", "uint256", "uint256", "bytes"],
+        events.Griefed.data
+      )[3]
+    );
+
+    return {
+      cost,
+      receipt
+    };
   };
 
   /**
    * Called by counterparty to release the stake
    *
-   * @param {string} amount amount to release from the stake (in NMR)
+   * @param {string} amount - amount to release from the stake (in NMR)
    * @returns {Promise} transaction receipt
    */
   release = async amount => {
@@ -200,7 +222,21 @@ class ErasureAgreement {
     }
 
     const tx = await this.contract().startCountdown();
-    return await tx.wait();
+    const receipt = await tx.wait();
+
+    const events = receipt.events.reduce((p, c) => {
+      p[c.event] = c;
+      return p;
+    }, {});
+
+    const deadline = Ethers.formatEther(
+      Abi.decode(["uint256"], events.DeadlineSet.data)[0]
+    );
+
+    return {
+      receipt,
+      deadline
+    };
   };
 
   /**
