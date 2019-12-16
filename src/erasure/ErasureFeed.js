@@ -53,6 +53,9 @@ class ErasureFeed {
 
   /**
    * Access the web3 contract class
+   *
+   * @memberof ErasureFeed
+   * @method contract
    */
   contract = () => {
     return this.#contract;
@@ -61,6 +64,8 @@ class ErasureFeed {
   /**
    * Get the address of this feed
    *
+   * @memberof ErasureFeed
+   * @method address
    * @returns {address} address of the feed
    */
   address = () => {
@@ -70,6 +75,8 @@ class ErasureFeed {
   /**
    * Get the address of the owner of this feed
    *
+   * @memberof ErasureFeed
+   * @method owner
    * @returns {address} address of the owner
    */
   owner = () => {
@@ -80,6 +87,8 @@ class ErasureFeed {
    * Submit new data to this feed
    * - can only called by feed owner
    *
+   * @memberof ErasureFeed
+   * @method createPost
    * @param {string} data - raw data to be posted
    * @param {string} [proofhash]
    * @returns {Promise<ErasurePostWithReceipt>}
@@ -149,6 +158,8 @@ class ErasureFeed {
   /**
    * Get all the posts submitted to this feed
    *
+   * @memberof ErasureFeed
+   * @method getPosts
    * @returns {Promise<ErasurePost[]>} array of ErasurePost objects
    */
   getPosts = async () => {
@@ -184,6 +195,8 @@ class ErasureFeed {
    * Reveal all posts in this feed publically
    * - fetch symkey and upload to ipfs
    *
+   * @memberof ErasureFeed
+   * @method reveal
    * @returns {Promise} array of base58 multihash format of the ipfs address of the revealed keys
    */
   reveal = async () => {
@@ -201,6 +214,8 @@ class ErasureFeed {
   /**
    * Get the status of the feed
    *
+   * @memberof ErasureFeed
+   * @method checkStatus
    * @returns {boolean} revealed bool true if the feed is revealed
    */
   checkStatus = () => {

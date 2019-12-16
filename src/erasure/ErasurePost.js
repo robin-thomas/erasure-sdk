@@ -39,6 +39,8 @@ class ErasurePost {
   /**
    * Get the proofhash of this post
    *
+   * @memberof ErasurePost
+   * @method proofhash
    * @returns {string} bytes32 sha256 proofhash
    * @returns {string} base58 multihash format of the proofhash
    */
@@ -53,6 +55,8 @@ class ErasurePost {
    *
    * Get the address of the owner of this post
    *
+   * @memberof ErasurePost
+   * @method owner
    * @returns {Promise} address of the owner
    */
   owner = () => {
@@ -71,6 +75,8 @@ class ErasurePost {
    * - add proofhash to metadata
    * - add Post owner as staker
    *
+   * @memberof ErasurePost
+   * @method offerSell
    * @param {Object} config - configuration for escrow
    * @param {string} [config.buyer]
    * @param {string} config.paymentAmount
@@ -118,6 +124,8 @@ class ErasurePost {
   /**
    * Get all escrows to sell this Post
    *
+   * @memberof ErasurePost
+   * @method getSellOffers
    * @returns {Promise} array of Escrow objects
    */
   getSellOffers = async () => {
@@ -172,6 +180,8 @@ class ErasurePost {
    * - add Post owner as staker
    * - add caller as buyer
    *
+   * @memberof ErasurePost
+   * @method offerBuy
    * @param {Object} config - configuration for escrow
    * @param {string} config.paymentAmount
    * @param {string} config.stakeAmount
@@ -213,6 +223,8 @@ class ErasurePost {
   /**
    * Get all escrows to buy this Post
    *
+   * @memberof ErasurePost
+   * @method getBuyOffers
    * @returns {Promise} array of Escrow objects
    */
   getBuyOffers = async () => {
@@ -264,6 +276,8 @@ class ErasurePost {
    * - fetch symkey and upload to ipfs
    * - should be called by feed creator
    *
+   * @memberof ErasurePost
+   * @method reveal
    * @returns {Promise} base58 multihash format of the ipfs address of the revealed key
    */
   reveal = async () => {
@@ -296,6 +310,8 @@ class ErasurePost {
    *
    * Get the status of the post
    *
+   * @memberof ErasurePost
+   * @method checkStatus
    * @returns {boolean} revealed bool true if the post is revealed
    * @returns {integer} numSold number of times the post was sold
    */

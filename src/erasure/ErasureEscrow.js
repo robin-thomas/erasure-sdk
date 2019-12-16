@@ -74,6 +74,8 @@ class ErasureEscrow {
   /**
    * Access the web3 contract class
    *
+   * @memberof ErasureEscrow
+   * @method contract
    * @returns {Object} contract object
    */
   contract = () => {
@@ -83,6 +85,8 @@ class ErasureEscrow {
   /**
    * Get the address of this escrow
    *
+   * @memberof ErasureEscrow
+   * @method address
    * @returns {address} address of the escrow
    */
   address = () => {
@@ -92,6 +96,8 @@ class ErasureEscrow {
   /**
    * Get the address of the seller of this escrow
    *
+   * @memberof ErasureEscrow
+   * @method seller
    * @returns {address} address of the seller
    */
   seller = () => {
@@ -101,6 +107,8 @@ class ErasureEscrow {
   /**
    * Get the address of the buyer of this escrow
    *
+   * @memberof ErasureEscrow
+   * @method buyer
    * @returns {address} address of the buyer
    */
   buyer = () => {
@@ -111,6 +119,8 @@ class ErasureEscrow {
    * Called by seller to deposit the stake
    * - If the payment is already deposited, also send the encrypted symkey
    *
+   * @memberof ErasureEscrow
+   * @method depositStake
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipt
    */
@@ -152,6 +162,8 @@ class ErasureEscrow {
   /**
    * Called by buyer to deposit the payment
    *
+   * @memberof ErasureEscrow
+   * @method depositPayment
    * @returns {Promise} transaction receipt
    */
   depositPayment = async () => {
@@ -180,6 +192,8 @@ class ErasureEscrow {
   /**
    * Called by seller to finalize and submit the encrypted symkey
    *
+   * @memberof ErasureEscrow
+   * @method finalize
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
    */
@@ -244,6 +258,8 @@ class ErasureEscrow {
   /**
    * Called by seller or buyer to attempt to cancel the escrow
    *
+   * @memberof ErasureEscrow
+   * @method cancel
    * @returns {Promise} transaction receipt
    */
   cancel = async () => {

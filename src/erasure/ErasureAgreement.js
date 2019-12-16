@@ -68,6 +68,8 @@ class ErasureAgreement {
   /**
    * Access the web3 contract class
    *
+   * @memberof ErasureAgreement
+   * @method contract
    * @returns {Object} contract object
    */
   contract = () => {
@@ -77,6 +79,8 @@ class ErasureAgreement {
   /**
    * Get the address of this agreement
    *
+   * @memberof ErasureAgreement
+   * @method address
    * @returns {address} address of the agreement
    */
   address = () => {
@@ -87,6 +91,8 @@ class ErasureAgreement {
    *
    * Get the type of this agreement (simple | countdown)
    *
+   * @memberof ErasureAgreement
+   * @method type
    * @returns {('simple'|'countdown')} type of the agreement
    */
   type = () => {
@@ -97,6 +103,8 @@ class ErasureAgreement {
    *
    * Get the address of the staker of this agreement
    *
+   * @memberof ErasureAgreement
+   * @method staker
    * @returns {address} address of the staker
    */
   staker = () => {
@@ -106,6 +114,8 @@ class ErasureAgreement {
   /**
    * Get the address of the counterparty of this agreement
    *
+   * @memberof ErasureAgreement
+   * @method counterparty
    * @returns {address} address of the counterparty
    */
   counterparty = () => {
@@ -115,6 +125,8 @@ class ErasureAgreement {
   /**
    * Called by staker to increase the stake
    *
+   * @memberof ErasureAgreement
+   * @method stake
    * @param {string} amount - amount by which to increase the stake
    * @returns {Promise} transaction receipt
    */
@@ -131,6 +143,8 @@ class ErasureAgreement {
   /**
    * Called by counterparty to increase the stake
    *
+   * @memberof ErasureAgreement
+   * @method reward
    * @param {string} amount - amount by which to increase the stake (in NMR)
    * @returns {Promise} transaction receipt
    */
@@ -151,6 +165,8 @@ class ErasureAgreement {
   /**
    * Called by counterparty to burn some stake
    *
+   * @memberof ErasureAgreement
+   * @method punish
    * @param {string} amount - punishment amount to burn from the stake (in NMR)
    * @param {string} message - message to indicate reason for the punishment
    * @returns {Promise} amount it cost to punish
@@ -193,6 +209,8 @@ class ErasureAgreement {
   /**
    * Called by counterparty to release the stake
    *
+   * @memberof ErasureAgreement
+   * @method release
    * @param {string} amount - amount to release from the stake (in NMR)
    * @returns {Promise} transaction receipt
    */
@@ -204,6 +222,8 @@ class ErasureAgreement {
   /**
    * Called by staker to start the countdown to withdraw the stake
    *
+   * @memberof ErasureAgreement
+   * @method requestWithdraw
    * @returns {Promise} deadline timestamp when withdraw will be available
    * @returns {Promise} transaction receipts
    */
@@ -236,6 +256,8 @@ class ErasureAgreement {
   /**
    * Called by staker to withdraw the stake
    *
+   * @memberof ErasureAgreement
+   * @method withdraw
    * @param {address} recipient
    * @returns {Promise} amount withdrawn
    * @returns {Promise} transaction receipt
@@ -270,6 +292,8 @@ class ErasureAgreement {
   /**
    * Get the status of the agreement
    *
+   * @memberof ErasureAgreement
+   * @method checkStatus
    * @returns {Promise} object with all relevant data
    */
   checkStatus = async () => {
