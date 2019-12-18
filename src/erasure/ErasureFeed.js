@@ -18,6 +18,7 @@ class ErasureFeed {
   #contract = null;
   #feedAddress = null;
   #escrowFactory = null;
+  #web3Provider = null;
   #protocolVersion = "";
 
   /**
@@ -25,18 +26,26 @@ class ErasureFeed {
    * @param {Object} config
    * @param {string} config.owner
    * @param {string} config.feedAddress
+   * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
    */
-  constructor({ owner, feedAddress, protocolVersion, escrowFactory }) {
+  constructor({
+    owner,
+    feedAddress,
+    web3Provider,
+    protocolVersion,
+    escrowFactory
+  }) {
     this.#owner = owner;
     this.#feedAddress = feedAddress;
     this.#escrowFactory = escrowFactory;
+    this.#web3Provider = web3Provider;
     this.#protocolVersion = protocolVersion;
 
     this.#contract = new ethers.Contract(
       feedAddress,
       contract.abi,
-      Ethers.getWallet()
+      Ethers.getWallet(this.#web3Provider)
     );
 
     // Listen for any metamask changes.
@@ -45,7 +54,7 @@ class ErasureFeed {
         this.#contract = new ethers.Contract(
           feedAddress,
           contract.abi,
-          Ethers.getWallet()
+          Ethers.getWallet(this.#web3Provider)
         );
       });
     }
@@ -96,7 +105,7 @@ class ErasureFeed {
    */
   createPost = async (data, proofhash = null) => {
     try {
-      const operator = await Ethers.getAccount();
+      const operator = await Ethers.getAccount(this.#web3Provider);
       if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
         throw new Error(
           `createPost() can only be called by the owner: ${this.owner()}`
@@ -163,7 +172,7 @@ class ErasureFeed {
    * @returns {Promise<ErasurePost[]>} array of ErasurePost objects
    */
   getPosts = async () => {
-    let results = await Ethers.getProvider().getLogs({
+    let results = await this.#web3Provider.getLogs({
       address: this.address(),
       topics: [ethers.utils.id("HashSubmitted(bytes32)")],
       fromBlock: 0
@@ -181,6 +190,7 @@ class ErasureFeed {
             owner: this.owner(),
             proofhash: result.data,
             feedAddress: this.address(),
+            web3Provider: this.#web3Provider,
             escrowFactory: this.#escrowFactory,
             protocolVersion: this.#protocolVersion
           })

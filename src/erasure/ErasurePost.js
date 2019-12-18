@@ -12,6 +12,7 @@ class ErasurePost {
   #proofhash = null;
   #feedAddress = null;
   #escrowFactory = null;
+  #web3Provider = null;
   #protocolVersion = "";
 
   /**
@@ -20,6 +21,7 @@ class ErasurePost {
    * @param {address} config.owner
    * @param {string} config.proofhash
    * @param {address} config.feedAddress
+   * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
    */
   constructor({
@@ -27,12 +29,14 @@ class ErasurePost {
     proofhash,
     feedAddress,
     escrowFactory,
+    web3Provider,
     protocolVersion
   }) {
     this.#owner = owner;
     this.#proofhash = proofhash;
     this.#feedAddress = feedAddress;
     this.#escrowFactory = escrowFactory;
+    this.#web3Provider = web3Provider;
     this.#protocolVersion = protocolVersion;
   }
 
@@ -98,7 +102,7 @@ class ErasurePost {
     griefRatioType,
     agreementCountdown
   }) => {
-    const operator = await Ethers.getAccount();
+    const operator = await Ethers.getAccount(this.#web3Provider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
       throw new Error(
         `offerSell() can only be called by the owner: ${this.owner()}`
@@ -129,7 +133,7 @@ class ErasurePost {
    * @returns {Promise} array of Escrow objects
    */
   getSellOffers = async () => {
-    const results = await Ethers.getProvider().getLogs({
+    const results = await this.#web3Provider.getLogs({
       address: this.#escrowFactory.address(),
       fromBlock: 0,
       topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]

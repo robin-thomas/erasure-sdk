@@ -20,11 +20,19 @@ class Escrow_Factory {
   #network = null;
   #contract = null;
   #erasureUsers = null;
+  #web3Provider = null;
   #protocolVersion = "";
 
-  constructor({ registry, network, erasureUsers, protocolVersion }) {
+  constructor({
+    registry,
+    network,
+    erasureUsers,
+    web3Provider,
+    protocolVersion
+  }) {
     this.#network = network;
     this.#erasureUsers = erasureUsers;
+    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
     this.#protocolVersion = protocolVersion;
 
     this.#nmr = new NMR({ registry, network, protocolVersion });
@@ -34,7 +42,7 @@ class Escrow_Factory {
       this.#contract = new ethers.Contract(
         this.#registry,
         contract.abi,
-        Ethers.getWallet()
+        Ethers.getWallet(this.#web3Provider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
@@ -45,7 +53,7 @@ class Escrow_Factory {
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
         contract.abi,
-        Ethers.getWallet()
+        Ethers.getWallet(this.#web3Provider)
       );
     }
 
@@ -56,13 +64,13 @@ class Escrow_Factory {
           this.#contract = new ethers.Contract(
             this.#registry,
             contract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         } else {
           this.#contract = new ethers.Contract(
             this.#registry[this.#network],
             contract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         }
       });
@@ -149,6 +157,7 @@ class Escrow_Factory {
           stakeAmount,
           paymentAmount,
           nmr: this.#nmr,
+          web3Provider: this.#web3Provider,
           proofhash: JSON.parse(metadata).proofhash,
           erasureUsers: this.#erasureUsers,
           escrowAddress: receipt.logs[0].address,
@@ -176,6 +185,7 @@ class Escrow_Factory {
       stakeAmount,
       paymentAmount,
       nmr: this.#nmr,
+      web3Provider: this.#web3Provider,
       erasureUsers: this.#erasureUsers,
       protocolVersion: this.#protocolVersion
     });

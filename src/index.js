@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
 
+import NMR from "./erasure/NMR";
+
 import Erasure_Users from "./registry/Erasure_Users";
 
 import Feed_Factory from "./factory/Feed_Factory";
@@ -31,7 +33,9 @@ import contracts from "./contracts.json";
  */
 
 class ErasureClient {
+  #nmr = null;
   #registry = {};
+  #web3Provider = null;
   #protocolVersion = "";
 
   #feedFactory = null;
@@ -44,10 +48,15 @@ class ErasureClient {
    *
    * @constructor
    * @param {Object} config - configuration for ErasureClient
+   * @param {string} config.web3Provider
    * @param {string} config.protocolVersion - version of the erasure protocol
    */
-  constructor({ protocolVersion, registry }) {
+  constructor({ protocolVersion, web3Provider, registry }) {
     this.#protocolVersion = protocolVersion;
+
+    if (web3Provider !== undefined && web3Provider !== null) {
+      this.#web3Provider = web3Provider;
+    }
 
     this.#registry =
       process.env.NODE_ENV === "test"
@@ -66,9 +75,11 @@ class ErasureClient {
       const opts = {
         registry: this.#registry,
         network: await Ethers.getProvider().getNetwork(),
+        web3Provider: this.#web3Provider,
         protocolVersion: this.#protocolVersion
       };
 
+      this.#nmr = new NMR(opts);
       this.#erasureUsers = new Erasure_Users(opts);
       this.#escrowFactory = new Escrow_Factory({
         ...opts,
@@ -78,7 +89,10 @@ class ErasureClient {
         ...opts,
         escrowFactory: this.#escrowFactory
       });
-      this.#agreementFactory = new Agreement_Factory(opts);
+      this.#agreementFactory = new Agreement_Factory({
+        ...opts,
+        nmr: this.#nmr
+      });
 
       return await this.#erasureUsers.registerUser();
     } catch (err) {
@@ -297,7 +311,7 @@ class ErasureClient {
   }) {
     try {
       if (operator === undefined) {
-        operator = await Ethers.getAccount();
+        operator = await Ethers.getAccount(this.#web3Provider);
       }
       if (!Ethers.isAddress(operator)) {
         throw new Error(`Operator ${operator} is not an address`);

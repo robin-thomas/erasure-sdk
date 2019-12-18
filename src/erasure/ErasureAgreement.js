@@ -18,6 +18,7 @@ class ErasureAgreement {
   #contract = null;
   #counterparty = null;
   #protocolVersion = "";
+  #web3Provider = null;
   #agreementAddress = null;
 
   /**
@@ -25,6 +26,7 @@ class ErasureAgreement {
    * @param {('simple'|'countdown')} config.type
    * @param {address} config.staker
    * @param {address} config.counterparty
+   * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
    * @param {address} config.agreementAddress
    */
@@ -32,12 +34,14 @@ class ErasureAgreement {
     type,
     staker,
     counterparty,
+    web3Provider,
     protocolVersion,
     agreementAddress
   }) {
     this.#type = type;
     this.#staker = staker;
     this.#counterparty = counterparty;
+    this.#web3Provider = web3Provider;
     this.#protocolVersion = protocolVersion;
     this.#agreementAddress = agreementAddress;
 
@@ -50,7 +54,7 @@ class ErasureAgreement {
     this.#contract = new ethers.Contract(
       agreementAddress,
       this.#abi,
-      Ethers.getWallet()
+      Ethers.getWallet(this.#web3Provider)
     );
 
     // Listen for any metamask changes.
@@ -59,7 +63,7 @@ class ErasureAgreement {
         this.#contract = new ethers.Contract(
           agreementAddress,
           this.#abi,
-          Ethers.getWallet()
+          Ethers.getWallet(this.#web3Provider)
         );
       });
     }
@@ -131,7 +135,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   stake = async amount => {
-    const operator = await Ethers.getAccount();
+    const operator = await Ethers.getAccount(this.#web3Provider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
       throw new Error(`stake() can be called only by staker: ${this.staker()}`);
     }
@@ -149,7 +153,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   reward = async amount => {
-    const operator = await Ethers.getAccount();
+    const operator = await Ethers.getAccount(this.#web3Provider);
     if (
       Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
     ) {
@@ -173,7 +177,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   punish = async (amount, message) => {
-    const operator = await Ethers.getAccount();
+    const operator = await Ethers.getAccount(this.#web3Provider);
     if (
       Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
     ) {
@@ -228,7 +232,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipts
    */
   requestWithdraw = async () => {
-    const operator = await Ethers.getAccount();
+    const operator = await Ethers.getAccount(this.#web3Provider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
       throw new Error(
         `requestWithdraw() can be called only by staker: ${this.staker()}`
@@ -271,7 +275,7 @@ class ErasureAgreement {
     const receipt = await tx.wait();
 
     // get the agreement address.
-    const results = await Ethers.getProvider().getLogs({
+    const results = await this.#web3Provider.getLogs({
       address: this.address(),
       topics: [ethers.utils.id("StakeTaken(address,address,uint256)")],
       fromBlock: 0

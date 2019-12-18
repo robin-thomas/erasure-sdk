@@ -35,7 +35,7 @@ const Ethers = {
    *
    * @returns {Object} ethers signer
    */
-  getWallet: () => {
+  getWallet: (web3Provider = null) => {
     if (process.env.NODE_ENV === "test") {
       const keys = require("../../test/test.json");
 
@@ -45,6 +45,10 @@ const Ethers = {
     }
 
     try {
+      if (web3Provider !== null) {
+        return web3Provider.getSigner();
+      }
+
       return Ethers.getProvider().getSigner();
     } catch (err) {
       return null;
@@ -103,8 +107,8 @@ const Ethers = {
   bigNumberify: value => ethers.utils.bigNumberify(value),
   hexlify: value => ethers.utils.hexlify(value),
 
-  getAccount: async () => {
-    return await Ethers.getWallet().getAddress();
+  getAccount: async (web3Provider = null) => {
+    return await Ethers.getWallet(web3Provider).getAddress();
   },
 
   MaxUint256: () => ethers.constants.MaxUint256,

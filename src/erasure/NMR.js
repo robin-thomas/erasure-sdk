@@ -10,16 +10,25 @@ class NMR {
   #registry = {};
   #network = null;
   #contract = null;
+  #web3Provider = null;
 
-  constructor({ registry, network }) {
+  /**
+   * @constructor
+   * @param {Object} config
+   * @param {address} config.registry
+   * @param {string} config.network
+   * @param {Object} config.web3Provider
+   */
+  constructor({ registry, network, web3Provider }) {
     this.#network = network;
+    this.#web3Provider = web3Provider;
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.NMR;
       this.#contract = new ethers.Contract(
         this.#registry,
         mockContract.abi,
-        Ethers.getWallet()
+        Ethers.getWallet(this.#web3Provider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, network) => {
@@ -31,13 +40,13 @@ class NMR {
         this.#contract = new ethers.Contract(
           this.#registry[this.#network],
           contract.abi,
-          Ethers.getWallet()
+          Ethers.getWallet(this.#web3Provider)
         );
       } else {
         this.#contract = new ethers.Contract(
           this.#registry[this.#network],
           mockContract.abi,
-          Ethers.getWallet()
+          Ethers.getWallet(this.#web3Provider)
         );
       }
     }
@@ -49,19 +58,19 @@ class NMR {
           this.#contract = new ethers.Contract(
             this.#registry,
             mockContract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         } else if (network === "homestead") {
           this.#contract = new ethers.Contract(
             this.#registry[this.#network],
             contract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         } else {
           this.#contract = new ethers.Contract(
             this.#registry[this.#network],
             mockContract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         }
       });

@@ -18,19 +18,28 @@ class Feed_Factory {
   #network = null;
   #contract = null;
   #escrowFactory = null;
+  #web3Provider = null;
   #protocolVersion = "";
 
-  constructor({ registry, network, protocolVersion, escrowFactory }) {
+  constructor({
+    registry,
+    network,
+    web3Provider,
+    protocolVersion,
+    escrowFactory
+  }) {
     this.#network = network;
     this.#escrowFactory = escrowFactory;
     this.#protocolVersion = protocolVersion;
+
+    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Feed_Factory;
       this.#contract = new ethers.Contract(
         this.#registry,
         contract.abi,
-        Ethers.getWallet()
+        Ethers.getWallet(this.#web3Provider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
@@ -41,7 +50,7 @@ class Feed_Factory {
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
         contract.abi,
-        Ethers.getWallet()
+        Ethers.getWallet(this.#web3Provider)
       );
     }
 
@@ -52,13 +61,13 @@ class Feed_Factory {
           this.#contract = new ethers.Contract(
             this.#registry,
             contract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         } else {
           this.#contract = new ethers.Contract(
             this.#registry[this.#network],
             contract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         }
       });
@@ -93,6 +102,7 @@ class Feed_Factory {
         receipt,
         feed: new ErasureFeed({
           owner: operator,
+          web3Provider: this.#web3Provider,
           feedAddress: receipt.logs[0].address,
           escrowFactory: this.#escrowFactory,
           protocolVersion: this.#protocolVersion
@@ -104,7 +114,7 @@ class Feed_Factory {
   };
 
   createClone = async address => {
-    const logs = await Ethers.getProvider().getLogs({
+    const logs = await this.#web3Provider.getLogs({
       address,
       fromBlock: 0,
       topics: [ethers.utils.id("OperatorUpdated(address)")]
@@ -114,6 +124,7 @@ class Feed_Factory {
     return new ErasureFeed({
       owner,
       feedAddress: address,
+      web3Provider: this.#web3Provider,
       escrowFactory: this.#escrowFactory,
       protocolVersion: this.#protocolVersion
     });
@@ -121,9 +132,7 @@ class Feed_Factory {
 
   getFeeds = async (user = null) => {
     try {
-      const provider = Ethers.getProvider();
-
-      const results = await provider.getLogs({
+      const results = await this.#web3Provider.getLogs({
         address: this.#contract.address,
         topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")],
         fromBlock: 0
@@ -152,6 +161,7 @@ class Feed_Factory {
             new ErasureFeed({
               owner,
               feedAddress,
+              web3Provider: this.#web3Provider,
               escrowFactory: this.#escrowFactory,
               protocolVersion: this.#protocolVersion
             })

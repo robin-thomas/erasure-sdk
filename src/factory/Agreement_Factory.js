@@ -6,7 +6,6 @@ import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Ethers from "../utils/Ethers";
 
-import NMR from "../erasure/NMR";
 import ErasureAgreement from "../erasure/ErasureAgreement";
 
 import simpleContract from "../../artifacts/SimpleGriefing_Factory.json";
@@ -17,13 +16,14 @@ class Agreement_Factory {
   #registry = {};
   #network = null;
   #contract = null;
+  #web3Provider = null;
   #protocolVersion = "";
 
-  constructor({ registry, network, protocolVersion }) {
+  constructor({ nmr, registry, network, web3Provider, protocolVersion }) {
+    this.#nmr = nmr;
     this.#network = network;
+    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
     this.#protocolVersion = protocolVersion;
-
-    this.#nmr = new NMR({ registry, network, protocolVersion });
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = {
@@ -70,7 +70,11 @@ class Agreement_Factory {
     } else {
       address = this.#registry[this.#network][agreementType];
     }
-    const contract = new ethers.Contract(address, abi, Ethers.getWallet());
+    const contract = new ethers.Contract(
+      address,
+      abi,
+      Ethers.getWallet(this.#web3Provider)
+    );
 
     const ipfsHash = await IPFS.add(metadata);
     const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
@@ -104,7 +108,7 @@ class Agreement_Factory {
     if (process.env.NODE_ENV === "test") {
       await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
     } else {
-      const network = await Ethers.getProvider().getNetwork();
+      const network = await this.#web3Provider.getNetwork();
       if (network && network.name === "rinkeby") {
         await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
         await this.#nmr.mintMockTokens(counterparty, Ethers.parseEther("1000"));
@@ -118,6 +122,7 @@ class Agreement_Factory {
       agreement: new ErasureAgreement({
         staker,
         counterparty,
+        web3Provider: this.#web3Provider,
         type:
           agreementType === "CountdownGriefing_Factory"
             ? "countdown"
@@ -134,6 +139,7 @@ class Agreement_Factory {
       counterparty,
       type,
       agreementAddress,
+      web3Provider: this.#web3Provider,
       protocolVersion: this.#protocolVersion
     });
   };

@@ -10,16 +10,18 @@ class Erasure_Users {
   #registry = {};
   #network = null;
   #contract = null;
+  #web3Provider = null;
 
-  constructor({ registry, network }) {
+  constructor({ registry, network, web3Provider }) {
     this.#network = network;
+    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Erasure_Users;
       this.#contract = new ethers.Contract(
         this.#registry,
         contract.abi,
-        Ethers.getWallet()
+        Ethers.getWallet(this.#web3Provider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, network) => {
@@ -30,7 +32,7 @@ class Erasure_Users {
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
         contract.abi,
-        Ethers.getWallet()
+        Ethers.getWallet(this.#web3Provider)
       );
     }
 
@@ -41,13 +43,13 @@ class Erasure_Users {
           this.#contract = new ethers.Contract(
             this.#registry,
             contract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         } else {
           this.#contract = new ethers.Contract(
             this.#registry[this.#network],
             contract.abi,
-            Ethers.getWallet()
+            Ethers.getWallet(this.#web3Provider)
           );
         }
       });
@@ -70,7 +72,7 @@ class Erasure_Users {
     // Register the publicKey in Erasure_Users.
     const publicKey = Buffer.from(keypair.key.publicKey).toString("hex");
 
-    const address = await Ethers.getAccount();
+    const address = await Ethers.getAccount(this.#web3Provider);
     const data = await this.getUserData(address);
 
     if (data === null || data === undefined || data === "0x") {
