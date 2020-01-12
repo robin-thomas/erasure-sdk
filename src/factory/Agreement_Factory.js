@@ -147,7 +147,7 @@ class Agreement_Factory {
     });
   };
 
-  decodeParams = data => {
+  decodeParams = (data, countdown = true) => {
     const result = Abi.decode(
       [
         "address",
@@ -156,7 +156,7 @@ class Agreement_Factory {
         "uint8",
         "uint256",
         "uint8",
-        "uint256",
+        ...(countdown === true ? ["uint256"] : []),
         "bytes"
       ],
       data
@@ -169,8 +169,14 @@ class Agreement_Factory {
       tokenId: result[3],
       griefRatio: Ethers.formatEther(result[4].toString()),
       griefRatioType: result[5],
-      countdownLength: result[6].toNumber(),
-      metadata: Utils.hexToHash(result[7])
+      ...(countdown === true
+        ? {
+            countdownLength: result[6].toNumber(),
+            metadata: Utils.hexToHash(result[7])
+          }
+        : {
+            metadata: Utils.hexToHash(result[6])
+          })
     };
   };
 }

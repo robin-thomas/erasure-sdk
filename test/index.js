@@ -318,6 +318,9 @@ describe("ErasureClient", () => {
         griefRatioType: 2
       }));
       assert.ok(Ethers.isAddress(agreement.address()));
+
+      const _simple = await client.getObject(agreement.address());
+      assert.ok(agreement.address() === _simple.address());
     });
 
     it("#stake", async () => {

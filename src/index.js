@@ -132,7 +132,8 @@ class ErasureClient {
         feed: "Initialized(address,bytes)",
         escrow:
           "Initialized(address,address,address,uint8,uint256,uint256,uint256,bytes,bytes)",
-        simple: "Initialized(address,address,address,uint256,uint8,bytes)",
+        simple:
+          "Initialized(address,address,address,uint8,uint256,uint8,bytes)",
         countdown:
           "Initialized(address,address,address,uint8,uint256,uint8,uint256,bytes)"
       };
@@ -146,6 +147,7 @@ class ErasureClient {
         });
 
         // Found the type.
+        let staker, counterparty;
         if (results.length > 0) {
           switch (type) {
             case "feed":
@@ -172,11 +174,22 @@ class ErasureClient {
               });
 
             case "simple":
-            case "countdown":
-              const {
+              ({ staker, counterparty } = this.#agreementFactory.decodeParams(
+                results[0].data,
+                false
+              ));
+
+              return this.#agreementFactory.createClone(
+                address,
+                type,
                 staker,
                 counterparty
-              } = this.#agreementFactory.decodeParams(results[0].data);
+              );
+
+            case "countdown":
+              ({ staker, counterparty } = this.#agreementFactory.decodeParams(
+                results[0].data
+              ));
 
               return this.#agreementFactory.createClone(
                 address,
