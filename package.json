@@ -1,9 +1,9 @@
 {
   "name": "@robinthomas/erasure-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
-  "homepage": "https://github.com/robin-thomas/erasure-client#readme",
+  "homepage": "https://github.com/robin-thomas/erasure-sdk#readme",
   "scripts": {
     "download": "./scripts/download.sh contracts",
     "prebuild": "npm run download",
@@ -33,7 +33,7 @@
     "bs58": "^4.0.1",
     "docdash": "^1.1.1",
     "esm": "^3.2.25",
-    "ethers": "^4.0.40",
+    "ethers": "^4.0.43",
     "ganache-cli": "^6.7.0",
     "husky": "^3.0.5",
     "identity-wallet": "^1.0.0",
@@ -60,9 +60,9 @@
   "dependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/robin-thomas/erasure-client.git"
+    "url": "git+https://github.com/robin-thomas/erasure-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/robin-thomas/erasure-client/issues"
+    "url": "https://github.com/robin-thomas/erasure-sdk/issues"
   }
 }

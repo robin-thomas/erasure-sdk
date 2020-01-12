@@ -127,7 +127,7 @@ class ErasureClient {
       }
 
       const init = {
-        feed: "Initialized(address,bytes32,bytes)",
+        feed: "Initialized(address,bytes)",
         escrow:
           "Initialized(address,address,address,uint256,uint256,uint256,bytes,bytes)",
         simple: "Initialized(address,address,address,uint256,uint8,bytes)",
