@@ -142,13 +142,6 @@ class Feed_Factory {
         const abiCoder = ethers.utils.defaultAbiCoder;
 
         for (const result of results) {
-          const data = abiCoder.decode(["bytes"], result.data)[0];
-          const callData = Abi.decodeWithSelector(
-            "initialize",
-            ["address", "bytes"],
-            data
-          );
-
           const owner = Ethers.getAddress(result.topics[2]);
           const feedAddress = Ethers.getAddress(result.topics[1]);
 

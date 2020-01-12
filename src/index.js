@@ -124,6 +124,8 @@ class ErasureClient {
             }
           }
         }
+
+        throw new Error("Unable to construct ErasurePost object!");
       }
 
       const init = {
