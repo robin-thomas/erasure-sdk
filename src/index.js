@@ -131,10 +131,10 @@ class ErasureClient {
       const init = {
         feed: "Initialized(address,bytes)",
         escrow:
-          "Initialized(address,address,address,uint256,uint256,uint256,bytes,bytes)",
+          "Initialized(address,address,address,uint8,uint256,uint256,uint256,bytes,bytes)",
         simple: "Initialized(address,address,address,uint256,uint8,bytes)",
         countdown:
-          "Initialized(address,address,address,uint256,uint8,uint256,bytes)"
+          "Initialized(address,address,address,uint8,uint256,uint8,uint256,bytes)"
       };
 
       for (const type of Object.keys(init)) {

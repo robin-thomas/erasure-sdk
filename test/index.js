@@ -142,9 +142,10 @@ describe("ErasureClient", () => {
 
         assert.ok(Ethers.isAddress(agreementAddress));
 
-        const events = receipt.events.map(e => e.event);
+        const events = receipt.events
+          .map(e => e.event)
+          .filter(e => e !== undefined);
         assert.ok(events.includes("DepositIncreased"));
-        assert.ok(events.includes("StakeAdded"));
         assert.ok(events.includes("StakeDeposited"));
         assert.ok(events.includes("DeadlineSet"));
       });
@@ -175,9 +176,10 @@ describe("ErasureClient", () => {
 
       it("#depositStake", async () => {
         const { receipt } = await escrow.depositStake();
-        const events = receipt.events.map(e => e.event);
+        const events = receipt.events
+          .map(e => e.event)
+          .filter(e => e !== undefined);
         assert.ok(events.includes("DepositIncreased"));
-        assert.ok(events.includes("StakeAdded"));
         assert.ok(events.includes("StakeDeposited"));
       });
 
@@ -281,7 +283,7 @@ describe("ErasureClient", () => {
       it("withdraw before countdown should fail", async () => {
         try {
           await agreement.withdraw(account);
-          assert.fail("0", "1", "Agreement deadline has not passed");
+          assert.fail("Agreement deadline has not passed");
         } catch (err) {
           assert.ok(true);
         }
@@ -297,7 +299,7 @@ describe("ErasureClient", () => {
               Number(amountWithdrawn).toString()
           );
         } catch (err) {
-          assert.fail("0", "1", "Agreement deadline has passed");
+          assert.fail("Should not fail as agreement deadline has passed");
         }
       });
     });
