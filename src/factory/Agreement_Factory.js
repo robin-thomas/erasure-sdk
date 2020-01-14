@@ -50,6 +50,7 @@ class Agreement_Factory {
     operator,
     staker,
     counterparty,
+    tokenId = 1,
     griefRatio,
     griefRatioType,
     countdownLength,
@@ -85,6 +86,7 @@ class Agreement_Factory {
         "address",
         "address",
         "address",
+        "uint8",
         "uint256",
         "uint8",
         ...(countdownLength !== undefined ? ["uint256"] : []),
@@ -94,6 +96,7 @@ class Agreement_Factory {
         operator,
         staker,
         counterparty,
+        tokenId,
         Ethers.parseEther(griefRatio),
         griefRatioType,
         ...(countdownLength !== undefined ? [countdownLength] : []),
@@ -144,9 +147,18 @@ class Agreement_Factory {
     });
   };
 
-  decodeParams = data => {
+  decodeParams = (data, countdown = true) => {
     const result = Abi.decode(
-      ["address", "address", "address", "uint256", "uint8", "uint256", "bytes"],
+      [
+        "address",
+        "address",
+        "address",
+        "uint8",
+        "uint256",
+        "uint8",
+        ...(countdown === true ? ["uint256"] : []),
+        "bytes"
+      ],
       data
     );
 
@@ -154,10 +166,17 @@ class Agreement_Factory {
       operator: result[0],
       staker: result[1],
       counterparty: result[2],
-      griefRatio: Ethers.formatEther(result[3].toString()),
-      griefRatioType: result[4],
-      countdownLength: result[5].toNumber(),
-      metadata: Utils.hexToHash(result[6])
+      tokenId: result[3],
+      griefRatio: Ethers.formatEther(result[4].toString()),
+      griefRatioType: result[5],
+      ...(countdown === true
+        ? {
+            countdownLength: result[6].toNumber(),
+            metadata: Utils.hexToHash(result[7])
+          }
+        : {
+            metadata: Utils.hexToHash(result[6])
+          })
     };
   };
 }

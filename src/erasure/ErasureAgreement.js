@@ -274,16 +274,15 @@ class ErasureAgreement {
     const tx = await this.contract().retrieveStake(recipient);
     const receipt = await tx.wait();
 
-    // get the agreement address.
-    const results = await this.#web3Provider.getLogs({
-      address: this.address(),
-      topics: [ethers.utils.id("StakeTaken(address,address,uint256)")],
-      fromBlock: 0
-    });
+    const events = receipt.events.reduce((p, c) => {
+      p[c.event] = c;
+      return p;
+    }, {});
+
     const amountWithdrawn = Ethers.formatEther(
       Abi.decode(
-        ["address", "address", "uint256"],
-        results[results.length - 1].data
+        ["uint8", "address", "uint256", "uint256"],
+        events.DepositDecreased.data
       )[2]
     );
 

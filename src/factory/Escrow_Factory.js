@@ -88,6 +88,7 @@ class Escrow_Factory {
    * @param {string} config.operator
    * @param {string} config.buyer
    * @param {string} config.seller
+   * @param {number} config.tokenId
    * @param {string} config.paymentAmount
    * @param {string} config.stakeAmount
    * @param {string} config.escrowCountdown
@@ -101,6 +102,7 @@ class Escrow_Factory {
     operator,
     buyer,
     seller,
+    tokenId = 1 /* NMR */,
     paymentAmount,
     stakeAmount,
     escrowCountdown,
@@ -127,6 +129,7 @@ class Escrow_Factory {
           "address",
           "address",
           "address",
+          "uint8",
           "uint256",
           "uint256",
           "uint256",
@@ -137,6 +140,7 @@ class Escrow_Factory {
           operator,
           buyer,
           seller,
+          tokenId,
           Ethers.parseEther(paymentAmount),
           Ethers.parseEther(stakeAmount),
           escrowCountdown,
@@ -197,6 +201,7 @@ class Escrow_Factory {
         "address",
         "address",
         "address",
+        "uint8",
         "uint256",
         "uint256",
         "uint256",
@@ -208,17 +213,18 @@ class Escrow_Factory {
 
     const agreementParams = Abi.decode(
       ["uint256", "uint8", "uint256"],
-      result[7]
+      result[8]
     );
 
     return {
       operator: Ethers.getAddress(result[0]),
       buyer: Ethers.getAddress(result[1]),
       seller: Ethers.getAddress(result[2]),
-      paymentAmount: Ethers.formatEther(result[3]).toString(),
-      stakeAmount: Ethers.formatEther(result[4]).toString(),
-      escrowCountdown: Ethers.formatEther(result[5].toString()),
-      staticMetadataB58: Utils.hexToHash(result[6]),
+      tokenId: Number(result[3]),
+      paymentAmount: Ethers.formatEther(result[4]).toString(),
+      stakeAmount: Ethers.formatEther(result[5]).toString(),
+      escrowCountdown: Ethers.formatEther(result[6].toString()),
+      staticMetadataB58: Utils.hexToHash(result[7]),
       agreementParams: {
         griefRatio: Ethers.formatEther(agreementParams[0]).toString(),
         griefRatioType: agreementParams[1],

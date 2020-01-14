@@ -179,11 +179,7 @@ class ErasureFeed {
     });
 
     let posts = [];
-    if (results && results.length > 1) {
-      // First proofhash is that of feed creation.
-      // so we can ignore it.
-      results = results.slice(1);
-
+    if (results && results.length > 0) {
       for (const result of results) {
         posts.push(
           new ErasurePost({

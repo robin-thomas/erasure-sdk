@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-VERSION="v1.2.0"
+VERSION="v1.3.0"
 ARTIFACT_DIR="artifacts"
+FALLBACK_VERSION="v1.2.0"
 
 download_contracts() {
   [ -d "${ARTIFACT_DIR}" ] || mkdir "${ARTIFACT_DIR}"
@@ -9,8 +10,8 @@ download_contracts() {
   declare -a contracts=(
     'CountdownGriefing'
     'CountdownGriefingEscrow'
-    'CountdownGriefing_Factory'
     'CountdownGriefingEscrow_Factory'
+    'CountdownGriefing_Factory'
     'Erasure_Agreements'
     'Erasure_Escrows'
     'Erasure_Posts'
@@ -18,8 +19,6 @@ download_contracts() {
     'Feed'
     'Feed_Factory'
     'MockNMR'
-    'Post'
-    'Post_Factory'
     'SimpleGriefing'
     'SimpleGriefing_Factory'
   )
