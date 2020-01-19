@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import IdentityWallet from "identity-wallet";
+import { AuthereumSigner } from "authereum";
 
 const Ethers = {
   /**
@@ -46,6 +47,11 @@ const Ethers = {
 
     try {
       if (web3Provider !== null) {
+        if (web3Provider.currentProvider.isAuthereum) {
+          return new AuthereumSigner(
+            web3Provider.currentProvider.authereum.networkName
+          );
+        }
         return web3Provider.getSigner();
       }
 
@@ -108,6 +114,10 @@ const Ethers = {
   hexlify: value => ethers.utils.hexlify(value),
 
   getAccount: async (web3Provider = null) => {
+    if (web3Provider !== null && web3Provider.currentProvider.isAuthereum) {
+      return (await web3Provider.eth.getAccounts())[0];
+    }
+
     return await Ethers.getWallet(web3Provider).getAddress();
   },
 

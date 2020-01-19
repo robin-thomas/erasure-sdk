@@ -18,10 +18,17 @@ const Box = {
    *
    * @returns {Object} authenticated 3Box space client
    */
-  getClient: async () => {
+  getClient: async (web3Provider = null) => {
     if (Box.space === null) {
       let box;
-      if (typeof window !== "undefined" && window.ethereum !== undefined) {
+      if (web3Provider !== null) {
+        console.log("box init");
+        box = await ThreeBox.openBox(null, web3Provider.currentProvider);
+        console.log("box");
+      } else if (
+        typeof window !== "undefined" &&
+        window.ethereum !== undefined
+      ) {
         const account = await Ethers.getAccount();
         box = await ThreeBox.openBox(account, window.ethereum);
       } else {
@@ -41,9 +48,9 @@ const Box = {
    * @param {Object} key
    * @param {Object} value
    */
-  set: async (key, value) => {
+  set: async (key, value, web3Provider = null) => {
     try {
-      const client = await Box.getClient();
+      const client = await Box.getClient(web3Provider);
       await client.private.set(key, value);
     } catch (err) {
       throw err;
@@ -56,9 +63,9 @@ const Box = {
    * @param {Object} key
    * @returns {Object} value
    */
-  get: async key => {
+  get: async (key, web3Provider = null) => {
     try {
-      const client = await Box.getClient();
+      const client = await Box.getClient(web3Provider);
       return await client.private.get(key);
     } catch (err) {
       throw err;
@@ -71,8 +78,8 @@ const Box = {
    *
    * @returns {Object} keypair
    */
-  getKeyPair: async () => {
-    const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC);
+  getKeyPair: async (web3Provider = null) => {
+    const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC, web3Provider);
     if (keypair === null) {
       return null;
     }
@@ -91,14 +98,18 @@ const Box = {
    * We use this, because 3Box cannot store Uint8Arrays
    *
    */
-  setKeyPair: async keypair => {
-    await Box.set(Box.KEYSTORE_ASYMMETRIC, {
-      ...keypair,
-      key: {
-        publicKey: keypair.key.publicKey.toString(),
-        secretKey: keypair.key.secretKey.toString()
-      }
-    });
+  setKeyPair: async (keypair, web3Provider = null) => {
+    await Box.set(
+      Box.KEYSTORE_ASYMMETRIC,
+      {
+        ...keypair,
+        key: {
+          publicKey: keypair.key.publicKey.toString(),
+          secretKey: keypair.key.secretKey.toString()
+        }
+      },
+      web3Provider
+    );
   },
 
   getSymKey: async keyhash => {

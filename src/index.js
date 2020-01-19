@@ -61,7 +61,7 @@ class ErasureClient {
     this.#registry =
       process.env.NODE_ENV === "test"
         ? registry
-        : contracts[this.protocolVersion];
+        : contracts[this.#protocolVersion];
   }
 
   /**
@@ -74,10 +74,20 @@ class ErasureClient {
     try {
       const opts = {
         registry: this.#registry,
-        network: await Ethers.getProvider().getNetwork(),
+        network: null,
         web3Provider: this.#web3Provider,
         protocolVersion: this.#protocolVersion
       };
+
+      if (this.#web3Provider !== undefined && this.#web3Provider !== null) {
+        if (this.#web3Provider.currentProvider.isAuthereum) {
+          opts.network = this.#web3Provider.currentProvider.authereum.networkName;
+        } else {
+          opts.network = (await this.#web3Provider.getNetwork()).name;
+        }
+      } else {
+        opts.network = (await Ethers.getProvider().getNetwork()).name;
+      }
 
       this.#nmr = new NMR(opts);
       this.#erasureUsers = new Erasure_Users(opts);

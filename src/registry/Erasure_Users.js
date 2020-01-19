@@ -63,10 +63,10 @@ class Erasure_Users {
    */
   registerUser = async () => {
     // Check if the user alrady exists in Box storage.
-    let keypair = await Box.getKeyPair();
+    let keypair = await Box.getKeyPair(this.#web3Provider);
     if (keypair === null) {
       keypair = await Crypto.asymmetric.genKeyPair();
-      Box.setKeyPair(keypair);
+      Box.setKeyPair(keypair, this.#web3Provider);
     }
 
     // Register the publicKey in Erasure_Users.

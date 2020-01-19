@@ -32,6 +32,10 @@ class Agreement_Factory {
       };
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
+        if (p[c] === undefined) {
+          p[c] = {};
+        }
+
         p[c].SimpleGriefing_Factory = registry[c].SimpleGriefing_Factory;
         p[c].CountdownGriefing_Factory = registry[c].CountdownGriefing_Factory;
         return p;
