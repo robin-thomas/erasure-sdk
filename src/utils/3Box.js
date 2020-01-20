@@ -23,14 +23,9 @@ const Box = {
       let box;
       if (web3Provider !== null) {
         console.log("box init");
-        box = await ThreeBox.openBox(null, web3Provider.currentProvider);
-        console.log("box");
-      } else if (
-        typeof window !== "undefined" &&
-        window.ethereum !== undefined
-      ) {
         const account = await Ethers.getAccount();
-        box = await ThreeBox.openBox(account, window.ethereum);
+        box = await ThreeBox.openBox(account, web3Provider.currentProvider);
+        console.log("box");
       } else {
         box = await ThreeBox.openBox(null, Ethers.getProvider(true));
       }

@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import IdentityWallet from "identity-wallet";
-import { AuthereumSigner } from "authereum";
 
 const Ethers = {
   /**
@@ -48,6 +47,8 @@ const Ethers = {
     try {
       if (web3Provider !== null) {
         if (web3Provider.currentProvider.isAuthereum) {
+          // import statement will fail as no window is defined.
+          const { AuthereumSigner } = require("authereum");
           return new AuthereumSigner(
             web3Provider.currentProvider.authereum.networkName
           );
