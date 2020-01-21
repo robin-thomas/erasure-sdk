@@ -85,6 +85,8 @@ class ErasureClient {
         } else {
           opts.network = (await this.#web3Provider.getNetwork()).name;
         }
+      } else if (process.env.NODE_ENV === "test") {
+        opts.network = "rinkeby";
       } else {
         opts.network = (await Ethers.getProvider().getNetwork()).name;
       }

@@ -115,8 +115,14 @@ const Ethers = {
   hexlify: value => ethers.utils.hexlify(value),
 
   getAccount: async (web3Provider = null) => {
-    if (web3Provider !== null && web3Provider.currentProvider.isAuthereum) {
-      return (await web3Provider.eth.getAccounts())[0];
+    if (web3Provider !== null) {
+      if (
+        (web3Provider.currentProvider !== undefined &&
+          web3Provider.currentProvider.isAuthereum) ||
+        web3Provider.isAuthereum
+      ) {
+        return (await web3Provider.eth.getAccounts())[0];
+      }
     }
 
     return await Ethers.getWallet(web3Provider).getAddress();

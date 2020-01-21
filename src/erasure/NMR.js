@@ -21,7 +21,7 @@ class NMR {
    */
   constructor({ registry, network, web3Provider }) {
     this.#network = network;
-    this.#web3Provider = web3Provider;
+    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.NMR;

@@ -4,6 +4,20 @@ import Ethers from "./Ethers";
 
 import config from "../config.json";
 
+const ethProvider = wallet => {
+  return {
+    send: (data, callback) => {
+      if (data.method === "personal_sign") {
+        wallet
+          .signMessage(data.params[0])
+          .then(result => callback(null, { result }));
+      } else {
+        callback(null, "0x");
+      }
+    }
+  };
+};
+
 const Box = {
   space: null,
 
@@ -22,10 +36,16 @@ const Box = {
     if (Box.space === null) {
       let box;
       if (web3Provider !== null) {
-        console.log("box init");
-        const account = await Ethers.getAccount();
-        box = await ThreeBox.openBox(account, web3Provider.currentProvider);
-        console.log("box");
+        if (process.env.NODE_ENV === "test") {
+          const account = await Ethers.getAccount();
+          const wallet = web3Provider.getSigner();
+
+          box = await ThreeBox.openBox(account, ethProvider(wallet));
+          console.log("box done");
+        } else {
+          const account = await Ethers.getAccount();
+          box = await ThreeBox.openBox(account, web3Provider.currentProvider);
+        }
       } else {
         box = await ThreeBox.openBox(null, Ethers.getProvider(true));
       }
