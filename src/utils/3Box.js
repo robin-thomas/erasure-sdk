@@ -36,14 +36,12 @@ const Box = {
     if (Box.space === null) {
       let box;
       if (web3Provider !== null) {
-        if (process.env.NODE_ENV === "test") {
-          const account = await Ethers.getAccount();
-          const wallet = web3Provider.getSigner();
+        const account = await Ethers.getAccount();
 
+        if (process.env.NODE_ENV === "test") {
+          const wallet = web3Provider.getSigner();
           box = await ThreeBox.openBox(account, ethProvider(wallet));
-          console.log("box done");
         } else {
-          const account = await Ethers.getAccount();
           box = await ThreeBox.openBox(account, web3Provider.currentProvider);
         }
       } else {
