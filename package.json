@@ -10,6 +10,7 @@
     "build": "webpack --mode=production",
     "start": "webpack --watch",
     "pretest": "npm run download",
+    "test-mock": "NODE_ENV=test mocha --require esm  --exit --bail -t 1200000 src/test/test.js",
     "test": "NODE_ENV=test mocha --require esm --exit --bail -t 1200000 test/index.js",
     "coverage": "nyc npm run test",
     "doc:generate": "jsdoc src/* --destination erasure-docs -c jsdoc.json",

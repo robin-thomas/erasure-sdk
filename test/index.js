@@ -6,8 +6,6 @@ import ErasureClient from "../src";
 import IPFS from "../src/utils/IPFS";
 import Ethers from "../src/utils/Ethers";
 
-import testConfig from "./test.json";
-
 const addStake = (stake, amount) => {
   stake = Ethers.parseEther(stake);
   amount = Ethers.bigNumberify(amount);
