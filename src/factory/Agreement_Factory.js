@@ -8,8 +8,8 @@ import Ethers from "../utils/Ethers";
 
 import ErasureAgreement from "../erasure/ErasureAgreement";
 
-import simpleContract from "../../artifacts/SimpleGriefing_Factory.json";
-import countdownContract from "../../artifacts/CountdownGriefing_Factory.json";
+import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing_Factory.json";
+import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing_Factory.json";
 
 class Agreement_Factory {
   #nmr = null;
@@ -55,10 +55,10 @@ class Agreement_Factory {
   }) => {
     let abi, agreementType;
     if (countdownLength !== undefined) {
-      abi = countdownContract.abi;
+      abi = countdownContractAbi;
       agreementType = "CountdownGriefing_Factory";
     } else {
-      abi = simpleContract.abi;
+      abi = simpleContractAbi;
       agreementType = "SimpleGriefing_Factory";
     }
 

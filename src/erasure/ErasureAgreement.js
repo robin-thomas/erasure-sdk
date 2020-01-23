@@ -6,8 +6,8 @@ import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 import ErasurePost from "./ErasurePost";
 
-import simpleContract from "../../artifacts/SimpleGriefing.json";
-import countdownContract from "../../artifacts/CountdownGriefing.json";
+import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing.json";
+import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing.json";
 
 class ErasureAgreement {
   #abi = null;
@@ -45,9 +45,9 @@ class ErasureAgreement {
     this.#agreementAddress = agreementAddress;
 
     if (type === "countdown") {
-      this.#abi = countdownContract.abi;
+      this.#abi = countdownContractAbi;
     } else if (type === "simple") {
-      this.#abi = simpleContract.abi;
+      this.#abi = simpleContractAbi;
     }
 
     this.#contract = new ethers.Contract(
