@@ -8,6 +8,7 @@ module.exports = {
     libraryTarget: "commonjs2",
     globalObject: "typeof self !== 'undefined' ? self : this"
   },
+  // devtool: "eval-source-map",
   module: {
     rules: [
       {

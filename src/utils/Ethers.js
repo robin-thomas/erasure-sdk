@@ -37,18 +37,18 @@ const Ethers = {
    *
    * @returns {Object} ethers signer
    */
-  getWallet: (web3Provider = null) => {
-    if (process.env.NODE_ENV === "test") {
-      const keys = require("../../test/test.json");
-
-      return ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
-        new ethers.providers.JsonRpcProvider()
-      );
-    }
-
+  getWallet: (ethersProvider = null) => {
     try {
-      if (web3Provider !== null) {
-        return web3Provider.getSigner();
+      if (ethersProvider !== null) {
+        return ethersProvider.getSigner();
+      }
+
+      if (process.env.NODE_ENV === "test") {
+        const keys = require("../../test/test.json");
+
+        return ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
+          new ethers.providers.JsonRpcProvider()
+        );
       }
 
       return Ethers.getProvider().getSigner();
@@ -109,8 +109,8 @@ const Ethers = {
   bigNumberify: value => ethers.utils.bigNumberify(value),
   hexlify: value => ethers.utils.hexlify(value),
 
-  getAccount: async (web3Provider = null) => {
-    return await Ethers.getWallet(web3Provider).getAddress();
+  getAccount: async (ethersProvider = null) => {
+    return await Ethers.getWallet(ethersProvider).getAddress();
   },
 
   MaxUint256: () => ethers.constants.MaxUint256,

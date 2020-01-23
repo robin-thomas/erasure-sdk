@@ -60,7 +60,7 @@ class ErasureClient {
     if (web3Provider !== undefined && web3Provider !== null) {
       this.#web3Provider = web3Provider;
       this.#ethersProvider = new ethers.providers.Web3Provider(
-        this.#web3Provider.currentProvider
+        web3Provider.currentProvider
       );
     }
 
@@ -155,7 +155,10 @@ class ErasureClient {
 
       for (const type of Object.keys(init)) {
         // Get the contract creation transaction.
-        const results = await Ethers.getProvider(this.#ethersProvider).getLogs({
+        const results = await Ethers.getProvider(
+          null,
+          this.#ethersProvider
+        ).getLogs({
           address,
           fromBlock: 0,
           topics: [ethers.utils.id(init[type])]
@@ -240,7 +243,7 @@ class ErasureClient {
 
     operator =
       operator ||
-      (await Ethers.getAccount(Ethers.getProvider(this.#ethersProvider)));
+      (await Ethers.getAccount(Ethers.getProvider(null, this.#ethersProvider)));
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
@@ -300,7 +303,7 @@ class ErasureClient {
   }) {
     operator =
       operator ||
-      (await Ethers.getAccount(Ethers.getProvider(this.#ethersProvider)));
+      (await Ethers.getAccount(Ethers.getProvider(null, this.#ethersProvider)));
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
@@ -346,7 +349,7 @@ class ErasureClient {
     try {
       if (operator === undefined) {
         operator = await Ethers.getAccount(
-          Ethers.getProvider(this.#ethersProvider)
+          Ethers.getProvider(null, this.#ethersProvider)
         );
       }
       if (!Ethers.isAddress(operator)) {

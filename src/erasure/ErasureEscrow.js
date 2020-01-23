@@ -6,7 +6,7 @@ import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/CountdownGriefingEscrow.json";
+import { abi } from "../../artifacts/CountdownGriefingEscrow.json";
 
 class ErasureEscrow {
   #nmr = null;
@@ -62,7 +62,7 @@ class ErasureEscrow {
 
     this.#contract = new ethers.Contract(
       escrowAddress,
-      contract.abi,
+      abi,
       Ethers.getWallet(this.#ethersProvider)
     );
   }

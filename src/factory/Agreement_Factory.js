@@ -16,13 +16,13 @@ class Agreement_Factory {
   #registry = {};
   #network = null;
   #contract = null;
-  #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
   constructor({ nmr, registry, network, ethersProvider, protocolVersion }) {
     this.#nmr = nmr;
     this.#network = network;
-    this.#web3Provider = Ethers.getProvider(ethersProvider);
+    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
     this.#protocolVersion = protocolVersion;
 
     if (process.env.NODE_ENV === "test") {
@@ -71,7 +71,7 @@ class Agreement_Factory {
     const contract = new ethers.Contract(
       address,
       abi,
-      Ethers.getWallet(this.#web3Provider)
+      Ethers.getWallet(this.#ethersProvider)
     );
 
     const ipfsHash = await IPFS.add(metadata);
@@ -108,7 +108,7 @@ class Agreement_Factory {
     if (process.env.NODE_ENV === "test") {
       await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
     } else {
-      const network = await this.#web3Provider.getNetwork();
+      const network = await this.#ethersProvider.getNetwork();
       if (network && network.name === "rinkeby") {
         await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
         await this.#nmr.mintMockTokens(counterparty, Ethers.parseEther("1000"));
@@ -122,7 +122,7 @@ class Agreement_Factory {
       agreement: new ErasureAgreement({
         staker,
         counterparty,
-        web3Provider: this.#web3Provider,
+        ethersProvider: this.#ethersProvider,
         type:
           agreementType === "CountdownGriefing_Factory"
             ? "countdown"
@@ -139,7 +139,7 @@ class Agreement_Factory {
       counterparty,
       type,
       agreementAddress,
-      web3Provider: this.#web3Provider,
+      ethersProvider: this.#ethersProvider,
       protocolVersion: this.#protocolVersion
     });
   };

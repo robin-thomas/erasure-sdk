@@ -4,7 +4,7 @@ import Box from "../utils/3Box";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/Erasure_Users.json";
+import { abi } from "../../artifacts/Erasure_Users.json";
 
 class Erasure_Users {
   #registry = {};
@@ -16,13 +16,13 @@ class Erasure_Users {
   constructor({ registry, network, web3Provider, ethersProvider }) {
     this.#network = network;
     this.#web3Provider = web3Provider;
-    this.#ethersProvider = Ethers.getProvider(ethersProvider);
+    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Erasure_Users;
       this.#contract = new ethers.Contract(
         this.#registry,
-        contract.abi,
+        abi,
         Ethers.getWallet(this.#ethersProvider)
       );
     } else {
@@ -33,7 +33,7 @@ class Erasure_Users {
 
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
-        contract.abi,
+        abi,
         Ethers.getWallet(this.#ethersProvider)
       );
     }
@@ -54,7 +54,6 @@ class Erasure_Users {
 
     // Register the publicKey in Erasure_Users.
     const publicKey = Buffer.from(keypair.key.publicKey).toString("hex");
-
     const address = await Ethers.getAccount(this.#ethersProvider);
     const data = await this.getUserData(address);
 

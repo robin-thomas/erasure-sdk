@@ -11,7 +11,7 @@ import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/CountdownGriefingEscrow_Factory.json";
+import { abi } from "../../artifacts/CountdownGriefingEscrow_Factory.json";
 
 class Escrow_Factory {
   #nmr = null;
@@ -35,7 +35,7 @@ class Escrow_Factory {
     this.#network = network;
     this.#erasureUsers = erasureUsers;
     this.#web3Provider = web3Provider;
-    this.#ethersProvider = Ethers.getProvider(ethersProvider);
+    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
     this.#protocolVersion = protocolVersion;
 
     this.#nmr = new NMR({ registry, network, protocolVersion });
@@ -44,7 +44,7 @@ class Escrow_Factory {
       this.#registry = registry.CountdownGriefingEscrow_Factory;
       this.#contract = new ethers.Contract(
         this.#registry,
-        contract.abi,
+        abi,
         Ethers.getWallet(this.#ethersProvider)
       );
     } else {
@@ -55,7 +55,7 @@ class Escrow_Factory {
 
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
-        contract.abi,
+        abi,
         Ethers.getWallet(this.#ethersProvider)
       );
     }

@@ -10,7 +10,7 @@ import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/Feed_Factory.json";
+import { abi } from "../../artifacts/Feed_Factory.json";
 
 class Feed_Factory {
   #receipt = null;
@@ -35,13 +35,13 @@ class Feed_Factory {
     this.#protocolVersion = protocolVersion;
 
     this.#web3Provider = web3Provider;
-    this.#ethersProvider = Ethers.getProvider(ethersProvider);
+    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Feed_Factory;
       this.#contract = new ethers.Contract(
         this.#registry,
-        contract.abi,
+        abi,
         Ethers.getWallet(this.#ethersProvider)
       );
     } else {
@@ -52,7 +52,7 @@ class Feed_Factory {
 
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
-        contract.abi,
+        abi,
         Ethers.getWallet(this.#ethersProvider)
       );
     }

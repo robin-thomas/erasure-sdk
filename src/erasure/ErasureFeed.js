@@ -9,7 +9,7 @@ import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/Feed.json";
+import { abi } from "../../artifacts/Feed.json";
 
 class ErasureFeed {
   #owner = null;
@@ -47,7 +47,7 @@ class ErasureFeed {
 
     this.#contract = new ethers.Contract(
       feedAddress,
-      contract.abi,
+      abi,
       Ethers.getWallet(this.#ethersProvider)
     );
   }
