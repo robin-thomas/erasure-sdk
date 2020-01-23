@@ -21,6 +21,7 @@ class Escrow_Factory {
   #contract = null;
   #erasureUsers = null;
   #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
   constructor({
@@ -28,11 +29,13 @@ class Escrow_Factory {
     network,
     erasureUsers,
     web3Provider,
+    ethersProvider,
     protocolVersion
   }) {
     this.#network = network;
     this.#erasureUsers = erasureUsers;
-    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
+    this.#web3Provider = web3Provider;
+    this.#ethersProvider = Ethers.getProvider(ethersProvider);
     this.#protocolVersion = protocolVersion;
 
     this.#nmr = new NMR({ registry, network, protocolVersion });
@@ -42,7 +45,7 @@ class Escrow_Factory {
       this.#contract = new ethers.Contract(
         this.#registry,
         contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        Ethers.getWallet(this.#ethersProvider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
@@ -53,27 +56,8 @@ class Escrow_Factory {
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
         contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        Ethers.getWallet(this.#ethersProvider)
       );
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        if (process.env.NODE_ENV === "test") {
-          this.#contract = new ethers.Contract(
-            this.#registry,
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        }
-      });
     }
   }
 
@@ -162,6 +146,7 @@ class Escrow_Factory {
           paymentAmount,
           nmr: this.#nmr,
           web3Provider: this.#web3Provider,
+          ethersProvider: this.#ethersProvider,
           proofhash: JSON.parse(metadata).proofhash,
           erasureUsers: this.#erasureUsers,
           escrowAddress: receipt.logs[0].address,
@@ -190,6 +175,7 @@ class Escrow_Factory {
       paymentAmount,
       nmr: this.#nmr,
       web3Provider: this.#web3Provider,
+      ethersProvider: this.#ethersProvider,
       erasureUsers: this.#erasureUsers,
       protocolVersion: this.#protocolVersion
     });

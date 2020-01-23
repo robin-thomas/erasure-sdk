@@ -7,8 +7,10 @@ const Ethers = {
    *
    * @returns {Object} ethers provider
    */
-  getProvider: (box = null) => {
-    let provider = null;
+  getProvider: (box = null, provider = null) => {
+    if (provider !== null) {
+      return provider;
+    }
 
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       window.ethereum.autoRefreshOnNetworkChange = false;
@@ -46,13 +48,6 @@ const Ethers = {
 
     try {
       if (web3Provider !== null) {
-        if (web3Provider.currentProvider.isAuthereum) {
-          // import statement will fail as no window is defined.
-          const { AuthereumSigner } = require("authereum");
-          return new AuthereumSigner(
-            web3Provider.currentProvider.authereum.networkName
-          );
-        }
         return web3Provider.getSigner();
       }
 
@@ -115,16 +110,6 @@ const Ethers = {
   hexlify: value => ethers.utils.hexlify(value),
 
   getAccount: async (web3Provider = null) => {
-    if (web3Provider !== null) {
-      if (
-        (web3Provider.currentProvider !== undefined &&
-          web3Provider.currentProvider.isAuthereum) ||
-        web3Provider.isAuthereum
-      ) {
-        return (await web3Provider.eth.getAccounts())[0];
-      }
-    }
-
     return await Ethers.getWallet(web3Provider).getAddress();
   },
 

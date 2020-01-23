@@ -37,12 +37,12 @@ const Crypto = {
      *
      * @returns {Promise} keypair
      */
-    genKeyPair: async () => {
+    genKeyPair: async (web3Provider = null) => {
       try {
-        const operator = await Ethers.getAccount();
+        const operator = await Ethers.getAccount(web3Provider);
 
         const msg = `I am signing this message to generate my ErasureClient keypair as ${operator}`;
-        const signature = await Ethers.getWallet().signMessage(msg);
+        const signature = await Ethers.getWallet(web3Provider).signMessage(msg);
 
         const salt = crypto
           .createHash("sha256")

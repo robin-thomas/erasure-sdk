@@ -35,17 +35,23 @@ const Box = {
   getClient: async (web3Provider = null) => {
     if (Box.space === null) {
       let box;
-      if (web3Provider !== null) {
-        const account = await Ethers.getAccount();
 
-        if (process.env.NODE_ENV === "test") {
-          const wallet = web3Provider.getSigner();
-          box = await ThreeBox.openBox(account, ethProvider(wallet));
-        } else {
-          box = await ThreeBox.openBox(account, web3Provider.currentProvider);
-        }
+      if (web3Provider !== null) {
+        const account = (await web3Provider.eth.getAccounts())[0];
+        box = await ThreeBox.openBox(account, web3Provider.currentProvider);
+      } else if (process.env.NODE_ENV === "test") {
+        const threeIdProvider = Ethers.getProvider(true);
+        box = await ThreeBox.openBox(null, threeIdProvider);
       } else {
-        box = await ThreeBox.openBox(null, Ethers.getProvider(true));
+        // TODO:
+        // 3Box DO NOT SUPPORT this hack completely.
+        // so chances of this working is slim.
+
+        const ethersProvider = Ethers.getProvider();
+        const wallet = web3Provider.getSigner();
+        const account = await Ethers.getAccount(ethersProvider);
+
+        box = await ThreeBox.openBox(account, ethProvider(wallet));
       }
 
       await box.syncDone;

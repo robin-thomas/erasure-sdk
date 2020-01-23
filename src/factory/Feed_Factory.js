@@ -19,12 +19,14 @@ class Feed_Factory {
   #contract = null;
   #escrowFactory = null;
   #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
   constructor({
     registry,
     network,
     web3Provider,
+    ethersProvider,
     protocolVersion,
     escrowFactory
   }) {
@@ -32,14 +34,15 @@ class Feed_Factory {
     this.#escrowFactory = escrowFactory;
     this.#protocolVersion = protocolVersion;
 
-    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
+    this.#web3Provider = web3Provider;
+    this.#ethersProvider = Ethers.getProvider(ethersProvider);
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Feed_Factory;
       this.#contract = new ethers.Contract(
         this.#registry,
         contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        Ethers.getWallet(this.#ethersProvider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
@@ -50,27 +53,8 @@ class Feed_Factory {
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
         contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        Ethers.getWallet(this.#ethersProvider)
       );
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        if (process.env.NODE_ENV === "test") {
-          this.#contract = new ethers.Contract(
-            this.#registry,
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        }
-      });
     }
   }
 
@@ -102,6 +86,7 @@ class Feed_Factory {
         feed: new ErasureFeed({
           owner: operator,
           web3Provider: this.#web3Provider,
+          ethersProvider: this.#ethersProvider,
           feedAddress: receipt.logs[0].address,
           escrowFactory: this.#escrowFactory,
           protocolVersion: this.#protocolVersion
@@ -113,7 +98,7 @@ class Feed_Factory {
   };
 
   createClone = async address => {
-    const logs = await this.#web3Provider.getLogs({
+    const logs = await this.#ethersProvider.getLogs({
       address,
       fromBlock: 0,
       topics: [ethers.utils.id("OperatorUpdated(address)")]
@@ -124,6 +109,7 @@ class Feed_Factory {
       owner,
       feedAddress: address,
       web3Provider: this.#web3Provider,
+      ethersProvider: this.#ethersProvider,
       escrowFactory: this.#escrowFactory,
       protocolVersion: this.#protocolVersion
     });
@@ -131,7 +117,7 @@ class Feed_Factory {
 
   getFeeds = async (user = null) => {
     try {
-      const results = await this.#web3Provider.getLogs({
+      const results = await this.#ethersProvider.getLogs({
         address: this.#contract.address,
         topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")],
         fromBlock: 0
@@ -154,6 +140,7 @@ class Feed_Factory {
               owner,
               feedAddress,
               web3Provider: this.#web3Provider,
+              ethersProvider: this.#ethersProvider,
               escrowFactory: this.#escrowFactory,
               protocolVersion: this.#protocolVersion
             })

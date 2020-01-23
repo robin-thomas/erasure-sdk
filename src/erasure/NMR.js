@@ -19,9 +19,9 @@ class NMR {
    * @param {string} config.network
    * @param {Object} config.web3Provider
    */
-  constructor({ registry, network, web3Provider }) {
+  constructor({ registry, network, ethersProvider }) {
     this.#network = network;
-    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
+    this.#web3Provider = Ethers.getProvider(ethersProvider);
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.NMR;
@@ -49,31 +49,6 @@ class NMR {
           Ethers.getWallet(this.#web3Provider)
         );
       }
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        if (process.env.NODE_ENV === "test") {
-          this.#contract = new ethers.Contract(
-            this.#registry,
-            mockContract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else if (network === "homestead") {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            mockContract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        }
-      });
     }
   }
 

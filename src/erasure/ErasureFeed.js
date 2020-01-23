@@ -19,6 +19,7 @@ class ErasureFeed {
   #feedAddress = null;
   #escrowFactory = null;
   #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
   /**
@@ -33,6 +34,7 @@ class ErasureFeed {
     owner,
     feedAddress,
     web3Provider,
+    ethersProvider,
     protocolVersion,
     escrowFactory
   }) {
@@ -40,24 +42,14 @@ class ErasureFeed {
     this.#feedAddress = feedAddress;
     this.#escrowFactory = escrowFactory;
     this.#web3Provider = web3Provider;
+    this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
 
     this.#contract = new ethers.Contract(
       feedAddress,
       contract.abi,
-      Ethers.getWallet(this.#web3Provider)
+      Ethers.getWallet(this.#ethersProvider)
     );
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        this.#contract = new ethers.Contract(
-          feedAddress,
-          contract.abi,
-          Ethers.getWallet(this.#web3Provider)
-        );
-      });
-    }
   }
 
   /**
@@ -105,7 +97,7 @@ class ErasureFeed {
    */
   createPost = async (data, proofhash = null) => {
     try {
-      const operator = await Ethers.getAccount(this.#web3Provider);
+      const operator = await Ethers.getAccount(this.#ethersProvider);
       if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
         throw new Error(
           `createPost() can only be called by the owner: ${this.owner()}`
@@ -172,7 +164,7 @@ class ErasureFeed {
    * @returns {Promise<ErasurePost[]>} array of ErasurePost objects
    */
   getPosts = async () => {
-    let results = await this.#web3Provider.getLogs({
+    let results = await this.#ethersProvider.getLogs({
       address: this.address(),
       topics: [ethers.utils.id("HashSubmitted(bytes32)")],
       fromBlock: 0
@@ -187,6 +179,7 @@ class ErasureFeed {
             proofhash: result.data,
             feedAddress: this.address(),
             web3Provider: this.#web3Provider,
+            ethersProvider: this.#ethersProvider,
             escrowFactory: this.#escrowFactory,
             protocolVersion: this.#protocolVersion
           })

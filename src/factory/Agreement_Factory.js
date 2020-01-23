@@ -19,10 +19,10 @@ class Agreement_Factory {
   #web3Provider = null;
   #protocolVersion = "";
 
-  constructor({ nmr, registry, network, web3Provider, protocolVersion }) {
+  constructor({ nmr, registry, network, ethersProvider, protocolVersion }) {
     this.#nmr = nmr;
     this.#network = network;
-    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
+    this.#web3Provider = Ethers.getProvider(ethersProvider);
     this.#protocolVersion = protocolVersion;
 
     if (process.env.NODE_ENV === "test") {
@@ -40,13 +40,6 @@ class Agreement_Factory {
         p[c].CountdownGriefing_Factory = registry[c].CountdownGriefing_Factory;
         return p;
       }, {});
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("networkChanged", function(networkId) {
-        this.#network = Ethers.getNetworkName(networkId);
-      });
     }
   }
 
