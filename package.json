@@ -19,7 +19,7 @@
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
-    "authereum": "0.0.4-beta.70"
+    "authereum": "0.0.4-beta.71"
   },
   "devDependencies": {
     "3box": "^1.16.1",

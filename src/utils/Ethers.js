@@ -7,17 +7,17 @@ const Ethers = {
    *
    * @returns {Object} ethers provider
    */
-  getProvider: (box = null, provider = null) => {
-    if (provider !== null) {
-      return provider;
+  getProvider: (box = null, ethersProvider = null) => {
+    if (ethersProvider !== null) {
+      return ethersProvider;
     }
 
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       window.ethereum.autoRefreshOnNetworkChange = false;
-      provider = new ethers.providers.Web3Provider(window.ethereum);
+      ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
     } else if (process.env.NODE_ENV === "test") {
       if (box === null) {
-        provider = new ethers.providers.JsonRpcProvider();
+        ethersProvider = new ethers.providers.JsonRpcProvider();
       } else {
         const keys = require("../../test/test.json");
 
@@ -25,11 +25,11 @@ const Ethers = {
           seed: ethers.utils.HDNode.mnemonicToSeed(keys.metamask.mnemonic)
         });
 
-        provider = idWallet.get3idProvider();
+        ethersProvider = idWallet.get3idProvider();
       }
     }
 
-    return provider;
+    return ethersProvider;
   },
 
   /**
