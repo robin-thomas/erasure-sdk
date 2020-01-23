@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import CryptoIPFS from "@erasure/crypto-ipfs";
+import { ipfs } from "@erasure/crypto-ipfs";
 
 import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
@@ -75,7 +75,7 @@ class Agreement_Factory {
     );
 
     const ipfsHash = await IPFS.add(metadata);
-    const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
+    const staticMetadata = ipfs.hashToHex(ipfsHash);
 
     const callData = Abi.encodeWithSelector(
       "initialize",

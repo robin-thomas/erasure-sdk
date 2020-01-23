@@ -1,8 +1,8 @@
-import ThreeBox from "3box";
+import { openBox } from "3box";
 
 import Ethers from "./Ethers";
 
-import config from "../config.json";
+import { app } from "../config.json";
 
 const ethProvider = wallet => {
   return {
@@ -38,10 +38,10 @@ const Box = {
 
       if (web3Provider !== null) {
         const account = (await web3Provider.eth.getAccounts())[0];
-        box = await ThreeBox.openBox(account, web3Provider.currentProvider);
+        box = await openBox(account, web3Provider.currentProvider);
       } else if (process.env.NODE_ENV === "test") {
         const threeIdProvider = Ethers.getProvider(true);
-        box = await ThreeBox.openBox(null, threeIdProvider);
+        box = await openBox(null, threeIdProvider);
       } else {
         // TODO:
         // 3Box DO NOT SUPPORT this hack completely.
@@ -51,11 +51,11 @@ const Box = {
         const wallet = web3Provider.getSigner();
         const account = await Ethers.getAccount(ethersProvider);
 
-        box = await ThreeBox.openBox(account, ethProvider(wallet));
+        box = await openBox(account, ethProvider(wallet));
       }
 
       await box.syncDone;
-      Box.space = await box.openSpace(config.app.name);
+      Box.space = await box.openSpace(app.name);
     }
 
     return Box.space;

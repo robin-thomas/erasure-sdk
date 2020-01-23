@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import CryptoIPFS from "@erasure/crypto-ipfs";
+import { ipfs } from "@erasure/crypto-ipfs";
 
 import ErasureFeed from "../erasure/ErasureFeed";
 
@@ -69,7 +69,7 @@ class Feed_Factory {
     try {
       // Convert the ipfs hash to multihash hex code.
       const staticMetadataB58 = await IPFS.add(metadata);
-      const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
+      const staticMetadata = ipfs.hashToHex(staticMetadataB58);
 
       const callData = Abi.encodeWithSelector(
         "initialize",

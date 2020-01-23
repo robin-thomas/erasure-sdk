@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import CryptoIPFS from "@erasure/crypto-ipfs";
 
 import Ethers from "../utils/Ethers";
 
