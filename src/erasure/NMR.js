@@ -1,10 +1,9 @@
 import { ethers } from "ethers";
-import CryptoIPFS from "@erasure/crypto-ipfs";
 
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/NMR.json";
-import mockContract from "../../artifacts/MockNMR.json";
+import { abi as contractAbi } from "../../artifacts/NMR.json";
+import { abi as mockContractAbi } from "../../artifacts/MockNMR.json";
 
 class NMR {
   #registry = {};
@@ -19,15 +18,15 @@ class NMR {
    * @param {string} config.network
    * @param {Object} config.web3Provider
    */
-  constructor({ registry, network, web3Provider }) {
+  constructor({ registry, network, ethersProvider }) {
     this.#network = network;
-    this.#web3Provider = web3Provider;
+    this.#web3Provider = Ethers.getProvider(null, ethersProvider);
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.NMR;
       this.#contract = new ethers.Contract(
         this.#registry,
-        mockContract.abi,
+        mockContractAbi,
         Ethers.getWallet(this.#web3Provider)
       );
     } else {
@@ -39,41 +38,16 @@ class NMR {
       if (network === "homestead") {
         this.#contract = new ethers.Contract(
           this.#registry[this.#network],
-          contract.abi,
+          contractAbi,
           Ethers.getWallet(this.#web3Provider)
         );
       } else {
         this.#contract = new ethers.Contract(
           this.#registry[this.#network],
-          mockContract.abi,
+          mockContractAbi,
           Ethers.getWallet(this.#web3Provider)
         );
       }
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        if (process.env.NODE_ENV === "test") {
-          this.#contract = new ethers.Contract(
-            this.#registry,
-            mockContract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else if (network === "homestead") {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            mockContract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        }
-      });
     }
   }
 

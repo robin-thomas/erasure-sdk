@@ -7,15 +7,17 @@ const Ethers = {
    *
    * @returns {Object} ethers provider
    */
-  getProvider: (box = null) => {
-    let provider = null;
+  getProvider: (box = null, ethersProvider = null) => {
+    if (ethersProvider !== null) {
+      return ethersProvider;
+    }
 
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       window.ethereum.autoRefreshOnNetworkChange = false;
-      provider = new ethers.providers.Web3Provider(window.ethereum);
+      ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
     } else if (process.env.NODE_ENV === "test") {
       if (box === null) {
-        provider = new ethers.providers.JsonRpcProvider();
+        ethersProvider = new ethers.providers.JsonRpcProvider();
       } else {
         const keys = require("../../test/test.json");
 
@@ -23,11 +25,11 @@ const Ethers = {
           seed: ethers.utils.HDNode.mnemonicToSeed(keys.metamask.mnemonic)
         });
 
-        provider = idWallet.get3idProvider();
+        ethersProvider = idWallet.get3idProvider();
       }
     }
 
-    return provider;
+    return ethersProvider;
   },
 
   /**
@@ -35,18 +37,18 @@ const Ethers = {
    *
    * @returns {Object} ethers signer
    */
-  getWallet: (web3Provider = null) => {
-    if (process.env.NODE_ENV === "test") {
-      const keys = require("../../test/test.json");
-
-      return ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
-        new ethers.providers.JsonRpcProvider()
-      );
-    }
-
+  getWallet: (ethersProvider = null) => {
     try {
-      if (web3Provider !== null) {
-        return web3Provider.getSigner();
+      if (ethersProvider !== null) {
+        return ethersProvider.getSigner();
+      }
+
+      if (process.env.NODE_ENV === "test") {
+        const keys = require("../../test/test.json");
+
+        return ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
+          new ethers.providers.JsonRpcProvider()
+        );
       }
 
       return Ethers.getProvider().getSigner();
@@ -107,8 +109,8 @@ const Ethers = {
   bigNumberify: value => ethers.utils.bigNumberify(value),
   hexlify: value => ethers.utils.hexlify(value),
 
-  getAccount: async (web3Provider = null) => {
-    return await Ethers.getWallet(web3Provider).getAddress();
+  getAccount: async (ethersProvider = null) => {
+    return await Ethers.getWallet(ethersProvider).getAddress();
   },
 
   MaxUint256: () => ethers.constants.MaxUint256,

@@ -6,7 +6,7 @@ import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/CountdownGriefingEscrow.json";
+import { abi } from "../../artifacts/CountdownGriefingEscrow.json";
 
 class ErasureEscrow {
   #nmr = null;
@@ -19,6 +19,7 @@ class ErasureEscrow {
   #erasureUsers = null;
   #escrowAddress = null;
   #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
   /**
@@ -43,6 +44,7 @@ class ErasureEscrow {
     escrowAddress,
     erasureUsers,
     web3Provider,
+    ethersProvider,
     protocolVersion
   }) {
     this.#nmr = nmr;
@@ -55,24 +57,14 @@ class ErasureEscrow {
 
     this.#erasureUsers = erasureUsers;
     this.#web3Provider = web3Provider;
+    this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
 
     this.#contract = new ethers.Contract(
       escrowAddress,
-      contract.abi,
-      Ethers.getWallet(this.#web3Provider)
+      abi,
+      Ethers.getWallet(this.#ethersProvider)
     );
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        this.#contract = new ethers.Contract(
-          escrowAddress,
-          contract.abi,
-          Ethers.getWallet(this.#web3Provider)
-        );
-      });
-    }
   }
 
   /**
@@ -129,7 +121,7 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   depositStake = async () => {
-    const operator = await Ethers.getAccount(this.#web3Provider);
+    const operator = await Ethers.getAccount(this.#ethersProvider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.seller())) {
       throw new Error(
         `depositStake() can only be called by the seller: ${this.seller()}`
@@ -139,7 +131,7 @@ class ErasureEscrow {
     if (process.env.NODE_ENV === "test") {
       await this.#nmr.mintMockTokens(operator, this.#stakeAmount);
     } else {
-      const network = await this.#web3Provider.getNetwork();
+      const network = await this.#ethersProvider.getNetwork();
       if (network && network.name === "rinkeby") {
         await this.#nmr.mintMockTokens(operator, this.#stakeAmount);
       }
@@ -171,7 +163,7 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   depositPayment = async () => {
-    const operator = await Ethers.getAccount(this.#web3Provider);
+    const operator = await Ethers.getAccount(this.#ethersProvider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.buyer())) {
       throw new Error(
         `depositPayment() can only be called by the seller: ${this.buyer()}`
@@ -181,7 +173,7 @@ class ErasureEscrow {
     if (process.env.NODE_ENV === "test") {
       await this.#nmr.mintMockTokens(operator, this.#paymentAmount);
     } else {
-      const network = await this.#web3Provider.getNetwork();
+      const network = await this.#ethersProvider.getNetwork();
       if (network && network.name === "rinkeby") {
         await this.#nmr.mintMockTokens(operator, this.#paymentAmount);
       }
@@ -232,7 +224,7 @@ class ErasureEscrow {
     }
 
     // get the agreement address.
-    const results = await this.#web3Provider.getLogs({
+    const results = await this.#ethersProvider.getLogs({
       address: this.address(),
       topics: [ethers.utils.id("Finalized(address)")],
       fromBlock: 0

@@ -14,7 +14,7 @@ const server = ganache.server({
 });
 server.listen("8545");
 
-const protocolVersion = "v1.2.0";
+const protocolVersion = "v1.3.0";
 const provider = new ethers.providers.JsonRpcProvider();
 const abiEncoder = new ethers.utils.AbiCoder();
 

@@ -23,7 +23,7 @@ $ npm install @robinthomas/erasure-sdk
 
 # Features
 
-- Supports Erasure version - v1.2.0
+- Supports Erasure version - v1.3.0
 - Supports Erasure Feeds, Posts, Escrows and Agreements
 - Keyvault for client side encryption and transaction signing (using 3Box)
 - Datastore for storing feed, post and other details (using 3Box)

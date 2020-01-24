@@ -1,5 +1,5 @@
-import crypto from "crypto";
-import cryptoIpfs from "@erasure/crypto-ipfs";
+import { createHash } from "crypto";
+import { crypto as cryptoIpfs } from "@erasure/crypto-ipfs";
 
 import Ethers from "./Ethers";
 
@@ -10,7 +10,7 @@ const Crypto = {
      *
      * @returns {string} symmetric key
      */
-    genKey: () => cryptoIpfs.crypto.symmetric.generateKey(),
+    genKey: () => cryptoIpfs.symmetric.generateKey(),
 
     /**
      * encrypt a message
@@ -19,7 +19,7 @@ const Crypto = {
      * @param {string} key - symmetric key
      * @returns {string} encrypted string
      */
-    encrypt: (key, msg) => cryptoIpfs.crypto.symmetric.encryptMessage(key, msg),
+    encrypt: (key, msg) => cryptoIpfs.symmetric.encryptMessage(key, msg),
 
     /**
      * decrypt an encrypted message
@@ -28,7 +28,7 @@ const Crypto = {
      * @param {string} key - symmetric key
      * @returns {string} decrypted string
      */
-    decrypt: (key, msg) => cryptoIpfs.crypto.symmetric.decryptMessage(key, msg)
+    decrypt: (key, msg) => cryptoIpfs.symmetric.decryptMessage(key, msg)
   },
 
   asymmetric: {
@@ -37,22 +37,20 @@ const Crypto = {
      *
      * @returns {Promise} keypair
      */
-    genKeyPair: async () => {
+    genKeyPair: async (ethersProvider = null) => {
       try {
-        const operator = await Ethers.getAccount();
+        const operator = await Ethers.getAccount(ethersProvider);
 
         const msg = `I am signing this message to generate my ErasureClient keypair as ${operator}`;
-        const signature = await Ethers.getWallet().signMessage(msg);
+        const signature = await Ethers.getWallet(ethersProvider).signMessage(
+          msg
+        );
 
-        const salt = crypto
-          .createHash("sha256")
+        const salt = createHash("sha256")
           .update(operator)
           .digest("base64");
 
-        const key = cryptoIpfs.crypto.asymmetric.generateKeyPair(
-          signature,
-          salt
-        );
+        const key = cryptoIpfs.asymmetric.generateKeyPair(signature, salt);
 
         return {
           msg,
@@ -70,7 +68,7 @@ const Crypto = {
      *
      * @returns {string} nonce
      */
-    genNonce: () => cryptoIpfs.crypto.asymmetric.generateNonce(),
+    genNonce: () => cryptoIpfs.asymmetric.generateNonce(),
 
     /**
      * encrypt a message
@@ -81,7 +79,7 @@ const Crypto = {
      * @returns {string} encrypted string
      */
     encrypt: (msg, nonce, keypair) =>
-      cryptoIpfs.crypto.asymmetric.encryptMessage(
+      cryptoIpfs.asymmetric.encryptMessage(
         msg,
         nonce,
         keypair.key.publicKey,
@@ -97,7 +95,7 @@ const Crypto = {
      * @returns {string} decrypted string
      */
     decrypt: (msg, nonce, keypair) =>
-      cryptoIpfs.crypto.asymmetric.decryptMessage(
+      cryptoIpfs.asymmetric.decryptMessage(
         msg,
         nonce,
         keypair.key.publicKey,

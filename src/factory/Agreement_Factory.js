@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import CryptoIPFS from "@erasure/crypto-ipfs";
+import { ipfs } from "@erasure/crypto-ipfs";
 
 import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
@@ -8,21 +8,21 @@ import Ethers from "../utils/Ethers";
 
 import ErasureAgreement from "../erasure/ErasureAgreement";
 
-import simpleContract from "../../artifacts/SimpleGriefing_Factory.json";
-import countdownContract from "../../artifacts/CountdownGriefing_Factory.json";
+import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing_Factory.json";
+import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing_Factory.json";
 
 class Agreement_Factory {
   #nmr = null;
   #registry = {};
   #network = null;
   #contract = null;
-  #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
-  constructor({ nmr, registry, network, web3Provider, protocolVersion }) {
+  constructor({ nmr, registry, network, ethersProvider, protocolVersion }) {
     this.#nmr = nmr;
     this.#network = network;
-    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
+    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
     this.#protocolVersion = protocolVersion;
 
     if (process.env.NODE_ENV === "test") {
@@ -32,17 +32,14 @@ class Agreement_Factory {
       };
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
+        if (p[c] === undefined) {
+          p[c] = {};
+        }
+
         p[c].SimpleGriefing_Factory = registry[c].SimpleGriefing_Factory;
         p[c].CountdownGriefing_Factory = registry[c].CountdownGriefing_Factory;
         return p;
       }, {});
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("networkChanged", function(networkId) {
-        this.#network = Ethers.getNetworkName(networkId);
-      });
     }
   }
 
@@ -58,10 +55,10 @@ class Agreement_Factory {
   }) => {
     let abi, agreementType;
     if (countdownLength !== undefined) {
-      abi = countdownContract.abi;
+      abi = countdownContractAbi;
       agreementType = "CountdownGriefing_Factory";
     } else {
-      abi = simpleContract.abi;
+      abi = simpleContractAbi;
       agreementType = "SimpleGriefing_Factory";
     }
 
@@ -74,11 +71,11 @@ class Agreement_Factory {
     const contract = new ethers.Contract(
       address,
       abi,
-      Ethers.getWallet(this.#web3Provider)
+      Ethers.getWallet(this.#ethersProvider)
     );
 
     const ipfsHash = await IPFS.add(metadata);
-    const staticMetadata = CryptoIPFS.ipfs.hashToHex(ipfsHash);
+    const staticMetadata = ipfs.hashToHex(ipfsHash);
 
     const callData = Abi.encodeWithSelector(
       "initialize",
@@ -111,7 +108,7 @@ class Agreement_Factory {
     if (process.env.NODE_ENV === "test") {
       await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
     } else {
-      const network = await this.#web3Provider.getNetwork();
+      const network = await this.#ethersProvider.getNetwork();
       if (network && network.name === "rinkeby") {
         await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
         await this.#nmr.mintMockTokens(counterparty, Ethers.parseEther("1000"));
@@ -125,7 +122,7 @@ class Agreement_Factory {
       agreement: new ErasureAgreement({
         staker,
         counterparty,
-        web3Provider: this.#web3Provider,
+        ethersProvider: this.#ethersProvider,
         type:
           agreementType === "CountdownGriefing_Factory"
             ? "countdown"
@@ -142,7 +139,7 @@ class Agreement_Factory {
       counterparty,
       type,
       agreementAddress,
-      web3Provider: this.#web3Provider,
+      ethersProvider: this.#ethersProvider,
       protocolVersion: this.#protocolVersion
     });
   };

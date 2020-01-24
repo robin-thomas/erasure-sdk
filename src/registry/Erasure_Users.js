@@ -4,24 +4,26 @@ import Box from "../utils/3Box";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/Erasure_Users.json";
+import { abi } from "../../artifacts/Erasure_Users.json";
 
 class Erasure_Users {
   #registry = {};
   #network = null;
   #contract = null;
   #web3Provider = null;
+  #ethersProvider = null;
 
-  constructor({ registry, network, web3Provider }) {
+  constructor({ registry, network, web3Provider, ethersProvider }) {
     this.#network = network;
-    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
+    this.#web3Provider = web3Provider;
+    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Erasure_Users;
       this.#contract = new ethers.Contract(
         this.#registry,
-        contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        abi,
+        Ethers.getWallet(this.#ethersProvider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, network) => {
@@ -31,28 +33,9 @@ class Erasure_Users {
 
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
-        contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        abi,
+        Ethers.getWallet(this.#ethersProvider)
       );
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        if (process.env.NODE_ENV === "test") {
-          this.#contract = new ethers.Contract(
-            this.#registry,
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        }
-      });
     }
   }
 
@@ -63,16 +46,15 @@ class Erasure_Users {
    */
   registerUser = async () => {
     // Check if the user alrady exists in Box storage.
-    let keypair = await Box.getKeyPair();
+    let keypair = await Box.getKeyPair(this.#web3Provider);
     if (keypair === null) {
-      keypair = await Crypto.asymmetric.genKeyPair();
-      Box.setKeyPair(keypair);
+      keypair = await Crypto.asymmetric.genKeyPair(this.#ethersProvider);
+      Box.setKeyPair(keypair, this.#web3Provider);
     }
 
     // Register the publicKey in Erasure_Users.
     const publicKey = Buffer.from(keypair.key.publicKey).toString("hex");
-
-    const address = await Ethers.getAccount(this.#web3Provider);
+    const address = await Ethers.getAccount(this.#ethersProvider);
     const data = await this.getUserData(address);
 
     if (data === null || data === undefined || data === "0x") {

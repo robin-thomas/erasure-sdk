@@ -1,14 +1,13 @@
 import { ethers } from "ethers";
 
 import Abi from "../utils/Abi";
-import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 import ErasurePost from "./ErasurePost";
 
-import simpleContract from "../../artifacts/SimpleGriefing.json";
-import countdownContract from "../../artifacts/CountdownGriefing.json";
+import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing.json";
+import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing.json";
 
 class ErasureAgreement {
   #abi = null;
@@ -18,7 +17,7 @@ class ErasureAgreement {
   #contract = null;
   #counterparty = null;
   #protocolVersion = "";
-  #web3Provider = null;
+  #ethersProvider = null;
   #agreementAddress = null;
 
   /**
@@ -34,39 +33,28 @@ class ErasureAgreement {
     type,
     staker,
     counterparty,
-    web3Provider,
+    ethersProvider,
     protocolVersion,
     agreementAddress
   }) {
     this.#type = type;
     this.#staker = staker;
     this.#counterparty = counterparty;
-    this.#web3Provider = web3Provider;
+    this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
     this.#agreementAddress = agreementAddress;
 
     if (type === "countdown") {
-      this.#abi = countdownContract.abi;
+      this.#abi = countdownContractAbi;
     } else if (type === "simple") {
-      this.#abi = simpleContract.abi;
+      this.#abi = simpleContractAbi;
     }
 
     this.#contract = new ethers.Contract(
       agreementAddress,
       this.#abi,
-      Ethers.getWallet(this.#web3Provider)
+      Ethers.getWallet(this.#ethersProvider)
     );
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        this.#contract = new ethers.Contract(
-          agreementAddress,
-          this.#abi,
-          Ethers.getWallet(this.#web3Provider)
-        );
-      });
-    }
   }
 
   /**
@@ -135,7 +123,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   stake = async amount => {
-    const operator = await Ethers.getAccount(this.#web3Provider);
+    const operator = await Ethers.getAccount(this.#ethersProvider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
       throw new Error(`stake() can be called only by staker: ${this.staker()}`);
     }
@@ -153,7 +141,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   reward = async amount => {
-    const operator = await Ethers.getAccount(this.#web3Provider);
+    const operator = await Ethers.getAccount(this.#ethersProvider);
     if (
       Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
     ) {
@@ -177,7 +165,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   punish = async (amount, message) => {
-    const operator = await Ethers.getAccount(this.#web3Provider);
+    const operator = await Ethers.getAccount(this.#ethersProvider);
     if (
       Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
     ) {
@@ -232,7 +220,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipts
    */
   requestWithdraw = async () => {
-    const operator = await Ethers.getAccount(this.#web3Provider);
+    const operator = await Ethers.getAccount(this.#ethersProvider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
       throw new Error(
         `requestWithdraw() can be called only by staker: ${this.staker()}`

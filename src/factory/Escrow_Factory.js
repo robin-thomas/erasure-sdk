@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import CryptoIPFS from "@erasure/crypto-ipfs";
+import { ipfs } from "@erasure/crypto-ipfs";
 
 import NMR from "../erasure/NMR";
 import ErasureEscrow from "../erasure/ErasureEscrow";
@@ -11,7 +11,7 @@ import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import contract from "../../artifacts/CountdownGriefingEscrow_Factory.json";
+import { abi } from "../../artifacts/CountdownGriefingEscrow_Factory.json";
 
 class Escrow_Factory {
   #nmr = null;
@@ -21,6 +21,7 @@ class Escrow_Factory {
   #contract = null;
   #erasureUsers = null;
   #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
   constructor({
@@ -28,11 +29,13 @@ class Escrow_Factory {
     network,
     erasureUsers,
     web3Provider,
+    ethersProvider,
     protocolVersion
   }) {
     this.#network = network;
     this.#erasureUsers = erasureUsers;
-    this.#web3Provider = web3Provider ? web3Provider : Ethers.getProvider();
+    this.#web3Provider = web3Provider;
+    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
     this.#protocolVersion = protocolVersion;
 
     this.#nmr = new NMR({ registry, network, protocolVersion });
@@ -41,8 +44,8 @@ class Escrow_Factory {
       this.#registry = registry.CountdownGriefingEscrow_Factory;
       this.#contract = new ethers.Contract(
         this.#registry,
-        contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        abi,
+        Ethers.getWallet(this.#ethersProvider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, c) => {
@@ -52,28 +55,9 @@ class Escrow_Factory {
 
       this.#contract = new ethers.Contract(
         this.#registry[this.#network],
-        contract.abi,
-        Ethers.getWallet(this.#web3Provider)
+        abi,
+        Ethers.getWallet(this.#ethersProvider)
       );
-    }
-
-    // Listen for any metamask changes.
-    if (typeof window !== "undefined" && window.ethereum !== undefined) {
-      window.ethereum.on("accountsChanged", function() {
-        if (process.env.NODE_ENV === "test") {
-          this.#contract = new ethers.Contract(
-            this.#registry,
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        } else {
-          this.#contract = new ethers.Contract(
-            this.#registry[this.#network],
-            contract.abi,
-            Ethers.getWallet(this.#web3Provider)
-          );
-        }
-      });
     }
   }
 
@@ -116,7 +100,7 @@ class Escrow_Factory {
 
       // Convert the ipfs hash to multihash hex code.
       const staticMetadataB58 = await IPFS.add(metadata);
-      const staticMetadata = CryptoIPFS.ipfs.hashToHex(staticMetadataB58);
+      const staticMetadata = ipfs.hashToHex(staticMetadataB58);
 
       const agreementParams = Abi.encode(
         ["uint256", "uint8", "uint256"],
@@ -162,6 +146,7 @@ class Escrow_Factory {
           paymentAmount,
           nmr: this.#nmr,
           web3Provider: this.#web3Provider,
+          ethersProvider: this.#ethersProvider,
           proofhash: JSON.parse(metadata).proofhash,
           erasureUsers: this.#erasureUsers,
           escrowAddress: receipt.logs[0].address,
@@ -190,6 +175,7 @@ class Escrow_Factory {
       paymentAmount,
       nmr: this.#nmr,
       web3Provider: this.#web3Provider,
+      ethersProvider: this.#ethersProvider,
       erasureUsers: this.#erasureUsers,
       protocolVersion: this.#protocolVersion
     });

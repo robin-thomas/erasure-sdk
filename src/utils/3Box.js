@@ -1,8 +1,22 @@
-import ThreeBox from "3box";
+import { openBox } from "3box";
 
 import Ethers from "./Ethers";
 
-import config from "../config.json";
+import { app } from "../config.json";
+
+const ethProvider = wallet => {
+  return {
+    send: (data, callback) => {
+      if (data.method === "personal_sign") {
+        wallet
+          .signMessage(data.params[0])
+          .then(result => callback(null, { result }));
+      } else {
+        callback(null, "0x");
+      }
+    }
+  };
+};
 
 const Box = {
   space: null,
@@ -18,18 +32,30 @@ const Box = {
    *
    * @returns {Object} authenticated 3Box space client
    */
-  getClient: async () => {
+  getClient: async (web3Provider = null) => {
     if (Box.space === null) {
       let box;
-      if (typeof window !== "undefined" && window.ethereum !== undefined) {
-        const account = await Ethers.getAccount();
-        box = await ThreeBox.openBox(account, window.ethereum);
+
+      if (web3Provider !== null) {
+        const account = (await web3Provider.eth.getAccounts())[0];
+        box = await openBox(account, web3Provider.currentProvider);
+      } else if (process.env.NODE_ENV === "test") {
+        const threeIdProvider = Ethers.getProvider(true);
+        box = await openBox(null, threeIdProvider);
       } else {
-        box = await ThreeBox.openBox(null, Ethers.getProvider(true));
+        // TODO:
+        // 3Box DO NOT SUPPORT this hack completely.
+        // so chances of this working is slim.
+
+        const ethersProvider = Ethers.getProvider();
+        const wallet = web3Provider.getSigner();
+        const account = await Ethers.getAccount(ethersProvider);
+
+        box = await openBox(account, ethProvider(wallet));
       }
 
       await box.syncDone;
-      Box.space = await box.openSpace(config.app.name);
+      Box.space = await box.openSpace(app.name);
     }
 
     return Box.space;
@@ -41,9 +67,9 @@ const Box = {
    * @param {Object} key
    * @param {Object} value
    */
-  set: async (key, value) => {
+  set: async (key, value, web3Provider = null) => {
     try {
-      const client = await Box.getClient();
+      const client = await Box.getClient(web3Provider);
       await client.private.set(key, value);
     } catch (err) {
       throw err;
@@ -56,9 +82,9 @@ const Box = {
    * @param {Object} key
    * @returns {Object} value
    */
-  get: async key => {
+  get: async (key, web3Provider = null) => {
     try {
-      const client = await Box.getClient();
+      const client = await Box.getClient(web3Provider);
       return await client.private.get(key);
     } catch (err) {
       throw err;
@@ -71,8 +97,8 @@ const Box = {
    *
    * @returns {Object} keypair
    */
-  getKeyPair: async () => {
-    const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC);
+  getKeyPair: async (web3Provider = null) => {
+    const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC, web3Provider);
     if (keypair === null) {
       return null;
     }
@@ -91,14 +117,18 @@ const Box = {
    * We use this, because 3Box cannot store Uint8Arrays
    *
    */
-  setKeyPair: async keypair => {
-    await Box.set(Box.KEYSTORE_ASYMMETRIC, {
-      ...keypair,
-      key: {
-        publicKey: keypair.key.publicKey.toString(),
-        secretKey: keypair.key.secretKey.toString()
-      }
-    });
+  setKeyPair: async (keypair, web3Provider = null) => {
+    await Box.set(
+      Box.KEYSTORE_ASYMMETRIC,
+      {
+        ...keypair,
+        key: {
+          publicKey: keypair.key.publicKey.toString(),
+          secretKey: keypair.key.secretKey.toString()
+        }
+      },
+      web3Provider
+    );
   },
 
   getSymKey: async keyhash => {

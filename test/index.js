@@ -6,8 +6,6 @@ import ErasureClient from "../src";
 import IPFS from "../src/utils/IPFS";
 import Ethers from "../src/utils/Ethers";
 
-import testConfig from "./test.json";
-
 const addStake = (stake, amount) => {
   stake = Ethers.parseEther(stake);
   amount = Ethers.bigNumberify(amount);
@@ -48,9 +46,7 @@ describe("ErasureClient", () => {
     console.log(`\n\tUsing eth account: ${account}\n`);
 
     client = new ErasureClient({
-      appName: "Test",
-      appVersion: "1.0.0",
-      protocolVersion: "v1.2.0",
+      protocolVersion: "v1.3.0",
       registry
     });
     await client.login();
