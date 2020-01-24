@@ -131,8 +131,8 @@ const Box = {
     );
   },
 
-  getSymKey: async keyhash => {
-    const keystore = await Box.get(Box.KEYSTORE_SYMMETRIC);
+  getSymKey: async (keyhash, web3Provider = null) => {
+    const keystore = await Box.get(Box.KEYSTORE_SYMMETRIC, web3Provider);
     if (keystore === null || keystore[keyhash] === undefined) {
       return null;
     }
@@ -140,15 +140,15 @@ const Box = {
     return keystore[keyhash];
   },
 
-  setSymKey: async (keyhash, key) => {
-    let keystore = await Box.get(Box.KEYSTORE_SYMMETRIC);
+  setSymKey: async (keyhash, key, web3Provider = null) => {
+    let keystore = await Box.get(Box.KEYSTORE_SYMMETRIC, web3Provider);
     if (keystore === null) {
       keystore = {};
     }
 
     keystore[keyhash] = key;
 
-    await Box.set(Box.KEYSTORE_SYMMETRIC, keystore);
+    await Box.set(Box.KEYSTORE_SYMMETRIC, keystore, web3Provider);
   }
 };
 

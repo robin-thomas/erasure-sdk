@@ -20,10 +20,5 @@ module.exports = {
   },
   node: {
     fs: "empty"
-  },
-  externals: {
-    authereum: {
-      commonjs2: "authereum"
-    }
   }
 };

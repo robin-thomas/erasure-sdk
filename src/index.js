@@ -51,8 +51,12 @@ class ErasureClient {
    * @param {Object} config - configuration for ErasureClient
    * @param {string} config.web3Provider
    * @param {string} config.protocolVersion - version of the erasure protocol
+   * @param {Object} [config.ipfs] - ipfs config
+   * @param {string} config.ipfs.host
+   * @param {string} config.ipfs.port
+   * @param {string} config.ipfs.protocol
    */
-  constructor({ protocolVersion, web3Provider, registry }) {
+  constructor({ protocolVersion, web3Provider, registry, ipfs }) {
     this.#web3Provider = null;
     this.#ethersProvider = null;
     this.#protocolVersion = protocolVersion;

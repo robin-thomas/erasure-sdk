@@ -1,5 +1,5 @@
 import Ipfs from "ipfs-http-client";
-import cryptoIpfs from "@erasure/crypto-ipfs";
+import { multihash } from "@erasure/crypto-ipfs";
 
 import config from "../config.json";
 
@@ -14,7 +14,9 @@ const IPFS = {
    */
   getClient: () => {
     if (IPFS.ipfs === null) {
-      IPFS.ipfs = new Ipfs(config.ipfs.host, config.ipfs.port, {
+      IPFS.ipfs = new Ipfs({
+        host: config.ipfs.host,
+        port: config.ipfs.port,
         protocol: config.ipfs.protocol
       });
     }
@@ -79,7 +81,27 @@ const IPFS = {
    */
   getHash: async data => {
     try {
-      return await cryptoIpfs.ipfs.onlyHash(data);
+      if (data === "") {
+        return "QmaRwA91m9Rdfaq9u3FH1fdMVxw1wFPjKL38czkWMxh3KB";
+      }
+
+      return await multihash({
+        input: data,
+        inputType: "raw",
+        outputType: "b58"
+      });
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  hashToHex: async hash => {
+    try {
+      return await multihash({
+        input: hash,
+        inputType: "b58",
+        outputType: "hex"
+      });
     } catch (err) {
       throw err;
     }

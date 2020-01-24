@@ -60,6 +60,23 @@ describe("ErasureClient", () => {
     assert.ok(feed.address() === _feed.address());
   });
 
+  it("#createFeedWithPost", async () => {
+    const { feed } = await client.createFeed({ data: rawData });
+    assert.ok(Ethers.isAddress(feed.address()));
+
+    const _feed = await client.getObject(feed.address());
+    assert.ok(feed.address() === _feed.address());
+
+    const post = (await feed.getPosts())[0];
+    const data = await IPFS.get(post.proofhash().multihash);
+    assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+
+    const _post = await client.getObject(post.proofhash().proofhash);
+    assert.ok(
+      JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+    );
+  });
+
   it("#createPost", async () => {
     ({ post } = await feed.createPost(rawData));
     const data = await IPFS.get(post.proofhash().multihash);

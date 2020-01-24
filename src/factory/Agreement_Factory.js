@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { ipfs } from "@erasure/crypto-ipfs";
+import { constants } from "@erasure/crypto-ipfs";
 
 import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
@@ -47,7 +47,7 @@ class Agreement_Factory {
     operator,
     staker,
     counterparty,
-    tokenId = 1,
+    tokenId = constants.TOKEN_TYPES.NMR,
     griefRatio,
     griefRatioType,
     countdownLength,
@@ -75,7 +75,7 @@ class Agreement_Factory {
     );
 
     const ipfsHash = await IPFS.add(metadata);
-    const staticMetadata = ipfs.hashToHex(ipfsHash);
+    const staticMetadata = await IPFS.hashToHex(ipfsHash);
 
     const callData = Abi.encodeWithSelector(
       "initialize",

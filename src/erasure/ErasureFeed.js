@@ -112,7 +112,7 @@ class ErasureFeed {
         const keyhash = await IPFS.getHash(symKey);
 
         // Store the symKey in the keystore.
-        await Box.setSymKey(keyhash, symKey);
+        await Box.setSymKey(keyhash, symKey, this.#web3Provider);
 
         const encryptedPost = Crypto.symmetric.encrypt(symKey, data);
         const encryptedDatahash = await IPFS.add(encryptedPost);
@@ -138,6 +138,8 @@ class ErasureFeed {
           owner: this.owner(),
           feedAddress: this.address(),
           escrowFactory: this.#escrowFactory,
+          web3Provider: this.#web3Provider,
+          ethersProvider: this.#ethersProvider,
           protocolVersion: this.#protocolVersion
         })
       };
@@ -152,6 +154,8 @@ class ErasureFeed {
       owner: this.owner(),
       feedAddress: this.address(),
       escrowFactory: this.#escrowFactory,
+      web3Provider: this.#web3Provider,
+      ethersProvider: this.#ethersProvider,
       protocolVersion: this.#protocolVersion
     });
   };
