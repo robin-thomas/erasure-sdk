@@ -62,9 +62,6 @@ const Ethers = {
   hexlify: value => ethers.utils.hexlify(value),
 
   getAccount: async (ethersProvider = null) => {
-    if (ethersProvider === null) {
-      throw new Error("a");
-    }
     return await Ethers.getWallet(ethersProvider).getAddress();
   },
 
