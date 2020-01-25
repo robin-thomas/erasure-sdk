@@ -16,7 +16,7 @@ class Erasure_Users {
   constructor({ registry, network, web3Provider, ethersProvider }) {
     this.#network = network;
     this.#web3Provider = web3Provider;
-    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
+    this.#ethersProvider = ethersProvider;
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Erasure_Users;

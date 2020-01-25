@@ -9,25 +9,25 @@ class NMR {
   #registry = {};
   #network = null;
   #contract = null;
-  #web3Provider = null;
+  #ethersProvider = null;
 
   /**
    * @constructor
    * @param {Object} config
    * @param {address} config.registry
    * @param {string} config.network
-   * @param {Object} config.web3Provider
+   * @param {Object} config.ethersProvider
    */
   constructor({ registry, network, ethersProvider }) {
     this.#network = network;
-    this.#web3Provider = Ethers.getProvider(null, ethersProvider);
+    this.#ethersProvider = ethersProvider;
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.NMR;
       this.#contract = new ethers.Contract(
         this.#registry,
         mockContractAbi,
-        Ethers.getWallet(this.#web3Provider)
+        Ethers.getWallet(this.#ethersProvider)
       );
     } else {
       this.#registry = Object.keys(registry).reduce((p, network) => {
@@ -39,13 +39,13 @@ class NMR {
         this.#contract = new ethers.Contract(
           this.#registry[this.#network],
           contractAbi,
-          Ethers.getWallet(this.#web3Provider)
+          Ethers.getWallet(this.#ethersProvider)
         );
       } else {
         this.#contract = new ethers.Contract(
           this.#registry[this.#network],
           mockContractAbi,
-          Ethers.getWallet(this.#web3Provider)
+          Ethers.getWallet(this.#ethersProvider)
         );
       }
     }

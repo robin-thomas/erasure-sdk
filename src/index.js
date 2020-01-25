@@ -66,6 +66,8 @@ class ErasureClient {
       this.#ethersProvider = new ethers.providers.Web3Provider(
         web3Provider.currentProvider
       );
+    } else {
+      this.#ethersProvider = Ethers.getProvider();
     }
 
     this.#registry =
@@ -84,24 +86,17 @@ class ErasureClient {
     try {
       const opts = {
         registry: this.#registry,
-        network: null,
+        network: (await this.#ethersProvider.getNetwork()).name,
         web3Provider: this.#web3Provider,
         ethersProvider: this.#ethersProvider,
         protocolVersion: this.#protocolVersion
       };
 
-      if (opts.web3Provider !== null) {
-        opts.network = (await opts.ethersProvider.getNetwork()).name;
-      } else if (process.env.NODE_ENV === "test") {
-        opts.network = "rinkeby";
-      } else {
-        opts.network = (await Ethers.getProvider().getNetwork()).name;
-      }
-
       this.#nmr = new NMR(opts);
       this.#erasureUsers = new Erasure_Users(opts);
       this.#escrowFactory = new Escrow_Factory({
         ...opts,
+        nmr: this.#nmr,
         erasureUsers: this.#erasureUsers
       });
       this.#feedFactory = new Feed_Factory({
@@ -163,10 +158,7 @@ class ErasureClient {
 
       for (const type of Object.keys(init)) {
         // Get the contract creation transaction.
-        const results = await Ethers.getProvider(
-          null,
-          this.#ethersProvider
-        ).getLogs({
+        const results = await this.#ethersProvider.getLogs({
           address,
           fromBlock: 0,
           topics: [ethers.utils.id(init[type])]
@@ -249,9 +241,7 @@ class ErasureClient {
   async createFeed(opts) {
     let { operator, data, proofhash, metadata } = opts || {};
 
-    operator =
-      operator ||
-      (await Ethers.getAccount(Ethers.getProvider(null, this.#ethersProvider)));
+    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
@@ -309,9 +299,7 @@ class ErasureClient {
     agreementCountdown,
     metadata
   }) {
-    operator =
-      operator ||
-      (await Ethers.getAccount(Ethers.getProvider(null, this.#ethersProvider)));
+    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
@@ -356,9 +344,7 @@ class ErasureClient {
   }) {
     try {
       if (operator === undefined) {
-        operator = await Ethers.getAccount(
-          Ethers.getProvider(null, this.#ethersProvider)
-        );
+        operator = await Ethers.getAccount(this.#ethersProvider);
       }
       if (!Ethers.isAddress(operator)) {
         throw new Error(`Operator ${operator} is not an address`);

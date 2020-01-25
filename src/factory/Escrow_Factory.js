@@ -1,7 +1,6 @@
 import { ethers } from "ethers";
 import { constants } from "@erasure/crypto-ipfs";
 
-import NMR from "../erasure/NMR";
 import ErasureEscrow from "../erasure/ErasureEscrow";
 
 import Abi from "../utils/Abi";
@@ -25,6 +24,7 @@ class Escrow_Factory {
   #protocolVersion = "";
 
   constructor({
+    nmr,
     registry,
     network,
     erasureUsers,
@@ -32,13 +32,12 @@ class Escrow_Factory {
     ethersProvider,
     protocolVersion
   }) {
+    this.#nmr = nmr;
     this.#network = network;
     this.#erasureUsers = erasureUsers;
     this.#web3Provider = web3Provider;
-    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
+    this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
-
-    this.#nmr = new NMR({ registry, network, protocolVersion });
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.CountdownGriefingEscrow_Factory;

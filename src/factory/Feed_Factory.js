@@ -34,7 +34,7 @@ class Feed_Factory {
     this.#protocolVersion = protocolVersion;
 
     this.#web3Provider = web3Provider;
-    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
+    this.#ethersProvider = ethersProvider;
 
     if (process.env.NODE_ENV === "test") {
       this.#registry = registry.Feed_Factory;
