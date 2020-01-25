@@ -147,6 +147,10 @@ class ErasureClient {
         throw new Error("Unable to construct ErasurePost object!");
       }
 
+      if (!Ethers.isAddress(address)) {
+        throw new Error(`Not a valid address: ${address}`);
+      }
+
       const init = {
         feed: "Initialized(address,bytes)",
         escrow:

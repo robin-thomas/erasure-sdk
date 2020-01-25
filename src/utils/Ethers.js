@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import IdentityWallet from "identity-wallet";
 
 const Ethers = {
   /**
@@ -15,18 +14,6 @@ const Ethers = {
     if (typeof window !== "undefined" && window.ethereum !== undefined) {
       window.ethereum.autoRefreshOnNetworkChange = false;
       ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
-    } else if (process.env.NODE_ENV === "test") {
-      if (box === null) {
-        ethersProvider = new ethers.providers.JsonRpcProvider();
-      } else {
-        const keys = require("../../test/test.json");
-
-        const idWallet = new IdentityWallet(() => true /* getConsent */, {
-          seed: ethers.utils.HDNode.mnemonicToSeed(keys.metamask.mnemonic)
-        });
-
-        ethersProvider = idWallet.get3idProvider();
-      }
     }
 
     return ethersProvider;
@@ -96,8 +83,8 @@ const Ethers = {
     }
   },
   getAddress: hex => {
-    const address = ethers.utils.hexStripZeros(hex);
-    if (address === "0x0") {
+    const address = hex.replace(`0x${"0".repeat(24)}`, "0x");
+    if (address === "0x") {
       return hex;
     }
 

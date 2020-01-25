@@ -39,9 +39,6 @@ const Box = {
       if (web3Provider !== null) {
         const account = (await web3Provider.eth.getAccounts())[0];
         box = await openBox(account, web3Provider.currentProvider);
-      } else if (process.env.NODE_ENV === "test") {
-        const threeIdProvider = Ethers.getProvider(true);
-        box = await openBox(null, threeIdProvider);
       } else {
         // TODO:
         // 3Box DO NOT SUPPORT this hack completely.

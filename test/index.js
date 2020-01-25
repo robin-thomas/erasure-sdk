@@ -1,10 +1,20 @@
 import assert from "assert";
 import { ethers } from "ethers";
+import { mnemonicToSeedSync } from "bip39";
+import hdkey from "ethereumjs-wallet/hdkey";
+import Web3 from "web3";
+import {
+  ecsign,
+  toRpcSig,
+  hashPersonalMessage
+} from "ethereumjs-util/dist/signature";
 
 import Deployer from "./deploy";
 import ErasureClient from "../src";
 import IPFS from "../src/utils/IPFS";
 import Ethers from "../src/utils/Ethers";
+
+import config from "./test.json";
 
 const addStake = (stake, amount) => {
   stake = Ethers.parseEther(stake);
@@ -28,6 +38,31 @@ const sleep = seconds => {
   return new Promise(resolve => setTimeout(resolve, 1000 * seconds));
 };
 
+// Ganache does not expose a `personal_sign` method.
+// Refer: https://github.com/trufflesuite/ganache-core/issues/540
+const ganacheProvider = provider => {
+  const fn = provider.send.bind(provider);
+
+  provider.send = (data, callback) => {
+    if (data.method === "personal_sign") {
+      const seed = mnemonicToSeedSync(config.metamask.mnemonic);
+      const hdk = hdkey.fromMasterSeed(seed);
+      const addrNode = hdk.derivePath("m/44'/60'/0'/0/0");
+      const privateKey = addrNode.getWallet().getPrivateKey();
+
+      const msgHash = hashPersonalMessage(Buffer.from(data.params[0]));
+      const signature = ecsign(msgHash, Buffer.from(privateKey, "hex"));
+      const signatureRPC = toRpcSig(signature.v, signature.r, signature.s);
+
+      callback(null, { result: signatureRPC });
+    } else {
+      fn(data, callback);
+    }
+  };
+
+  return provider;
+};
+
 describe("ErasureClient", () => {
   const punishAmount = "2";
   const rewardAmount = "10";
@@ -45,9 +80,15 @@ describe("ErasureClient", () => {
     account = await Ethers.getAccount();
     console.log(`\n\tUsing eth account: ${account}\n`);
 
+    let provider = new Web3.providers.HttpProvider(
+      `http://localhost:${config.ganache.port}`
+    );
+    provider = ganacheProvider(provider);
+
     client = new ErasureClient({
-      protocolVersion: "v1.3.0",
-      registry
+      registry,
+      web3Provider: new Web3(provider),
+      protocolVersion: "v1.3.0"
     });
     await client.login();
   });
@@ -67,9 +108,13 @@ describe("ErasureClient", () => {
     const _feed = await client.getObject(feed.address());
     assert.ok(feed.address() === _feed.address());
 
+    assert.ok(feed.owner() === account);
+
     const post = (await feed.getPosts())[0];
     const data = await IPFS.get(post.proofhash().multihash);
     assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+
+    assert.ok((await post.checkStatus()).revealed === false);
 
     const _post = await client.getObject(post.proofhash().proofhash);
     assert.ok(
@@ -81,6 +126,8 @@ describe("ErasureClient", () => {
     ({ post } = await feed.createPost(rawData));
     const data = await IPFS.get(post.proofhash().multihash);
     assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+
+    assert.ok(post.owner() === account);
 
     const _post = await client.getObject(post.proofhash().proofhash);
     assert.ok(
