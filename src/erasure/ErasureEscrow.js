@@ -194,12 +194,12 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipts
    */
   finalize = async (finalized = false) => {
-    const keypair = await Box.getKeyPair();
+    const keypair = await Box.getKeyPair(this.#web3Provider);
     if (keypair === null) {
       throw new Error("Cannot find the keypair of this user!");
     }
 
-    const symKey = await Box.getSymKey(this.#proofhash);
+    const symKey = await Box.getSymKey(this.#proofhash, this.#web3Provider);
     const publicKey = await this.#erasureUsers.getUserData(this.buyer());
     const buyerKeypair = {
       key: {

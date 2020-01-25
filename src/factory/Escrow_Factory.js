@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { ipfs } from "@erasure/crypto-ipfs";
+import { constants } from "@erasure/crypto-ipfs";
 
 import NMR from "../erasure/NMR";
 import ErasureEscrow from "../erasure/ErasureEscrow";
@@ -86,7 +86,7 @@ class Escrow_Factory {
     operator,
     buyer,
     seller,
-    tokenId = 1 /* NMR */,
+    tokenId = constants.TOKEN_TYPES.NMR,
     paymentAmount,
     stakeAmount,
     escrowCountdown,
@@ -100,7 +100,7 @@ class Escrow_Factory {
 
       // Convert the ipfs hash to multihash hex code.
       const staticMetadataB58 = await IPFS.add(metadata);
-      const staticMetadata = ipfs.hashToHex(staticMetadataB58);
+      const staticMetadata = await IPFS.hashToHex(staticMetadataB58);
 
       const agreementParams = Abi.encode(
         ["uint256", "uint8", "uint256"],

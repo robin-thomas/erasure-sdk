@@ -13,6 +13,7 @@ class ErasurePost {
   #feedAddress = null;
   #escrowFactory = null;
   #web3Provider = null;
+  #ethersProvider = null;
   #protocolVersion = "";
 
   /**
@@ -30,6 +31,7 @@ class ErasurePost {
     feedAddress,
     escrowFactory,
     web3Provider,
+    ethersProvider,
     protocolVersion
   }) {
     this.#owner = owner;
@@ -37,6 +39,7 @@ class ErasurePost {
     this.#feedAddress = feedAddress;
     this.#escrowFactory = escrowFactory;
     this.#web3Provider = web3Provider;
+    this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
   }
 
@@ -102,7 +105,7 @@ class ErasurePost {
     griefRatioType,
     agreementCountdown
   }) => {
-    const operator = await Ethers.getAccount(this.#web3Provider);
+    const operator = await Ethers.getAccount(this.#ethersProvider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
       throw new Error(
         `offerSell() can only be called by the owner: ${this.owner()}`
@@ -133,7 +136,7 @@ class ErasurePost {
    * @returns {Promise} array of Escrow objects
    */
   getSellOffers = async () => {
-    const results = await this.#web3Provider.getLogs({
+    const results = await this.#ethersProvider.getLogs({
       address: this.#escrowFactory.address(),
       fromBlock: 0,
       topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
@@ -205,7 +208,7 @@ class ErasurePost {
     griefRatioType,
     agreementCountdown
   }) => {
-    const buyer = await Ethers.getAccount();
+    const buyer = await Ethers.getAccount(this.#ethersProvider);
     const seller = this.owner();
 
     const escrow = await this.#escrowFactory.create({
@@ -232,7 +235,7 @@ class ErasurePost {
    * @returns {Promise} array of Escrow objects
    */
   getBuyOffers = async () => {
-    const results = await Ethers.getProvider().getLogs({
+    const results = await this.#ethersProvider.getLogs({
       address: this.#escrowFactory.address(),
       fromBlock: 0,
       topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")]
@@ -286,13 +289,13 @@ class ErasurePost {
    */
   reveal = async () => {
     try {
-      const keypair = await Box.getKeyPair();
+      const keypair = await Box.getKeyPair(this.#web3Provider);
       if (keypair === null) {
         throw new Error("Unable to retrieve the keypair");
       }
 
       const { keyhash, encryptedDatahash } = await this.#metadata();
-      const symKey = await Box.getSymKey(keyhash);
+      const symKey = await Box.getSymKey(keyhash, this.#web3Provider);
 
       // Download the encryptedPost from ipfs
       const encryptedPost = await IPFS.get(encryptedDatahash);
