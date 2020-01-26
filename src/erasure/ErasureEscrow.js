@@ -8,6 +8,15 @@ import Ethers from "../utils/Ethers";
 
 import { abi } from "../../artifacts/CountdownGriefingEscrow.json";
 
+const ESCROW_STATES = {
+  IS_OPEN: 0, // initialized but no deposits made
+  ONLY_STAKE_DEPOSITED: 1, // only stake deposit completed
+  ONLY_PAYMENT_DEPOSITED: 2, // only payment deposit completed
+  IS_DEPOSITED: 3, // both payment and stake deposit are completed
+  IS_FINALIZED: 4, // the escrow completed successfully
+  IS_CANCELLED: 5 // the escrow was cancelled
+};
+
 class ErasureEscrow {
   #nmr = null;
   #buyer = null;
@@ -67,6 +76,10 @@ class ErasureEscrow {
     );
   }
 
+  static get ESCROW_STATES() {
+    return ESCROW_STATES;
+  }
+
   /**
    * Access the web3 contract class
    *
@@ -109,6 +122,17 @@ class ErasureEscrow {
    */
   buyer = () => {
     return this.#buyer;
+  };
+
+  /**
+   * Get the escrow status
+   *
+   * @memberof ErasureEscrow
+   * @method getEscrowStatus
+   * @returns {number} escrow status
+   */
+  getEscrowStatus = async () => {
+    return await this.contract().getEscrowStatus();
   };
 
   /**

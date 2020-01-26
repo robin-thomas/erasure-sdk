@@ -178,7 +178,10 @@ class ErasureClient {
                 stakeAmount,
                 paymentAmount,
                 staticMetadataB58
-              } = this.#escrowFactory.decodeParams(results[0].data);
+              } = this.#escrowFactory.decodeParams(
+                results[0].data,
+                false /* encodedCalldata */
+              );
 
               const metadata = await IPFS.get(staticMetadataB58);
 
@@ -350,9 +353,7 @@ class ErasureClient {
         throw new Error(`Operator ${operator} is not an address`);
       }
 
-      if (staker === undefined) {
-        staker = operator;
-      }
+      staker = staker === undefined ? operator : staker;
 
       if (!Ethers.isAddress(counterparty)) {
         throw new Error(`Counterparty ${counterparty} is not an address`);

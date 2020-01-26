@@ -60,8 +60,19 @@ class Escrow_Factory {
     }
   }
 
+  /**
+   * Access the web3 contract class
+   *
+   * @memberof ErasureEscrow
+   * @method contract
+   * @returns {Object} contract object
+   */
+  contract = () => {
+    return this.#contract;
+  };
+
   address = () => {
-    return this.#contract.address;
+    return this.contract().address;
   };
 
   /**
@@ -133,7 +144,7 @@ class Escrow_Factory {
       );
 
       // Creates the contract.
-      const tx = await this.#contract.create(callData);
+      const tx = await this.contract().create(callData);
       const receipt = await tx.wait();
 
       return {
@@ -180,21 +191,29 @@ class Escrow_Factory {
     });
   };
 
-  decodeParams = data => {
-    const result = Abi.decode(
-      [
-        "address",
-        "address",
-        "address",
-        "uint8",
-        "uint256",
-        "uint256",
-        "uint256",
-        "bytes",
-        "bytes"
-      ],
-      data
-    );
+  decodeParams = (data, encodedCalldata = true) => {
+    const abiTypes = [
+      "address",
+      "address",
+      "address",
+      "uint8",
+      "uint256",
+      "uint256",
+      "uint256",
+      "bytes",
+      "bytes"
+    ];
+
+    let result;
+    if (encodedCalldata) {
+      result = Abi.decodeWithSelector(
+        "initialize",
+        abiTypes,
+        Abi.decode(["bytes"], data)[0]
+      );
+    } else {
+      result = Abi.decode(abiTypes, data);
+    }
 
     const agreementParams = Abi.decode(
       ["uint256", "uint8", "uint256"],

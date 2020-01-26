@@ -94,15 +94,15 @@ describe("ErasureClient", () => {
     await client.login();
   });
 
-  it("Create a feed", async () => {
-    ({ feed } = await client.createFeed());
-    assert.ok(Ethers.isAddress(feed.address()));
-
-    const _feed = await client.getObject(feed.address());
-    assert.ok(feed.address() === _feed.address());
-  });
-
   describe("Feed", () => {
+    it("Create a feed", async () => {
+      ({ feed } = await client.createFeed());
+      assert.ok(Ethers.isAddress(feed.address()));
+
+      const _feed = await client.getObject(feed.address());
+      assert.ok(feed.address() === _feed.address());
+    });
+
     it("Create a feed with a post", async () => {
       const { feed } = await client.createFeed({ data: rawData });
       assert.ok(Ethers.isAddress(feed.address()));
@@ -136,17 +136,53 @@ describe("ErasureClient", () => {
     });
   });
 
-  it("Create a post", async () => {
-    ({ post } = await feed.createPost(rawData));
-    const data = await IPFS.get(post.proofhash().multihash);
-    assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+  describe("Post", () => {
+    it("Create a post", async () => {
+      ({ post } = await feed.createPost(rawData));
+      const data = await IPFS.get(post.proofhash().multihash);
+      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
 
-    assert.ok(post.owner() === account);
+      assert.ok(post.owner() === account);
 
-    const _post = await client.getObject(post.proofhash().proofhash);
-    assert.ok(
-      JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
-    );
+      const _post = await client.getObject(post.proofhash().proofhash);
+      assert.ok(
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+    });
+
+    it("Sell the post", async () => {
+      await post.offerSell({
+        paymentAmount: stakeAmount,
+        stakeAmount: stakeAmount,
+        escrowCountdown: countdownLength,
+        griefRatio: "1",
+        griefRatioType: 2,
+        agreementCountdown: countdownLength
+      });
+
+      const escrows = await post.getSellOffers();
+      assert.ok(escrows[0].seller() === account);
+    });
+
+    it("Buy the post", async () => {
+      await post.offerBuy({
+        paymentAmount: stakeAmount,
+        stakeAmount: stakeAmount,
+        escrowCountdown: countdownLength,
+        griefRatio: "1",
+        griefRatioType: 2,
+        agreementCountdown: countdownLength
+      });
+
+      const escrows = await post.getBuyOffers();
+      assert.ok(escrows[0].buyer() === account);
+    });
+
+    it("Reveal the post", async () => {
+      const keyhash = await post.reveal();
+      const metadata = await IPFS.get(post.proofhash().multihash);
+      assert.ok(keyhash === JSON.parse(metadata).keyhash);
+    });
   });
 
   describe("Escrow", () => {
@@ -430,11 +466,5 @@ describe("ErasureClient", () => {
       [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
-  });
-
-  it("Reveal a post", async () => {
-    const keyhash = await post.reveal();
-    const metadata = await IPFS.get(post.proofhash().multihash);
-    assert.ok(keyhash === JSON.parse(metadata).keyhash);
   });
 });
