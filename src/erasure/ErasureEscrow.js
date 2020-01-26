@@ -159,8 +159,10 @@ class ErasureEscrow {
 
     // If the payment is already deposited, also send the encrypted symkey
     let agreementAddress = null;
-    const isDeposited = (await this.contract().getEscrowStatus()) === 4;
-    if (isDeposited) {
+    const isFinalized =
+      (await this.getEscrowStatus()) ===
+      ErasureEscrow.ESCROW_STATES.IS_FINALIZED;
+    if (isFinalized) {
       ({ agreementAddress } = await this.finalize(true /* finalized */));
     }
 
@@ -265,8 +267,16 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   cancel = async () => {
-    const tx = await this.contract().cancel();
-    return await tx.wait();
+    if (
+      (await this.getEscrowStatus()) ===
+      ErasureEscrow.ESCROW_STATES.IS_DEPOSITED
+    ) {
+      const tx = await this.contract().timeout();
+      return await tx.wait();
+    } else {
+      const tx = await this.contract().cancel();
+      return await tx.wait();
+    }
   };
 }
 
