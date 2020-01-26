@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
+import { constants } from "@erasure/crypto-ipfs";
 
+import DAI from "./erasure/DAI";
 import NMR from "./erasure/NMR";
 
 import Erasure_Users from "./registry/Erasure_Users";
@@ -33,6 +35,7 @@ import contracts from "./contracts.json";
  */
 
 class ErasureClient {
+  #dai = null;
   #nmr = null;
   #registry = {};
   #web3Provider = null;
@@ -92,6 +95,7 @@ class ErasureClient {
         protocolVersion: this.#protocolVersion
       };
 
+      this.#dai = new DAI(opts);
       this.#nmr = new NMR(opts);
       this.#erasureUsers = new Erasure_Users(opts);
       this.#escrowFactory = new Escrow_Factory({
@@ -378,18 +382,28 @@ class ErasureClient {
   }
 
   /**
-   * Mint mock NMR tokens for testnet.
+   * Mint mock NMR/DAI tokens for testnet.
    *
    * @param {string} paymentAmount
+   * @param {integer} tokenId
    */
-  async mintMockTokens(paymentAmount) {
-    if (this.#nmr) {
-      const operator = await Ethers.getAccount(this.#ethersProvider);
-
-      paymentAmount = Ethers.parseEther(paymentAmount);
-      await this.#nmr.mintMockTokens(operator, paymentAmount);
-    } else {
+  async mintMockTokens(paymentAmount, tokenId = constants.TOKEN_TYPES.NMR) {
+    if (!this.#dai || !this.#nmr) {
       throw new Error("You need to call login() first");
+    }
+
+    const operator = await Ethers.getAccount(this.#ethersProvider);
+
+    switch (tokenId) {
+      case constants.TOKEN_TYPES.NMR:
+        paymentAmount = Ethers.parseEther(paymentAmount);
+        await this.#nmr.mintMockTokens(operator, paymentAmount);
+        break;
+
+      case constants.TOKEN_TYPES.DAI:
+        paymentAmount = Ethers.parseEther(paymentAmount);
+        await this.#dai.mintMockTokens(operator, paymentAmount);
+        break;
     }
   }
 }
