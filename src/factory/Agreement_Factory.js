@@ -22,7 +22,7 @@ class Agreement_Factory {
   constructor({ nmr, registry, network, ethersProvider, protocolVersion }) {
     this.#nmr = nmr;
     this.#network = network;
-    this.#ethersProvider = Ethers.getProvider(null, ethersProvider);
+    this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
 
     if (process.env.NODE_ENV === "test") {

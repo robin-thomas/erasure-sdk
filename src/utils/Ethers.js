@@ -6,7 +6,7 @@ const Ethers = {
    *
    * @returns {Object} ethers provider
    */
-  getProvider: (box = null, ethersProvider = null) => {
+  getProvider: (ethersProvider = null) => {
     if (ethersProvider !== null) {
       return ethersProvider;
     }
@@ -26,45 +26,9 @@ const Ethers = {
    */
   getWallet: (ethersProvider = null) => {
     try {
-      if (ethersProvider !== null) {
-        return ethersProvider.getSigner();
-      }
-
-      if (process.env.NODE_ENV === "test") {
-        const keys = require("../../test/test.json");
-
-        return ethers.Wallet.fromMnemonic(keys.metamask.mnemonic).connect(
-          new ethers.providers.JsonRpcProvider()
-        );
-      }
-
-      return Ethers.getProvider().getSigner();
+      return Ethers.getProvider(ethersProvider).getSigner();
     } catch (err) {
       return null;
-    }
-  },
-
-  /**
-   * retrieves the eth network name
-   *
-   * @param {Function} callback - callback function
-   */
-  getNetworkSync: callback => {
-    try {
-      Ethers.getProvider()
-        .getNetwork()
-        .then(net => callback(net.name))
-        .catch(console.error);
-    } catch (err) {}
-  },
-
-  // refer: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
-  getNetworkName: networkId => {
-    switch (networkId) {
-      case 1:
-        return "homestead";
-      case 4:
-        return "rinkeby";
     }
   },
 
@@ -82,6 +46,7 @@ const Ethers = {
       return false;
     }
   },
+
   getAddress: hex => {
     const address = hex.replace(`0x${"0".repeat(24)}`, "0x");
     if (address === "0x") {

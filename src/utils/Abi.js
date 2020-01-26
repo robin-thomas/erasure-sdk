@@ -14,8 +14,7 @@ const Abi = {
     const initData = abiEncoder.encode(abiTypes, abiValues);
     const selector = Abi.createSelector(fnName, abiTypes);
 
-    const encoded = selector + initData.slice(2);
-    return encoded;
+    return selector + initData.slice(2);
   },
 
   /**

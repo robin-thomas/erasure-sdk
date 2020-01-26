@@ -1,5 +1,7 @@
 import { ethers } from "ethers";
 
+import ErasureEscrow from "./ErasureEscrow";
+
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
@@ -8,7 +10,6 @@ import Ethers from "../utils/Ethers";
 
 class ErasurePost {
   #owner = null;
-  #revealed = false;
   #proofhash = null;
   #feedAddress = null;
   #escrowFactory = null;
@@ -112,9 +113,11 @@ class ErasurePost {
       );
     }
 
-    const escrow = await this.#escrowFactory.create({
+    return await this.#escrowFactory.create({
       operator,
-      buyer,
+      ...(buyer !== undefined && buyer !== null
+        ? { buyer }
+        : { buyer: operator }),
       seller: this.owner(),
       paymentAmount,
       stakeAmount,
@@ -124,8 +127,6 @@ class ErasurePost {
       agreementCountdown,
       metadata: JSON.stringify({ proofhash: this.proofhash().proofhash })
     });
-
-    return escrow;
   };
 
   /**
@@ -154,10 +155,10 @@ class ErasurePost {
             seller,
             paymentAmount,
             stakeAmount,
-            metadata
+            staticMetadataB58
           } = this.#escrowFactory.decodeParams(result.data);
 
-          metadata = await IPFS.get(metadata);
+          let metadata = await IPFS.get(staticMetadataB58);
           metadata = JSON.parse(metadata);
 
           if (
@@ -170,7 +171,8 @@ class ErasurePost {
                 buyer,
                 seller,
                 stakeAmount,
-                paymentAmount
+                paymentAmount,
+                proofhash: metadata.proofhash
               })
             );
           }
@@ -211,7 +213,7 @@ class ErasurePost {
     const buyer = await Ethers.getAccount(this.#ethersProvider);
     const seller = this.owner();
 
-    const escrow = await this.#escrowFactory.create({
+    return await this.#escrowFactory.create({
       operator: buyer,
       buyer,
       seller,
@@ -223,8 +225,6 @@ class ErasurePost {
       agreementCountdown,
       metadata: JSON.stringify({ proofhash: this.proofhash().proofhash })
     });
-
-    return escrow;
   };
 
   /**
@@ -250,11 +250,11 @@ class ErasurePost {
           seller,
           paymentAmount,
           stakeAmount,
-          metadata
+          staticMetadataB58
         } = this.#escrowFactory.decodeParams(result.data);
 
         if (seller === this.owner()) {
-          metadata = await IPFS.get(metadata);
+          let metadata = await IPFS.get(staticMetadataB58);
           metadata = JSON.parse(metadata);
 
           if (
@@ -267,7 +267,8 @@ class ErasurePost {
                 buyer,
                 seller,
                 stakeAmount,
-                paymentAmount
+                paymentAmount,
+                proofhash: metadata.proofhash
               })
             );
           }
@@ -300,10 +301,8 @@ class ErasurePost {
       // Download the encryptedPost from ipfs
       const encryptedPost = await IPFS.get(encryptedDatahash);
 
-      const post = Crypto.symmetric.decrypt(symKey, encryptedPost);
-      this.#revealed = true;
-
       // Upload the decrypted ost data to ipfs.
+      const post = Crypto.symmetric.decrypt(symKey, encryptedPost);
       await IPFS.add(post);
 
       // Upload the symKey & return the ipfshash.
@@ -313,29 +312,42 @@ class ErasurePost {
     }
   };
 
+  isRevealed = async () => {
+    const { keyhash } = await this.#metadata();
+    const symkey = await IPFS.get(keyhash);
+    return symkey !== undefined;
+  };
+
   /**
    *
    * Get the status of the post
    *
    * @memberof ErasurePost
    * @method checkStatus
-   * @returns {boolean} revealed bool true if the post is revealed
-   * @returns {integer} numSold number of times the post was sold
+   * @returns {Promise} result
+   * @returns {boolean} result.revealed - bool true if the post is revealed
+   * @returns {integer} result.numSold - number of times the post was sold
    */
   checkStatus = async () => {
-    let posts = [];
-    posts.push(...(await this.getBuyOffers()));
-    posts.push(...(await this.getSellOffers()));
+    let escrows = [];
+    escrows.push(...(await this.getBuyOffers()));
+    escrows.push(...(await this.getSellOffers()));
 
     let numSold = 0;
-    for (const post of posts) {
+    for (const escrow of escrows) {
       // Check the number of finalized escrows.
-      numSold += (await this.contract().getEscrowStatus()) === 3 ? 1 : 0;
+      numSold +=
+        (await escrow.getEscrowStatus()) ===
+        ErasureEscrow.ESCROW_STATES.IS_FINALIZED
+          ? 1
+          : 0;
     }
+
+    const revealed = await this.isRevealed();
 
     return {
       numSold,
-      revealed: this.#revealed
+      revealed
     };
   };
 }

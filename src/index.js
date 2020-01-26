@@ -66,6 +66,8 @@ class ErasureClient {
       this.#ethersProvider = new ethers.providers.Web3Provider(
         web3Provider.currentProvider
       );
+    } else {
+      throw new Error("Need to provide a web3Provider!");
     }
 
     this.#registry =
@@ -84,24 +86,17 @@ class ErasureClient {
     try {
       const opts = {
         registry: this.#registry,
-        network: null,
+        network: (await this.#ethersProvider.getNetwork()).name,
         web3Provider: this.#web3Provider,
         ethersProvider: this.#ethersProvider,
         protocolVersion: this.#protocolVersion
       };
 
-      if (opts.web3Provider !== null) {
-        opts.network = (await opts.ethersProvider.getNetwork()).name;
-      } else if (process.env.NODE_ENV === "test") {
-        opts.network = "rinkeby";
-      } else {
-        opts.network = (await Ethers.getProvider().getNetwork()).name;
-      }
-
       this.#nmr = new NMR(opts);
       this.#erasureUsers = new Erasure_Users(opts);
       this.#escrowFactory = new Escrow_Factory({
         ...opts,
+        nmr: this.#nmr,
         erasureUsers: this.#erasureUsers
       });
       this.#feedFactory = new Feed_Factory({
@@ -128,7 +123,11 @@ class ErasureClient {
   async getObject(address) {
     try {
       // Check if address is proofhash. If yes, then its ErasurePost.
-      if (Utils.isProofhash(address)) {
+      if (Utils.isProofhash(address) || (await IPFS.isHash(address))) {
+        if (await IPFS.isHash(address)) {
+          address = Utils.hashToSha256(address);
+        }
+
         const feeds = await this.#feedFactory.getFeeds();
         if (feeds && feeds.length > 0) {
           for (const feed of feeds) {
@@ -163,10 +162,7 @@ class ErasureClient {
 
       for (const type of Object.keys(init)) {
         // Get the contract creation transaction.
-        const results = await Ethers.getProvider(
-          null,
-          this.#ethersProvider
-        ).getLogs({
+        const results = await this.#ethersProvider.getLogs({
           address,
           fromBlock: 0,
           topics: [ethers.utils.id(init[type])]
@@ -186,7 +182,10 @@ class ErasureClient {
                 stakeAmount,
                 paymentAmount,
                 staticMetadataB58
-              } = this.#escrowFactory.decodeParams(results[0].data);
+              } = this.#escrowFactory.decodeParams(
+                results[0].data,
+                false /* encodedCalldata */
+              );
 
               const metadata = await IPFS.get(staticMetadataB58);
 
@@ -249,9 +248,7 @@ class ErasureClient {
   async createFeed(opts) {
     let { operator, data, proofhash, metadata } = opts || {};
 
-    operator =
-      operator ||
-      (await Ethers.getAccount(Ethers.getProvider(null, this.#ethersProvider)));
+    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
@@ -309,9 +306,7 @@ class ErasureClient {
     agreementCountdown,
     metadata
   }) {
-    operator =
-      operator ||
-      (await Ethers.getAccount(Ethers.getProvider(null, this.#ethersProvider)));
+    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
@@ -356,17 +351,13 @@ class ErasureClient {
   }) {
     try {
       if (operator === undefined) {
-        operator = await Ethers.getAccount(
-          Ethers.getProvider(null, this.#ethersProvider)
-        );
+        operator = await Ethers.getAccount(this.#ethersProvider);
       }
       if (!Ethers.isAddress(operator)) {
         throw new Error(`Operator ${operator} is not an address`);
       }
 
-      if (staker === undefined) {
-        staker = operator;
-      }
+      staker = staker === undefined ? operator : staker;
 
       if (!Ethers.isAddress(counterparty)) {
         throw new Error(`Counterparty ${counterparty} is not an address`);
@@ -383,6 +374,22 @@ class ErasureClient {
       });
     } catch (err) {
       throw err;
+    }
+  }
+
+  /**
+   * Mint mock NMR tokens for testnet.
+   *
+   * @param {string} paymentAmount
+   */
+  async mintMockTokens(paymentAmount) {
+    if (this.#nmr) {
+      const operator = await Ethers.getAccount(this.#ethersProvider);
+
+      paymentAmount = Ethers.parseEther(paymentAmount);
+      await this.#nmr.mintMockTokens(operator, paymentAmount);
+    } else {
+      throw new Error("You need to call login() first");
     }
   }
 }

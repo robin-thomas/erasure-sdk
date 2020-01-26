@@ -12,6 +12,7 @@ import {
 import Deployer from "./deploy";
 import ErasureClient from "../src";
 import IPFS from "../src/utils/IPFS";
+import Utils from "../src/utils/Utils";
 import Ethers from "../src/utils/Ethers";
 
 import config from "./test.json";
@@ -69,7 +70,9 @@ describe("ErasureClient", () => {
   const stakeAmount = "11";
   const countdownLength = 1;
 
-  let post, feed;
+  let post,
+    feed,
+    proofhash = null;
   const rawData = Math.random().toString(36);
 
   let client, account, registry;
@@ -77,62 +80,141 @@ describe("ErasureClient", () => {
     // Deploy all contracts to ganache.
     registry = await Deployer();
 
-    account = await Ethers.getAccount();
-    console.log(`\n\tUsing eth account: ${account}\n`);
-
-    let provider = new Web3.providers.HttpProvider(
+    const provider = new Web3.providers.HttpProvider(
       `http://localhost:${config.ganache.port}`
     );
-    provider = ganacheProvider(provider);
+    const web3Provider = new Web3(ganacheProvider(provider));
+
+    account = (await web3Provider.eth.getAccounts())[0];
+    console.log(`\n\tUsing eth account: ${account}\n`);
 
     client = new ErasureClient({
       registry,
-      web3Provider: new Web3(provider),
+      web3Provider,
       protocolVersion: "v1.3.0"
     });
-    await client.login();
-  });
 
-  it("#createFeed", async () => {
+    await client.login();
+
+    // Mint some mock tokens.
+    await client.mintMockTokens("1000");
+
     ({ feed } = await client.createFeed());
     assert.ok(Ethers.isAddress(feed.address()));
 
     const _feed = await client.getObject(feed.address());
     assert.ok(feed.address() === _feed.address());
-  });
 
-  it("#createFeedWithPost", async () => {
-    const { feed } = await client.createFeed({ data: rawData });
-    assert.ok(Ethers.isAddress(feed.address()));
-
-    const _feed = await client.getObject(feed.address());
-    assert.ok(feed.address() === _feed.address());
-
-    assert.ok(feed.owner() === account);
-
-    const post = (await feed.getPosts())[0];
-    const data = await IPFS.get(post.proofhash().multihash);
-    assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
-
-    assert.ok((await post.checkStatus()).revealed === false);
-
-    const _post = await client.getObject(post.proofhash().proofhash);
-    assert.ok(
-      JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
-    );
-  });
-
-  it("#createPost", async () => {
     ({ post } = await feed.createPost(rawData));
     const data = await IPFS.get(post.proofhash().multihash);
     assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
 
-    assert.ok(post.owner() === account);
+    proofhash = post.proofhash().proofhash;
+  });
 
-    const _post = await client.getObject(post.proofhash().proofhash);
-    assert.ok(
-      JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
-    );
+  describe("Feed", () => {
+    it("Create a feed with a post", async () => {
+      const { feed } = await client.createFeed({ data: rawData });
+      assert.ok(Ethers.isAddress(feed.address()));
+
+      const _feed = await client.getObject(feed.address());
+      assert.ok(feed.address() === _feed.address());
+
+      assert.ok(feed.owner() === account);
+
+      const post = (await feed.getPosts())[0];
+      const data = await IPFS.get(post.proofhash().multihash);
+      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+
+      assert.ok((await post.checkStatus()).revealed === false);
+
+      const _post = await client.getObject(post.proofhash().proofhash);
+      assert.ok(
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+    });
+
+    it("Create a feed with invalid post proofhash", async () => {
+      try {
+        const { feed } = await client.createFeed({
+          proofhash: "fake_proofhash"
+        });
+        assert.fail("Test supposed to fail");
+      } catch (err) {
+        assert.ok(true);
+      }
+    });
+
+    it("Create a feed with a post and reveal it", async () => {
+      const { feed } = await client.createFeed({ data: rawData });
+      assert.ok(Ethers.isAddress(feed.address()));
+
+      const post = (await feed.getPosts())[0];
+      assert.ok((await post.checkStatus()).revealed === false);
+
+      await feed.reveal();
+      assert.ok((await feed.checkStatus()).revealed === true);
+    });
+  });
+
+  describe("Post", () => {
+    it("Create a post", async () => {
+      let _post = await client.getObject(post.proofhash().proofhash);
+      assert.ok(
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+
+      _post = await client.getObject(post.proofhash().multihash);
+      assert.ok(
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+    });
+
+    it("Create a post with proofhash", async () => {
+      const { post } = await feed.createPost(null, proofhash);
+      const data = await IPFS.get(post.proofhash().multihash);
+      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+
+      assert.ok(post.owner() === account);
+
+      const _post = await client.getObject(post.proofhash().proofhash);
+      assert.ok(
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+    });
+
+    it("Sell the post", async () => {
+      await post.offerSell({
+        paymentAmount: stakeAmount,
+        stakeAmount: stakeAmount,
+        escrowCountdown: countdownLength,
+        griefRatio: "1",
+        griefRatioType: 2,
+        agreementCountdown: countdownLength
+      });
+
+      const escrows = await post.getSellOffers();
+      assert.ok(escrows[0].seller() === account);
+    });
+
+    it("Buy the post", async () => {
+      await post.offerBuy({
+        paymentAmount: stakeAmount,
+        stakeAmount: stakeAmount,
+        escrowCountdown: countdownLength,
+        griefRatio: "1",
+        griefRatioType: 2,
+        agreementCountdown: countdownLength
+      });
+
+      const escrows = await post.getBuyOffers();
+      assert.ok(escrows[0].buyer() === account);
+    });
+
+    it("Reveal the post", async () => {
+      await post.reveal();
+      assert.ok((await post.checkStatus()).revealed === true);
+    });
   });
 
   describe("Escrow", () => {
@@ -305,7 +387,7 @@ describe("ErasureClient", () => {
     });
 
     it("#stake", async () => {
-      const result = await agreement.reward(stakeAmount);
+      const result = await agreement.stake(stakeAmount);
 
       let amount = "";
       [currentStake, amount] = addStake(currentStake, result.logs[1].data);
@@ -372,7 +454,6 @@ describe("ErasureClient", () => {
     before(async () => {
       ({ agreement } = await client.createAgreement({
         operator: account,
-        staker: account,
         counterparty: account,
         griefRatio: "1",
         griefRatioType: 2
@@ -381,10 +462,12 @@ describe("ErasureClient", () => {
 
       const _simple = await client.getObject(agreement.address());
       assert.ok(agreement.address() === _simple.address());
+
+      await agreement.checkStatus();
     });
 
     it("#stake", async () => {
-      const result = await agreement.reward(stakeAmount);
+      const result = await agreement.stake(stakeAmount);
 
       let amount = "";
       [currentStake, amount] = addStake(currentStake, result.logs[1].data);
@@ -417,11 +500,5 @@ describe("ErasureClient", () => {
       [currentStake, amount] = subStake(currentStake, result.logs[1].data);
       assert.ok(Number(amount).toString() === punishAmount);
     });
-  });
-
-  it("#revealPost", async () => {
-    const keyhash = await post.reveal();
-    const metadata = await IPFS.get(post.proofhash().multihash);
-    assert.ok(keyhash === JSON.parse(metadata).keyhash);
   });
 });
