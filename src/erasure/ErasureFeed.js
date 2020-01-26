@@ -14,7 +14,6 @@ import { abi } from "../../artifacts/Feed.json";
 class ErasureFeed {
   #owner = null;
   #numSold = 0;
-  #revealed = false;
   #contract = null;
   #feedAddress = null;
   #escrowFactory = null;
@@ -209,7 +208,6 @@ class ErasureFeed {
     for (const post of posts) {
       hashes.push(await post.reveal());
     }
-    this.#revealed = true;
 
     return hashes;
   };
@@ -219,12 +217,20 @@ class ErasureFeed {
    *
    * @memberof ErasureFeed
    * @method checkStatus
-   * @returns {boolean} revealed bool true if the feed is revealed
+   * @returns {Promise} revealed bool true if the feed is revealed
    */
-  checkStatus = () => {
-    return {
-      revealed: this.#revealed
-    };
+  checkStatus = async () => {
+    let revealed = false;
+
+    const posts = await this.getPosts();
+    for (const post of posts) {
+      if (await post.isRevealed()) {
+        revealed = true;
+        break;
+      }
+    }
+
+    return { revealed };
   };
 }
 

@@ -134,6 +134,18 @@ describe("ErasureClient", () => {
         assert.ok(true);
       }
     });
+
+    it("Create a feed with a post and reveal it", async () => {
+      const { feed } = await client.createFeed({ data: rawData });
+      assert.ok(Ethers.isAddress(feed.address()));
+
+      let post = (await feed.getPosts())[0];
+      assert.ok((await post.checkStatus()).revealed === false);
+
+      await feed.reveal();
+      post = (await feed.getPosts())[0];
+      assert.ok((await post.checkStatus()).revealed === true);
+    });
   });
 
   describe("Post", () => {

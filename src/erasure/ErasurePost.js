@@ -10,7 +10,6 @@ import Ethers from "../utils/Ethers";
 
 class ErasurePost {
   #owner = null;
-  #revealed = false;
   #proofhash = null;
   #feedAddress = null;
   #escrowFactory = null;
@@ -302,10 +301,8 @@ class ErasurePost {
       // Download the encryptedPost from ipfs
       const encryptedPost = await IPFS.get(encryptedDatahash);
 
-      const post = Crypto.symmetric.decrypt(symKey, encryptedPost);
-      this.#revealed = true;
-
       // Upload the decrypted ost data to ipfs.
+      const post = Crypto.symmetric.decrypt(symKey, encryptedPost);
       await IPFS.add(post);
 
       // Upload the symKey & return the ipfshash.
@@ -313,6 +310,12 @@ class ErasurePost {
     } catch (err) {
       throw err;
     }
+  };
+
+  isRevealed = async () => {
+    const { keyhash } = await this.#metadata();
+    const symkey = await IPFS.get(keyhash);
+    return symkey !== undefined;
   };
 
   /**
@@ -340,9 +343,11 @@ class ErasurePost {
           : 0;
     }
 
+    const revealed = await this.isRevealed();
+
     return {
       numSold,
-      revealed: this.#revealed
+      revealed
     };
   };
 }
