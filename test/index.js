@@ -12,6 +12,7 @@ import {
 import Deployer from "./deploy";
 import ErasureClient from "../src";
 import IPFS from "../src/utils/IPFS";
+import Utils from "../src/utils/Utils";
 import Ethers from "../src/utils/Ethers";
 
 import config from "./test.json";
@@ -69,7 +70,9 @@ describe("ErasureClient", () => {
   const stakeAmount = "11";
   const countdownLength = 1;
 
-  let post, feed;
+  let post,
+    feed,
+    proofhash = null;
   const rawData = Math.random().toString(36);
 
   let client, account, registry;
@@ -95,17 +98,21 @@ describe("ErasureClient", () => {
 
     // Mint some mock tokens.
     await client.mintMockTokens("1000");
+
+    ({ feed } = await client.createFeed());
+    assert.ok(Ethers.isAddress(feed.address()));
+
+    const _feed = await client.getObject(feed.address());
+    assert.ok(feed.address() === _feed.address());
+
+    ({ post } = await feed.createPost(rawData));
+    const data = await IPFS.get(post.proofhash().multihash);
+    assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+
+    proofhash = post.proofhash().proofhash;
   });
 
   describe("Feed", () => {
-    it("Create a feed", async () => {
-      ({ feed } = await client.createFeed());
-      assert.ok(Ethers.isAddress(feed.address()));
-
-      const _feed = await client.getObject(feed.address());
-      assert.ok(feed.address() === _feed.address());
-    });
-
     it("Create a feed with a post", async () => {
       const { feed } = await client.createFeed({ data: rawData });
       assert.ok(Ethers.isAddress(feed.address()));
@@ -142,29 +149,35 @@ describe("ErasureClient", () => {
       const { feed } = await client.createFeed({ data: rawData });
       assert.ok(Ethers.isAddress(feed.address()));
 
-      let post = (await feed.getPosts())[0];
+      const post = (await feed.getPosts())[0];
       assert.ok((await post.checkStatus()).revealed === false);
 
       await feed.reveal();
-      post = (await feed.getPosts())[0];
-      assert.ok((await post.checkStatus()).revealed === true);
+      assert.ok((await feed.checkStatus()).revealed === true);
     });
   });
 
   describe("Post", () => {
     it("Create a post", async () => {
-      ({ post } = await feed.createPost(rawData));
-      const data = await IPFS.get(post.proofhash().multihash);
-      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
-
-      assert.ok(post.owner() === account);
-
       let _post = await client.getObject(post.proofhash().proofhash);
       assert.ok(
         JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
       );
 
       _post = await client.getObject(post.proofhash().multihash);
+      assert.ok(
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+    });
+
+    it("Create a post with proofhash", async () => {
+      const { post } = await feed.createPost(null, proofhash);
+      const data = await IPFS.get(post.proofhash().multihash);
+      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
+
+      assert.ok(post.owner() === account);
+
+      const _post = await client.getObject(post.proofhash().proofhash);
       assert.ok(
         JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
       );
@@ -199,9 +212,8 @@ describe("ErasureClient", () => {
     });
 
     it("Reveal the post", async () => {
-      const keyhash = await post.reveal();
-      const metadata = await IPFS.get(post.proofhash().multihash);
-      assert.ok(keyhash === JSON.parse(metadata).keyhash);
+      await post.reveal();
+      assert.ok((await post.checkStatus()).revealed === true);
     });
   });
 

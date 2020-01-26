@@ -103,10 +103,10 @@ class ErasureFeed {
         );
       }
 
-      // Get the IPFS hash of the post without uploading it to IPFS.
-      const datahash = await IPFS.getHash(data);
-
       if (proofhash === null) {
+        // Get the IPFS hash of the post without uploading it to IPFS.
+        const datahash = await IPFS.getHash(data);
+
         const symKey = Crypto.symmetric.genKey();
         const keyhash = await IPFS.getHash(symKey);
 
