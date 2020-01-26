@@ -313,9 +313,14 @@ class ErasurePost {
   };
 
   isRevealed = async () => {
-    const { keyhash } = await this.#metadata();
-    const symkey = await IPFS.get(keyhash);
-    return symkey !== undefined;
+    try {
+      const { keyhash } = await this.#metadata();
+      const symkey = await IPFS.get(keyhash);
+
+      return symkey !== undefined;
+    } catch (err) {
+      return false;
+    }
   };
 
   /**
