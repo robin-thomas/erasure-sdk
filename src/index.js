@@ -376,6 +376,22 @@ class ErasureClient {
       throw err;
     }
   }
+
+  /**
+   * Mint mock NMR tokens for testnet.
+   *
+   * @param {string} paymentAmount
+   */
+  async mintMockTokens(paymentAmount) {
+    if (this.#nmr) {
+      const operator = await Ethers.getAccount(this.#ethersProvider);
+
+      paymentAmount = Ethers.parseEther(paymentAmount);
+      await this.#nmr.mintMockTokens(operator, paymentAmount);
+    } else {
+      throw new Error("You need to call login() first");
+    }
+  }
 }
 
 export { Ethers };

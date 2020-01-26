@@ -152,15 +152,6 @@ class ErasureEscrow {
       );
     }
 
-    if (process.env.NODE_ENV === "test") {
-      await this.#nmr.mintMockTokens(operator, this.#stakeAmount);
-    } else {
-      const network = await this.#ethersProvider.getNetwork();
-      if (network && network.name === "rinkeby") {
-        await this.#nmr.mintMockTokens(operator, this.#stakeAmount);
-      }
-    }
-
     await this.#nmr.approve(this.address(), this.#stakeAmount);
 
     const tx = await this.contract().depositStake();

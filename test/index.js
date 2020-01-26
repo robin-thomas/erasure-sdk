@@ -92,6 +92,9 @@ describe("ErasureClient", () => {
     });
 
     await client.login();
+
+    // Mint some mock tokens.
+    await client.mintMockTokens("1000");
   });
 
   describe("Feed", () => {
@@ -372,7 +375,7 @@ describe("ErasureClient", () => {
     });
 
     it("#stake", async () => {
-      const result = await agreement.reward(stakeAmount);
+      const result = await agreement.stake(stakeAmount);
 
       let amount = "";
       [currentStake, amount] = addStake(currentStake, result.logs[1].data);
@@ -450,7 +453,7 @@ describe("ErasureClient", () => {
     });
 
     it("#stake", async () => {
-      const result = await agreement.reward(stakeAmount);
+      const result = await agreement.stake(stakeAmount);
 
       let amount = "";
       [currentStake, amount] = addStake(currentStake, result.logs[1].data);
