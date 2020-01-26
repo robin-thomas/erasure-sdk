@@ -105,6 +105,15 @@ const IPFS = {
     } catch (err) {
       throw err;
     }
+  },
+
+  isHash: async hash => {
+    try {
+      await IPFS.hashToHex(hash);
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 };
 

@@ -123,7 +123,11 @@ class ErasureClient {
   async getObject(address) {
     try {
       // Check if address is proofhash. If yes, then its ErasurePost.
-      if (Utils.isProofhash(address)) {
+      if (Utils.isProofhash(address) || (await IPFS.isHash(address))) {
+        if (await IPFS.isHash(address)) {
+          address = Utils.hashToSha256(address);
+        }
+
         const feeds = await this.#feedFactory.getFeeds();
         if (feeds && feeds.length > 0) {
           for (const feed of feeds) {

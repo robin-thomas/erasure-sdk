@@ -156,7 +156,12 @@ describe("ErasureClient", () => {
 
       assert.ok(post.owner() === account);
 
-      const _post = await client.getObject(post.proofhash().proofhash);
+      let _post = await client.getObject(post.proofhash().proofhash);
+      assert.ok(
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+
+      _post = await client.getObject(post.proofhash().multihash);
       assert.ok(
         JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
       );
