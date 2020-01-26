@@ -124,8 +124,6 @@ class Feed_Factory {
 
       let feeds = [];
       if (results && results.length > 0) {
-        const abiCoder = ethers.utils.defaultAbiCoder;
-
         for (const result of results) {
           const owner = Ethers.getAddress(result.topics[2]);
           const feedAddress = Ethers.getAddress(result.topics[1]);
