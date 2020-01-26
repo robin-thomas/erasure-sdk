@@ -8,6 +8,7 @@ import {
   toRpcSig,
   hashPersonalMessage
 } from "ethereumjs-util/dist/signature";
+import { constants } from "@erasure/crypto-ipfs";
 
 import Deployer from "./deploy";
 import ErasureClient from "../src";
@@ -96,8 +97,9 @@ describe("ErasureClient", () => {
 
     await client.login();
 
-    // Mint some mock tokens.
+    // Mint some mock NMR tokens.
     await client.mintMockTokens("1000");
+    await client.mintMockTokens("1000", constants.TOKEN_TYPES.DAI);
 
     ({ feed } = await client.createFeed());
     assert.ok(Ethers.isAddress(feed.address()));
