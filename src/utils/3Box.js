@@ -4,20 +4,6 @@ import Ethers from "./Ethers";
 
 import { app } from "../config.json";
 
-const ethProvider = wallet => {
-  return {
-    send: (data, callback) => {
-      if (data.method === "personal_sign") {
-        wallet
-          .signMessage(data.params[0])
-          .then(result => callback(null, { result }));
-      } else {
-        callback(null, "0x");
-      }
-    }
-  };
-};
-
 const Box = {
   space: null,
 
@@ -34,22 +20,8 @@ const Box = {
    */
   getClient: async (web3Provider = null) => {
     if (Box.space === null) {
-      let box;
-
-      if (web3Provider !== null) {
-        const account = (await web3Provider.eth.getAccounts())[0];
-        box = await openBox(account, web3Provider.currentProvider);
-      } else {
-        // TODO:
-        // 3Box DO NOT SUPPORT this hack completely.
-        // so chances of this working is slim.
-
-        const ethersProvider = Ethers.getProvider();
-        const wallet = web3Provider.getSigner();
-        const account = await Ethers.getAccount(ethersProvider);
-
-        box = await openBox(account, ethProvider(wallet));
-      }
+      const account = (await web3Provider.eth.getAccounts())[0];
+      const box = await openBox(account, web3Provider.currentProvider);
 
       await box.syncDone;
       Box.space = await box.openSpace(app.name);

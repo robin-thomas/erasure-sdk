@@ -67,7 +67,7 @@ class ErasureClient {
         web3Provider.currentProvider
       );
     } else {
-      this.#ethersProvider = Ethers.getProvider();
+      throw new Error("Need to provide a web3Provider!");
     }
 
     this.#registry =

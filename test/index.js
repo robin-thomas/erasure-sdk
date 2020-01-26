@@ -462,6 +462,8 @@ describe("ErasureClient", () => {
 
       const _simple = await client.getObject(agreement.address());
       assert.ok(agreement.address() === _simple.address());
+
+      await agreement.checkStatus();
     });
 
     it("#stake", async () => {
