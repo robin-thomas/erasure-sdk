@@ -462,6 +462,7 @@ describe("ErasureClient", () => {
           griefRatio: "1",
           griefRatioType: 2,
           agreementCountdown: countdownLength,
+          tokenId: constants.TOKEN_TYPES.DAI,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
@@ -509,6 +510,7 @@ describe("ErasureClient", () => {
           griefRatio: "1",
           griefRatioType: 2,
           agreementCountdown: countdownLength,
+          tokenId: constants.TOKEN_TYPES.DAI,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
@@ -560,6 +562,7 @@ describe("ErasureClient", () => {
           griefRatio: "1",
           griefRatioType: 2,
           agreementCountdown: countdownLength,
+          tokenId: constants.TOKEN_TYPES.DAI,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));

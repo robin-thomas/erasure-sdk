@@ -93,6 +93,23 @@ const deployNMR = async () => {
   return await deployContract("MockNMR", [], signer);
 };
 
+const deployDAI = async () => {
+  const deployAddress = "0xb5b06a16621616875A6C2637948bF98eA57c58fa";
+
+  const tx = await provider.getSigner().sendTransaction({
+    to: deployAddress,
+    value: Ethers.parseEther("100")
+  });
+  await tx.wait();
+
+  const signer = provider.getSigner(deployAddress);
+
+  // needs to increment the nonce to 1 by
+  await signer.sendTransaction({ to: signer.address, value: 0 });
+
+  return await deployContract("DAI", [], signer);
+};
+
 const deploy = async () => {
   let contractRegistry = {};
 
@@ -116,7 +133,9 @@ const deploy = async () => {
       const template = contractRegistry[name];
       contract = await deployFactory(contractName, registry, template, factory);
     } else {
-      if (contractName === "NMR") {
+      if (contractName === "DAI") {
+        contract = await deployDAI();
+      } else if (contractName === "NMR") {
         contract = await deployNMR();
       } else {
         const signer = provider.getSigner();

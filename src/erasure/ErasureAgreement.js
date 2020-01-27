@@ -196,6 +196,9 @@ class ErasureAgreement {
       );
     }
 
+    // TODO: derive the expectedCost and approve() that instead.
+    // expectedCost = punishAmount.mul(griefRatio)
+
     const punishAmount = Ethers.parseEther(amount);
     await this.#token.approve(this.tokenId(), this.address(), punishAmount);
 
