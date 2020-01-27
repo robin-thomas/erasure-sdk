@@ -109,6 +109,7 @@ class ErasureClient {
       });
       this.#agreementFactory = new Agreement_Factory({
         ...opts,
+        dai: this.#dai,
         nmr: this.#nmr
       });
 
@@ -208,24 +209,24 @@ class ErasureClient {
                 false
               ));
 
-              return this.#agreementFactory.createClone(
+              return this.#agreementFactory.createClone({
                 address,
                 type,
                 staker,
                 counterparty
-              );
+              });
 
             case "countdown":
               ({ staker, counterparty } = this.#agreementFactory.decodeParams(
                 results[0].data
               ));
 
-              return this.#agreementFactory.createClone(
+              return this.#agreementFactory.createClone({
                 address,
                 type,
                 staker,
                 counterparty
-              );
+              });
           }
         }
       }
@@ -308,6 +309,7 @@ class ErasureClient {
     griefRatio,
     griefRatioType,
     agreementCountdown,
+    tokenId = constants.TOKEN_TYPES.NMR,
     metadata
   }) {
     operator = operator || (await Ethers.getAccount(this.#ethersProvider));
@@ -327,6 +329,7 @@ class ErasureClient {
       griefRatio,
       griefRatioType,
       agreementCountdown,
+      tokenId,
       metadata
     });
   }
@@ -351,6 +354,7 @@ class ErasureClient {
     griefRatio,
     griefRatioType,
     countdownLength,
+    tokenId = constants.TOKEN_TYPES.NMR,
     metadata
   }) {
     try {
@@ -374,6 +378,7 @@ class ErasureClient {
         griefRatio,
         griefRatioType,
         countdownLength,
+        tokenId,
         metadata: metadata || ""
       });
     } catch (err) {

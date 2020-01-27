@@ -12,6 +12,7 @@ import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing_Factory
 import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing_Factory.json";
 
 class Agreement_Factory {
+  #dai = null;
   #nmr = null;
   #registry = {};
   #network = null;
@@ -104,18 +105,16 @@ class Agreement_Factory {
     const tx = await contract.create(callData);
     const receipt = await tx.wait();
 
-    // Mint some mock NMR for test purposes.
-    if (process.env.NODE_ENV === "test") {
-      await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
-    } else {
-      const network = await this.#ethersProvider.getNetwork();
-      if (network && network.name === "rinkeby") {
-        await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
-        await this.#nmr.mintMockTokens(counterparty, Ethers.parseEther("1000"));
-      }
-    }
+    // Allow other contracts to spend on sender's behalf
+    switch (tokenId) {
+      case constants.TOKEN_TYPES.NMR:
+        await this.#nmr.changeApproval(receipt.logs[0].address);
+        break;
 
-    await this.#nmr.changeApproval(receipt.logs[0].address);
+      case constants.TOKEN_TYPES.DAI:
+        await this.#dai.changeApproval(receipt.logs[0].address);
+        break;
+    }
 
     return {
       receipt,
@@ -133,12 +132,12 @@ class Agreement_Factory {
     };
   };
 
-  createClone = (agreementAddress, type, staker, counterparty) => {
+  createClone = ({ address, type, staker, counterparty }) => {
     return new ErasureAgreement({
       staker,
       counterparty,
       type,
-      agreementAddress,
+      agreementAddress: address,
       ethersProvider: this.#ethersProvider,
       protocolVersion: this.#protocolVersion
     });

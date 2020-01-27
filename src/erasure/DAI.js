@@ -42,6 +42,21 @@ class DAI {
   }
 
   /**
+   * Change the approval so that DAI could be staked
+   *
+   * @param {string} spender - griefing instance address
+   * @returns {Promise} receipt of the approve transaction
+   */
+  changeApproval = async (spender, newValue = Ethers.MaxUint256()) => {
+    try {
+      const tx = await this.#contract.approve(spender, newValue);
+      return await tx.wait();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  /**
    * Mints some mock DAI tokens
    *
    * @param {string} to - address to transfer some mock DAI tokens
