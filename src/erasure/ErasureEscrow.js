@@ -19,8 +19,7 @@ const ESCROW_STATES = {
 };
 
 class ErasureEscrow {
-  #dai = null;
-  #nmr = null;
+  #token = null;
   #buyer = null;
   #seller = null;
   #tokenId = null;
@@ -47,8 +46,7 @@ class ErasureEscrow {
    * @param {string} config.protocolVersion
    */
   constructor({
-    dai,
-    nmr,
+    token,
     buyer,
     seller,
     tokenId,
@@ -61,14 +59,13 @@ class ErasureEscrow {
     ethersProvider,
     protocolVersion
   }) {
-    this.#dai = dai;
-    this.#nmr = nmr;
+    this.#token = token;
     this.#buyer = buyer;
     this.#seller = seller;
     this.#tokenId = tokenId;
     this.#proofhash = proofhash;
-    this.#stakeAmount = Ethers.parseEther(stakeAmount);
-    this.#paymentAmount = Ethers.parseEther(paymentAmount);
+    this.#stakeAmount = stakeAmount;
+    this.#paymentAmount = paymentAmount;
     this.#escrowAddress = escrowAddress;
 
     this.#erasureUsers = erasureUsers;
@@ -170,16 +167,8 @@ class ErasureEscrow {
       );
     }
 
-    // Allow other contracts to spend on sender's behalf
-    switch (this.#tokenId) {
-      case constants.TOKEN_TYPES.NMR:
-        await this.#nmr.approve(this.address(), this.#stakeAmount);
-        break;
-
-      case constants.TOKEN_TYPES.DAI:
-        await this.#dai.approve(this.address(), this.#stakeAmount);
-        break;
-    }
+    const stakeAmount = Ethers.parseEther(this.#stakeAmount);
+    await this.#token.approve(this.tokenId(), this.address(), stakeAmount);
 
     const tx = await this.contract().depositStake();
     const receipt = await tx.wait();
@@ -214,16 +203,8 @@ class ErasureEscrow {
       );
     }
 
-    // Allow other contracts to spend on sender's behalf
-    switch (this.#tokenId) {
-      case constants.TOKEN_TYPES.NMR:
-        await this.#nmr.approve(this.address(), this.#paymentAmount);
-        break;
-
-      case constants.TOKEN_TYPES.DAI:
-        await this.#dai.approve(this.address(), this.#paymentAmount);
-        break;
-    }
+    const paymentAmount = Ethers.parseEther(this.#paymentAmount);
+    await this.#token.approve(this.tokenId(), this.address(), paymentAmount);
 
     const tx = await this.contract().depositPayment();
     return await tx.wait();

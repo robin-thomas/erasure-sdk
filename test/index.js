@@ -427,7 +427,7 @@ describe("ErasureClient", () => {
     });
   });
 
-  describe("Countdown Griefing", () => {
+  describe("Countdown Griefing (staking with NMR)", () => {
     let agreement,
       currentStake = "0";
 
@@ -441,6 +441,7 @@ describe("ErasureClient", () => {
         countdownLength
       }));
       assert.ok(Ethers.isAddress(agreement.address()));
+      assert.ok(agreement.tokenId() === constants.TOKEN_TYPES.NMR);
 
       const _countdown = await client.getObject(agreement.address());
       assert.ok(agreement.address() === _countdown.address());
@@ -507,18 +508,20 @@ describe("ErasureClient", () => {
     });
   });
 
-  describe("Simple Griefing", () => {
+  describe("Simple Griefing (staking with DAI)", () => {
     let agreement,
       currentStake = "0";
 
     before(async () => {
       ({ agreement } = await client.createAgreement({
+        tokenId: constants.TOKEN_TYPES.DAI,
         operator: account,
         counterparty: account,
         griefRatio: "1",
         griefRatioType: 2
       }));
       assert.ok(Ethers.isAddress(agreement.address()));
+      assert.ok(agreement.tokenId() === constants.TOKEN_TYPES.DAI);
 
       const _simple = await client.getObject(agreement.address());
       assert.ok(agreement.address() === _simple.address());

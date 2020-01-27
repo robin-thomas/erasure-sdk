@@ -12,24 +12,15 @@ import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing_Factory
 import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing_Factory.json";
 
 class Agreement_Factory {
-  #dai = null;
-  #nmr = null;
+  #token = null;
   #registry = {};
   #network = null;
   #contract = null;
   #ethersProvider = null;
   #protocolVersion = "";
 
-  constructor({
-    dai,
-    nmr,
-    registry,
-    network,
-    ethersProvider,
-    protocolVersion
-  }) {
-    this.#dai = dai;
-    this.#nmr = nmr;
+  constructor({ token, registry, network, ethersProvider, protocolVersion }) {
+    this.#token = token;
     this.#network = network;
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
@@ -113,20 +104,11 @@ class Agreement_Factory {
     const tx = await contract.create(callData);
     const receipt = await tx.wait();
 
-    // Allow other contracts to spend on sender's behalf
-    switch (tokenId) {
-      case constants.TOKEN_TYPES.NMR:
-        await this.#nmr.changeApproval(receipt.logs[0].address);
-        break;
-
-      case constants.TOKEN_TYPES.DAI:
-        await this.#dai.changeApproval(receipt.logs[0].address);
-        break;
-    }
-
     return {
       receipt,
       agreement: new ErasureAgreement({
+        token: this.#token,
+        tokenId,
         staker,
         counterparty,
         ethersProvider: this.#ethersProvider,
@@ -140,11 +122,13 @@ class Agreement_Factory {
     };
   };
 
-  createClone = ({ address, type, staker, counterparty }) => {
+  createClone = ({ address, type, tokenId, staker, counterparty }) => {
     return new ErasureAgreement({
       staker,
       counterparty,
       type,
+      tokenId,
+      token: this.#token,
       agreementAddress: address,
       ethersProvider: this.#ethersProvider,
       protocolVersion: this.#protocolVersion
