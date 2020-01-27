@@ -219,7 +219,7 @@ describe("ErasureClient", () => {
     });
   });
 
-  describe("Escrow", () => {
+  describe("Escrow (NMR)", () => {
     describe("createEscrow -> stake -> cancel", () => {
       let escrow;
 
@@ -237,6 +237,7 @@ describe("ErasureClient", () => {
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
+        assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR);
 
         const _escrow = await client.getObject(escrow.address());
         assert.ok(escrow.address() === _escrow.address());
@@ -274,6 +275,7 @@ describe("ErasureClient", () => {
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
+        assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR);
 
         const _escrow = await client.getObject(escrow.address());
         assert.ok(escrow.address() === _escrow.address());
@@ -320,6 +322,7 @@ describe("ErasureClient", () => {
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
+        assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR);
 
         const _escrow = await client.getObject(escrow.address());
         assert.ok(escrow.address() === _escrow.address());
@@ -370,6 +373,197 @@ describe("ErasureClient", () => {
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
         }));
         assert.ok(Ethers.isAddress(escrow.address()));
+
+        const _escrow = await client.getObject(escrow.address());
+        assert.ok(escrow.address() === _escrow.address());
+      });
+
+      it("#depositStake", async () => {
+        const { receipt } = await escrow.depositStake();
+        const events = receipt.events
+          .map(e => e.event)
+          .filter(e => e !== undefined);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("StakeDeposited"));
+      });
+
+      it("#depositPayment", async () => {
+        const receipt = await escrow.depositPayment();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("PaymentDeposited"));
+        assert.ok(events.includes("DeadlineSet"));
+
+        assert.ok((await escrow.getEscrowStatus()) === 3); // isDeposited
+        assert.ok((await escrow.contract().getCountdownStatus()) === 2);
+      });
+
+      it("#cancel", async () => {
+        await sleep(countdownLength);
+
+        const receipt = await escrow.cancel();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("Cancelled"));
+      });
+    });
+  });
+
+  describe("Escrow (DAI)", () => {
+    describe("createEscrow -> stake -> cancel", () => {
+      let escrow;
+
+      it("create an escrow", async () => {
+        ({ escrow } = await client.createEscrow({
+          operator: account,
+          buyer: account,
+          seller: account,
+          paymentAmount: stakeAmount,
+          stakeAmount: stakeAmount,
+          escrowCountdown: countdownLength,
+          griefRatio: "1",
+          griefRatioType: 2,
+          agreementCountdown: countdownLength,
+          tokenId: constants.TOKEN_TYPES.DAI,
+          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
+        }));
+        assert.ok(Ethers.isAddress(escrow.address()));
+        assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
+
+        const _escrow = await client.getObject(escrow.address());
+        assert.ok(escrow.address() === _escrow.address());
+      });
+
+      it("#depositStake", async () => {
+        const { receipt, agreementAddress } = await escrow.depositStake();
+
+        // no agreement created since no seller payment made.
+        assert.ok(!Ethers.isAddress(agreementAddress));
+        assert.ok((await escrow.getEscrowStatus()) === 1); // onlyStakeDeposited
+      });
+
+      it("#cancel", async () => {
+        const receipt = await escrow.cancel();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("Cancelled"));
+      });
+    });
+
+    describe("createEscrow -> depositPayment -> stake", () => {
+      let escrow;
+
+      it("create an escrow", async () => {
+        ({ escrow } = await client.createEscrow({
+          operator: account,
+          buyer: account,
+          seller: account,
+          paymentAmount: stakeAmount,
+          stakeAmount: stakeAmount,
+          escrowCountdown: countdownLength,
+          griefRatio: "1",
+          griefRatioType: 2,
+          agreementCountdown: countdownLength,
+          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
+        }));
+        assert.ok(Ethers.isAddress(escrow.address()));
+        assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
+
+        const _escrow = await client.getObject(escrow.address());
+        assert.ok(escrow.address() === _escrow.address());
+      });
+
+      it("#depositPayment", async () => {
+        const receipt = await escrow.depositPayment();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("PaymentDeposited"));
+
+        assert.ok((await escrow.getEscrowStatus()) === 2); // onlyPaymentDeposited
+        assert.ok((await escrow.contract().getCountdownStatus()) === 1);
+      });
+
+      it("#depositStake", async () => {
+        const { receipt, agreementAddress } = await escrow.depositStake();
+
+        assert.ok(Ethers.isAddress(agreementAddress));
+
+        const events = receipt.events
+          .map(e => e.event)
+          .filter(e => e !== undefined);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("StakeDeposited"));
+        assert.ok(events.includes("DeadlineSet"));
+      });
+    });
+
+    describe("createEscrow -> stake -> depositPayment -> finalize", () => {
+      let escrow;
+
+      it("create an escrow", async () => {
+        ({ escrow } = await client.createEscrow({
+          operator: account,
+          buyer: account,
+          seller: account,
+          paymentAmount: stakeAmount,
+          stakeAmount: stakeAmount,
+          escrowCountdown: countdownLength,
+          griefRatio: "1",
+          griefRatioType: 2,
+          agreementCountdown: countdownLength,
+          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
+        }));
+        assert.ok(Ethers.isAddress(escrow.address()));
+        assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
+
+        const _escrow = await client.getObject(escrow.address());
+        assert.ok(escrow.address() === _escrow.address());
+      });
+
+      it("#depositStake", async () => {
+        const { receipt } = await escrow.depositStake();
+        const events = receipt.events
+          .map(e => e.event)
+          .filter(e => e !== undefined);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("StakeDeposited"));
+      });
+
+      it("#depositPayment", async () => {
+        const receipt = await escrow.depositPayment();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("DepositIncreased"));
+        assert.ok(events.includes("PaymentDeposited"));
+        assert.ok(events.includes("DeadlineSet"));
+
+        assert.ok((await escrow.getEscrowStatus()) === 3); // isFinalized
+        assert.ok((await escrow.contract().getCountdownStatus()) === 2);
+      });
+
+      it("#finalize", async () => {
+        const { agreementAddress, receipt } = await escrow.finalize();
+        const events = receipt.events.map(e => e.event);
+        assert.ok(events.includes("Finalized"));
+        assert.ok(Ethers.isAddress(agreementAddress));
+      });
+    });
+
+    describe("createEscrow -> stake -> depositPayment -> cancel", () => {
+      let escrow;
+
+      it("create an escrow", async () => {
+        ({ escrow } = await client.createEscrow({
+          operator: account,
+          buyer: account,
+          seller: account,
+          paymentAmount: stakeAmount,
+          stakeAmount: stakeAmount,
+          escrowCountdown: countdownLength,
+          griefRatio: "1",
+          griefRatioType: 2,
+          agreementCountdown: countdownLength,
+          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
+        }));
+        assert.ok(Ethers.isAddress(escrow.address()));
+        assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
 
         const _escrow = await client.getObject(escrow.address());
         assert.ok(escrow.address() === _escrow.address());
@@ -525,6 +719,7 @@ describe("ErasureClient", () => {
 
       const _simple = await client.getObject(agreement.address());
       assert.ok(agreement.address() === _simple.address());
+      assert.ok(_simple.tokenId() === constants.TOKEN_TYPES.DAI);
 
       await agreement.checkStatus();
     });
