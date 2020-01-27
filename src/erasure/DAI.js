@@ -47,9 +47,9 @@ class DAI {
    * @param {string} spender - griefing instance address
    * @returns {Promise} receipt of the approve transaction
    */
-  changeApproval = async (spender, newValue = Ethers.MaxUint256()) => {
+  approve = async (spender, value) => {
     try {
-      const tx = await this.#contract.approve(spender, newValue);
+      const tx = await this.#contract.approve(spender, value);
       return await tx.wait();
     } catch (err) {
       throw err;

@@ -100,6 +100,7 @@ class ErasureClient {
       this.#erasureUsers = new Erasure_Users(opts);
       this.#escrowFactory = new Escrow_Factory({
         ...opts,
+        dai: this.#dai,
         nmr: this.#nmr,
         erasureUsers: this.#erasureUsers
       });
@@ -184,6 +185,7 @@ class ErasureClient {
               const {
                 buyer,
                 seller,
+                tokenId,
                 stakeAmount,
                 paymentAmount,
                 staticMetadataB58
@@ -195,12 +197,13 @@ class ErasureClient {
               const metadata = await IPFS.get(staticMetadataB58);
 
               return this.#escrowFactory.createClone({
-                escrowAddress: address,
                 buyer,
                 seller,
-                proofhash: JSON.parse(metadata).proofhash,
+                tokenId,
                 stakeAmount,
-                paymentAmount
+                paymentAmount,
+                proofhash: JSON.parse(metadata).proofhash,
+                escrowAddress: address
               });
 
             case "simple":

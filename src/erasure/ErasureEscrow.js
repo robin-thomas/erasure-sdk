@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { constants } from "@erasure/crypto-ipfs";
 
 import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
@@ -18,9 +19,11 @@ const ESCROW_STATES = {
 };
 
 class ErasureEscrow {
+  #dai = null;
   #nmr = null;
   #buyer = null;
   #seller = null;
+  #tokenId = null;
   #contract = null;
   #proofhash = null;
   #stakeAmount = null;
@@ -44,9 +47,11 @@ class ErasureEscrow {
    * @param {string} config.protocolVersion
    */
   constructor({
+    dai,
     nmr,
     buyer,
     seller,
+    tokenId,
     proofhash,
     stakeAmount,
     paymentAmount,
@@ -56,9 +61,11 @@ class ErasureEscrow {
     ethersProvider,
     protocolVersion
   }) {
+    this.#dai = dai;
     this.#nmr = nmr;
     this.#buyer = buyer;
     this.#seller = seller;
+    this.#tokenId = tokenId;
     this.#proofhash = proofhash;
     this.#stakeAmount = Ethers.parseEther(stakeAmount);
     this.#paymentAmount = Ethers.parseEther(paymentAmount);
@@ -125,6 +132,17 @@ class ErasureEscrow {
   };
 
   /**
+   * Get the tokenId
+   *
+   * @memberof ErasureEscrow
+   * @method tokenId
+   * @returns {integer} tokenId
+   */
+  tokenId = () => {
+    return this.#tokenId;
+  };
+
+  /**
    * Get the escrow status
    *
    * @memberof ErasureEscrow
@@ -152,7 +170,16 @@ class ErasureEscrow {
       );
     }
 
-    await this.#nmr.approve(this.address(), this.#stakeAmount);
+    // Allow other contracts to spend on sender's behalf
+    switch (this.#tokenId) {
+      case constants.TOKEN_TYPES.NMR:
+        await this.#nmr.approve(this.address(), this.#stakeAmount);
+        break;
+
+      case constants.TOKEN_TYPES.DAI:
+        await this.#dai.approve(this.address(), this.#stakeAmount);
+        break;
+    }
 
     const tx = await this.contract().depositStake();
     const receipt = await tx.wait();
@@ -187,7 +214,16 @@ class ErasureEscrow {
       );
     }
 
-    await this.#nmr.approve(this.address(), this.#paymentAmount);
+    // Allow other contracts to spend on sender's behalf
+    switch (this.#tokenId) {
+      case constants.TOKEN_TYPES.NMR:
+        await this.#nmr.approve(this.address(), this.#paymentAmount);
+        break;
+
+      case constants.TOKEN_TYPES.DAI:
+        await this.#dai.approve(this.address(), this.#paymentAmount);
+        break;
+    }
 
     const tx = await this.contract().depositPayment();
     return await tx.wait();

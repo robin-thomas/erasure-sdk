@@ -55,7 +55,7 @@ class NMR {
    * Change the approval so that NMR could be staked
    *
    * @param {string} spender - griefing instance address
-   * @returns {Promise} receipt of the changeApproval transaction
+   * @returns {Promise} receipt of the approve transaction
    */
   approve = async (spender, value) => {
     try {

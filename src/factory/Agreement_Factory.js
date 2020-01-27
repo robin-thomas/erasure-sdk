@@ -20,7 +20,15 @@ class Agreement_Factory {
   #ethersProvider = null;
   #protocolVersion = "";
 
-  constructor({ nmr, registry, network, ethersProvider, protocolVersion }) {
+  constructor({
+    dai,
+    nmr,
+    registry,
+    network,
+    ethersProvider,
+    protocolVersion
+  }) {
+    this.#dai = dai;
     this.#nmr = nmr;
     this.#network = network;
     this.#ethersProvider = ethersProvider;
