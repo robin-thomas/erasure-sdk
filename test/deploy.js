@@ -16,18 +16,31 @@ server.listen("8545");
 
 const protocolVersion = "v1.3.0";
 const provider = new ethers.providers.JsonRpcProvider();
+const signer = provider.getSigner();
 const abiEncoder = new ethers.utils.AbiCoder();
 
-const deployContract = async (contractName, params, signer) => {
-  const contractAddress =
-    contractConfig[protocolVersion]["rinkeby"][contractName];
+// Deployer addresses
+const daiDeployAddress = "0xb5b06a16621616875A6C2637948bF98eA57c58fa";
+const nmrDeployAddress = "0x9608010323ed882a38ede9211d7691102b4f0ba0";
+const uniswapFactoryAddress = "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95";
 
+const uniswapSigner = provider.getSigner(uniswapFactoryAddress);
+
+const fundSigner = async _signer => {
+  await (
+    await signer.sendTransaction({
+      to: await _signer.getAddress(),
+      value: Ethers.parseEther("100")
+    })
+  ).wait();
+};
+
+const deployContract = async (contractName, params, _signer) => {
   const artifact = require(`../artifacts/${contractName}.json`);
-
   const factory = new ethers.ContractFactory(
     artifact.abi,
     artifact.bytecode,
-    signer
+    _signer
   );
   const contract = await factory.deploy(...params);
   await contract.deployed();
@@ -76,49 +89,94 @@ const deployFactory = async (
   return factoryContract;
 };
 
-const deployNMR = async () => {
-  const deployAddress = "0x9608010323ed882a38ede9211d7691102b4f0ba0";
+const increaseNonce = async (_signer, count = 1) => {
+  const address = await _signer.getAddress();
 
-  const tx = await provider.getSigner().sendTransaction({
-    to: deployAddress,
-    value: Ethers.parseEther("100")
-  });
-  await tx.wait();
-
-  const signer = provider.getSigner(deployAddress);
-
-  // needs to increment the nonce to 1 by
-  await signer.sendTransaction({ to: signer.address, value: 0 });
-
-  return await deployContract("MockNMR", [], signer);
+  let index = await provider.getTransactionCount(address);
+  while (index < count) {
+    await (await _signer.sendTransaction({ to: address })).wait();
+    ++index;
+  }
 };
 
-const deployDAI = async () => {
-  const deployAddress = "0xb5b06a16621616875A6C2637948bF98eA57c58fa";
+const addLiquidity = async (uniswapFactory, token, uniswapSigner) => {
+  const exchange = await deployContract(
+    "MockUniswapExchange",
+    [token.address, uniswapFactory.address],
+    uniswapSigner
+  );
 
-  const tx = await provider.getSigner().sendTransaction({
-    to: deployAddress,
-    value: Ethers.parseEther("100")
+  await uniswapFactory.createExchange(token.address, exchange.address);
+
+  const tokenAmount = ethers.utils.parseEther("1000");
+  const ethAmount = ethers.utils.parseEther("100");
+
+  const deadline =
+    (await provider.getBlock(await provider.getBlockNumber())).timestamp + 6000;
+
+  token = token.connect(exchange.signer);
+  try {
+    // NMR
+    await (await token.mintMockTokens(exchange.address, tokenAmount)).wait();
+  } catch (err) {
+    // DAI
+    await (await token.mint(exchange.address, tokenAmount)).wait();
+  }
+  await (await token.approve(exchange.address, tokenAmount)).wait();
+
+  await exchange.addLiquidity(0, tokenAmount, deadline, {
+    value: ethAmount
   });
-  await tx.wait();
+};
 
-  const signer = provider.getSigner(deployAddress);
+const deployDAI = async uniswapFactory => {
+  const daiSigner = provider.getSigner(daiDeployAddress);
+  await fundSigner(daiSigner);
 
-  // needs to increment the nonce to 1 by
-  await signer.sendTransaction({ to: signer.address, value: 0 });
+  // Need to increase nonce by 1 to get the correct DAI contract address
+  await increaseNonce(daiSigner);
+  const token = await deployContract("DAI", [], daiSigner);
 
-  return await deployContract("DAI", [], signer);
+  // Need to increase nonce to get the correct DAI uniswap contract address
+  await increaseNonce(uniswapSigner, 1225);
+
+  await addLiquidity(uniswapFactory, token, uniswapSigner);
+
+  return token;
+};
+
+const deployNMR = async uniswapFactory => {
+  const nmrSigner = provider.getSigner(nmrDeployAddress);
+  await fundSigner(nmrSigner);
+
+  // Need to increase nonce to get the correct NMR contract address
+  await increaseNonce(nmrSigner);
+  const token = await deployContract("MockNMR", [], nmrSigner);
+
+  // Need to increase nonce to get the correct NMR uniswap contract address
+  await increaseNonce(uniswapSigner, 41);
+
+  await addLiquidity(uniswapFactory, token, uniswapSigner);
+
+  return token;
 };
 
 const deploy = async () => {
   let contractRegistry = {};
 
-  const contracts = contractConfig[protocolVersion].rinkeby;
-  for (const contractName of Object.keys(contracts)) {
-    const contractAddress = contracts[contractName];
+  await fundSigner(uniswapSigner);
 
+  const contracts = {
+    MockUniswapFactory: "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95",
+    NMR: "",
+    ...contractConfig[protocolVersion].rinkeby
+  };
+
+  for (const contractName of Object.keys(contracts)) {
     let contract = null;
-    if (contractName.endsWith("_Factory")) {
+    if (contractName === "MockUniswapFactory") {
+      contract = await deployContract(contractName, [], signer);
+    } else if (contractName.endsWith("_Factory")) {
       const name = contractName.replace("_Factory", "");
 
       let factory = null;
@@ -134,11 +192,10 @@ const deploy = async () => {
       contract = await deployFactory(contractName, registry, template, factory);
     } else {
       if (contractName === "DAI") {
-        contract = await deployDAI();
+        contract = await deployDAI(contractRegistry.MockUniswapFactory);
       } else if (contractName === "NMR") {
-        contract = await deployNMR();
+        contract = await deployNMR(contractRegistry.MockUniswapFactory);
       } else {
-        const signer = provider.getSigner();
         contract = await deployContract(contractName, [], signer);
       }
     }

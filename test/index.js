@@ -97,7 +97,7 @@ describe("ErasureClient", () => {
 
     await client.login();
 
-    // Mint some mock NMR tokens.
+    // Mint some mock NMR/DAI tokens.
     await client.mintMockTokens("1000");
     await client.mintMockTokens("1000", constants.TOKEN_TYPES.DAI);
 
