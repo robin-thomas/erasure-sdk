@@ -109,19 +109,15 @@ const addLiquidity = async (uniswapFactory, token, uniswapSigner) => {
   await uniswapFactory.createExchange(token.address, exchange.address);
 
   const tokenAmount = ethers.utils.parseEther("1000");
-  const ethAmount = ethers.utils.parseEther("100");
+  const ethAmount = ethers.utils.parseEther("45");
 
   const deadline =
     (await provider.getBlock(await provider.getBlockNumber())).timestamp + 6000;
 
-  token = token.connect(exchange.signer);
-  try {
-    // NMR
-    await (await token.mintMockTokens(exchange.address, tokenAmount)).wait();
-  } catch (err) {
-    // DAI
-    await (await token.mint(exchange.address, tokenAmount)).wait();
-  }
+  token = token.connect(uniswapSigner);
+  await (
+    await token.mintMockTokens(await uniswapSigner.getAddress(), tokenAmount)
+  ).wait();
   await (await token.approve(exchange.address, tokenAmount)).wait();
 
   await exchange.addLiquidity(0, tokenAmount, deadline, {

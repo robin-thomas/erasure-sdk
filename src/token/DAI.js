@@ -65,7 +65,7 @@ class DAI {
    */
   mintMockTokens = async (to, value) => {
     try {
-      const tx = await this.#contract.mint(to, value);
+      const tx = await this.#contract.mintMockTokens(to, value);
       return await tx.wait();
     } catch (err) {
       throw err;

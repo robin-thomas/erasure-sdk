@@ -744,14 +744,12 @@ describe("ErasureClient", () => {
     });
 
     it("#punish", async () => {
-      const { receipt } = await agreement.punish(
+      const { cost, receipt } = await agreement.punish(
         punishAmount,
         "This is a punishment"
       );
 
-      let amount = "";
-      [currentStake, amount] = subStake(currentStake, receipt.logs[1].data);
-      assert.ok(Number(amount).toString() === punishAmount);
+      assert.ok(Number(cost).toString() === punishAmount);
     });
 
     it("#release", async () => {
