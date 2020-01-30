@@ -6,8 +6,8 @@ import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 import ErasurePost from "./ErasurePost";
 
-import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing.json";
-import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing.json";
+import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing.json";
+import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing.json";
 
 class ErasureAgreement {
   #abi = null;

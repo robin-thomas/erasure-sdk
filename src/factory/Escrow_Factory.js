@@ -10,7 +10,7 @@ import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import { abi } from "../../artifacts/CountdownGriefingEscrow_Factory.json";
+import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow_Factory.json";
 
 class Escrow_Factory {
   #token = null;

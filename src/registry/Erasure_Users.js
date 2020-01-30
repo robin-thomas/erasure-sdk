@@ -4,7 +4,7 @@ import Box from "../utils/3Box";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import { abi } from "../../artifacts/Erasure_Users.json";
+import { abi } from "@erasure/abis/src/v1.3.0/abis/Erasure_Users.json";
 
 class Erasure_Users {
   #registry = {};

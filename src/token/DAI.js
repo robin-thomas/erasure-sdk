@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 
 import Ethers from "../utils/Ethers";
 
-import { abi } from "../../artifacts/DAI.json";
+import { abi } from "@erasure/abis/src/v1.3.0/abis/MockERC20.json";
 
 class DAI {
   #registry = {};

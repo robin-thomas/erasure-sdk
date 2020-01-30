@@ -8,8 +8,8 @@ import Ethers from "../utils/Ethers";
 
 import ErasureAgreement from "../erasure/ErasureAgreement";
 
-import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing_Factory.json";
-import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing_Factory.json";
+import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json";
+import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json";
 
 class Agreement_Factory {
   #token = null;

@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import Ethers from "../utils/Ethers";
 
 import { abi as contractAbi } from "../../artifacts/NMR.json";
-import { abi as mockContractAbi } from "../../artifacts/MockNMR.json";
+import { abi as mockContractAbi } from "@erasure/abis/src/v1.3.0/abis/MockNMR.json";
 
 class NMR {
   #registry = {};

@@ -36,7 +36,9 @@ const fundSigner = async _signer => {
 };
 
 const deployContract = async (contractName, params, _signer) => {
-  const artifact = require(`../artifacts/${contractName}.json`);
+  const artifact = require(`@erasure/abis/src/${protocolVersion}/abis/${
+    contractName === "DAI" ? "MockERC20" : contractName
+  }.json`);
   const factory = new ethers.ContractFactory(
     artifact.abi,
     artifact.bytecode,
