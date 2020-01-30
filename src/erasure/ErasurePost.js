@@ -65,7 +65,7 @@ class ErasurePost {
    *
    * @memberof ErasurePost
    * @method owner
-   * @returns {Promise} address of the owner
+   * @returns {string} address of the owner
    */
   owner = () => {
     return this.#owner;
