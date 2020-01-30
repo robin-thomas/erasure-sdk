@@ -71,6 +71,18 @@ class ErasurePost {
     return this.#owner;
   };
 
+  /**
+   *
+   * Get the address of the feed of this post
+   *
+   * @memberof ErasurePost
+   * @method feedAddress
+   * @returns {string} address of the feed
+   */
+  feedAddress = () => {
+    return this.#feedAddress;
+  };
+
   #metadata = async () => {
     const staticMetadataB58 = Utils.sha256ToHash(this.proofhash().proofhash);
     const metadata = await IPFS.get(staticMetadataB58);
