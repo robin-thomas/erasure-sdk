@@ -12,15 +12,15 @@ import { abi as simpleContractAbi } from "../../artifacts/SimpleGriefing_Factory
 import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing_Factory.json";
 
 class Agreement_Factory {
-  #nmr = null;
+  #token = null;
   #registry = {};
   #network = null;
   #contract = null;
   #ethersProvider = null;
   #protocolVersion = "";
 
-  constructor({ nmr, registry, network, ethersProvider, protocolVersion }) {
-    this.#nmr = nmr;
+  constructor({ token, registry, network, ethersProvider, protocolVersion }) {
+    this.#token = token;
     this.#network = network;
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
@@ -104,23 +104,13 @@ class Agreement_Factory {
     const tx = await contract.create(callData);
     const receipt = await tx.wait();
 
-    // Mint some mock NMR for test purposes.
-    if (process.env.NODE_ENV === "test") {
-      await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
-    } else {
-      const network = await this.#ethersProvider.getNetwork();
-      if (network && network.name === "rinkeby") {
-        await this.#nmr.mintMockTokens(operator, Ethers.parseEther("1000"));
-        await this.#nmr.mintMockTokens(counterparty, Ethers.parseEther("1000"));
-      }
-    }
-
-    await this.#nmr.changeApproval(receipt.logs[0].address);
-
     return {
       receipt,
       agreement: new ErasureAgreement({
+        token: this.#token,
+        tokenId,
         staker,
+        griefRatio,
         counterparty,
         ethersProvider: this.#ethersProvider,
         type:
@@ -133,12 +123,22 @@ class Agreement_Factory {
     };
   };
 
-  createClone = (agreementAddress, type, staker, counterparty) => {
+  createClone = ({
+    address,
+    type,
+    tokenId,
+    staker,
+    griefRatio,
+    counterparty
+  }) => {
     return new ErasureAgreement({
       staker,
       counterparty,
       type,
-      agreementAddress,
+      tokenId,
+      griefRatio,
+      token: this.#token,
+      agreementAddress: address,
       ethersProvider: this.#ethersProvider,
       protocolVersion: this.#protocolVersion
     });

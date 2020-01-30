@@ -52,15 +52,15 @@ class NMR {
   }
 
   /**
-   * Change the approval so that NMR could be staked
+   * Retrieve the amount of tokens that an owner allowed to a spender.
    *
-   * @param {string} spender - griefing instance address
-   * @returns {Promise} receipt of the changeApproval transaction
+   * @returns {Promise} allowance
    */
-  approve = async (spender, value) => {
+  allowance = async spender => {
     try {
-      const tx = await this.#contract.approve(spender, value);
-      return await tx.wait();
+      const operator = await Ethers.getAccount(this.#ethersProvider);
+
+      return this.#contract.allowance(operator, spender);
     } catch (err) {
       throw err;
     }

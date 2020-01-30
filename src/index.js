@@ -1,8 +1,9 @@
 import { ethers } from "ethers";
 import { constants } from "@erasure/crypto-ipfs";
 
-import DAI from "./erasure/DAI";
-import NMR from "./erasure/NMR";
+import DAI from "./token/DAI";
+import NMR from "./token/NMR";
+import Token from "./erasure/Token";
 
 import Erasure_Users from "./registry/Erasure_Users";
 
@@ -35,8 +36,7 @@ import contracts from "./contracts.json";
  */
 
 class ErasureClient {
-  #dai = null;
-  #nmr = null;
+  #token = null;
   #registry = {};
   #web3Provider = null;
   #ethersProvider = null;
@@ -95,12 +95,14 @@ class ErasureClient {
         protocolVersion: this.#protocolVersion
       };
 
-      this.#dai = new DAI(opts);
-      this.#nmr = new NMR(opts);
+      const dai = new DAI(opts);
+      const nmr = new NMR(opts);
+      this.#token = new Token({ dai, nmr });
+
       this.#erasureUsers = new Erasure_Users(opts);
       this.#escrowFactory = new Escrow_Factory({
         ...opts,
-        nmr: this.#nmr,
+        token: this.#token,
         erasureUsers: this.#erasureUsers
       });
       this.#feedFactory = new Feed_Factory({
@@ -109,7 +111,7 @@ class ErasureClient {
       });
       this.#agreementFactory = new Agreement_Factory({
         ...opts,
-        nmr: this.#nmr
+        token: this.#token
       });
 
       return await this.#erasureUsers.registerUser();
@@ -173,16 +175,17 @@ class ErasureClient {
         });
 
         // Found the type.
-        let staker, counterparty;
+        let tokenId, staker, griefRatio, counterparty;
         if (results.length > 0) {
           switch (type) {
             case "feed":
               return this.#feedFactory.createClone(address);
 
             case "escrow":
-              const {
+              let {
                 buyer,
                 seller,
+                tokenId,
                 stakeAmount,
                 paymentAmount,
                 staticMetadataB58
@@ -194,38 +197,48 @@ class ErasureClient {
               const metadata = await IPFS.get(staticMetadataB58);
 
               return this.#escrowFactory.createClone({
-                escrowAddress: address,
                 buyer,
                 seller,
-                proofhash: JSON.parse(metadata).proofhash,
+                tokenId,
                 stakeAmount,
-                paymentAmount
+                paymentAmount,
+                proofhash: JSON.parse(metadata).proofhash,
+                escrowAddress: address
               });
 
             case "simple":
-              ({ staker, counterparty } = this.#agreementFactory.decodeParams(
-                results[0].data,
-                false
-              ));
+              ({
+                tokenId,
+                staker,
+                griefRatio,
+                counterparty
+              } = this.#agreementFactory.decodeParams(results[0].data, false));
 
-              return this.#agreementFactory.createClone(
+              return this.#agreementFactory.createClone({
                 address,
                 type,
+                tokenId,
                 staker,
+                griefRatio,
                 counterparty
-              );
+              });
 
             case "countdown":
-              ({ staker, counterparty } = this.#agreementFactory.decodeParams(
-                results[0].data
-              ));
+              ({
+                tokenId,
+                staker,
+                griefRatio,
+                counterparty
+              } = this.#agreementFactory.decodeParams(results[0].data));
 
-              return this.#agreementFactory.createClone(
+              return this.#agreementFactory.createClone({
                 address,
                 type,
+                tokenId,
                 staker,
+                griefRatio,
                 counterparty
-              );
+              });
           }
         }
       }
@@ -308,6 +321,7 @@ class ErasureClient {
     griefRatio,
     griefRatioType,
     agreementCountdown,
+    tokenId = constants.TOKEN_TYPES.NMR,
     metadata
   }) {
     operator = operator || (await Ethers.getAccount(this.#ethersProvider));
@@ -327,6 +341,7 @@ class ErasureClient {
       griefRatio,
       griefRatioType,
       agreementCountdown,
+      tokenId,
       metadata
     });
   }
@@ -351,6 +366,7 @@ class ErasureClient {
     griefRatio,
     griefRatioType,
     countdownLength,
+    tokenId = constants.TOKEN_TYPES.NMR,
     metadata
   }) {
     try {
@@ -374,6 +390,7 @@ class ErasureClient {
         griefRatio,
         griefRatioType,
         countdownLength,
+        tokenId,
         metadata: metadata || ""
       });
     } catch (err) {
@@ -387,23 +404,26 @@ class ErasureClient {
    * @param {string} paymentAmount
    * @param {integer} tokenId
    */
-  async mintMockTokens(paymentAmount, tokenId = constants.TOKEN_TYPES.NMR) {
-    if (!this.#dai || !this.#nmr) {
+  async mintMockTokens(
+    paymentAmount,
+    tokenId = constants.TOKEN_TYPES.NMR,
+    operator = null
+  ) {
+    if (!this.#token) {
       throw new Error("You need to call login() first");
     }
 
-    const operator = await Ethers.getAccount(this.#ethersProvider);
+    try {
+      if (!operator) {
+        operator = await Ethers.getAccount(this.#ethersProvider);
+      } else if (!Ethers.isAddress(operator)) {
+        throw new Error(`Not a valid address: ${address}`);
+      }
 
-    switch (tokenId) {
-      case constants.TOKEN_TYPES.NMR:
-        paymentAmount = Ethers.parseEther(paymentAmount);
-        await this.#nmr.mintMockTokens(operator, paymentAmount);
-        break;
-
-      case constants.TOKEN_TYPES.DAI:
-        paymentAmount = Ethers.parseEther(paymentAmount);
-        await this.#dai.mintMockTokens(operator, paymentAmount);
-        break;
+      paymentAmount = Ethers.parseEther(paymentAmount);
+      await this.#token.mintMockTokens(tokenId, operator, paymentAmount);
+    } catch (err) {
+      throw err;
     }
   }
 }

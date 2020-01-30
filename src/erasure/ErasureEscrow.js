@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { constants } from "@erasure/crypto-ipfs";
 
 import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
@@ -18,9 +19,10 @@ const ESCROW_STATES = {
 };
 
 class ErasureEscrow {
-  #nmr = null;
+  #token = null;
   #buyer = null;
   #seller = null;
+  #tokenId = null;
   #contract = null;
   #proofhash = null;
   #stakeAmount = null;
@@ -44,9 +46,10 @@ class ErasureEscrow {
    * @param {string} config.protocolVersion
    */
   constructor({
-    nmr,
+    token,
     buyer,
     seller,
+    tokenId,
     proofhash,
     stakeAmount,
     paymentAmount,
@@ -56,12 +59,13 @@ class ErasureEscrow {
     ethersProvider,
     protocolVersion
   }) {
-    this.#nmr = nmr;
+    this.#token = token;
     this.#buyer = buyer;
     this.#seller = seller;
+    this.#tokenId = tokenId;
     this.#proofhash = proofhash;
-    this.#stakeAmount = Ethers.parseEther(stakeAmount);
-    this.#paymentAmount = Ethers.parseEther(paymentAmount);
+    this.#stakeAmount = stakeAmount;
+    this.#paymentAmount = paymentAmount;
     this.#escrowAddress = escrowAddress;
 
     this.#erasureUsers = erasureUsers;
@@ -125,6 +129,17 @@ class ErasureEscrow {
   };
 
   /**
+   * Get the tokenId
+   *
+   * @memberof ErasureEscrow
+   * @method tokenId
+   * @returns {integer} tokenId
+   */
+  tokenId = () => {
+    return this.#tokenId;
+  };
+
+  /**
    * Get the escrow status
    *
    * @memberof ErasureEscrow
@@ -152,7 +167,8 @@ class ErasureEscrow {
       );
     }
 
-    await this.#nmr.approve(this.address(), this.#stakeAmount);
+    const stakeAmount = Ethers.parseEther(this.#stakeAmount);
+    await this.#token.approve(this.tokenId(), this.address(), stakeAmount);
 
     const tx = await this.contract().depositStake();
     const receipt = await tx.wait();
@@ -187,7 +203,8 @@ class ErasureEscrow {
       );
     }
 
-    await this.#nmr.approve(this.address(), this.#paymentAmount);
+    const paymentAmount = Ethers.parseEther(this.#paymentAmount);
+    await this.#token.approve(this.tokenId(), this.address(), paymentAmount);
 
     const tx = await this.contract().depositPayment();
     return await tx.wait();

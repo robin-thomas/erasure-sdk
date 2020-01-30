@@ -13,7 +13,7 @@ import Ethers from "../utils/Ethers";
 import { abi } from "../../artifacts/CountdownGriefingEscrow_Factory.json";
 
 class Escrow_Factory {
-  #nmr = null;
+  #token = null;
   #receipt = null;
   #registry = null;
   #network = null;
@@ -24,7 +24,7 @@ class Escrow_Factory {
   #protocolVersion = "";
 
   constructor({
-    nmr,
+    token,
     registry,
     network,
     erasureUsers,
@@ -32,7 +32,7 @@ class Escrow_Factory {
     ethersProvider,
     protocolVersion
   }) {
-    this.#nmr = nmr;
+    this.#token = token;
     this.#network = network;
     this.#erasureUsers = erasureUsers;
     this.#web3Provider = web3Provider;
@@ -152,9 +152,10 @@ class Escrow_Factory {
         escrow: new ErasureEscrow({
           buyer,
           seller,
+          tokenId,
           stakeAmount,
           paymentAmount,
-          nmr: this.#nmr,
+          token: this.#token,
           web3Provider: this.#web3Provider,
           ethersProvider: this.#ethersProvider,
           proofhash: JSON.parse(metadata).proofhash,
@@ -169,21 +170,23 @@ class Escrow_Factory {
   };
 
   createClone = ({
-    escrowAddress,
     buyer,
     seller,
+    tokenId,
     proofhash,
     stakeAmount,
-    paymentAmount
+    paymentAmount,
+    escrowAddress
   }) => {
     return new ErasureEscrow({
-      escrowAddress,
       buyer,
       seller,
+      tokenId,
       proofhash,
       stakeAmount,
       paymentAmount,
-      nmr: this.#nmr,
+      escrowAddress,
+      token: this.#token,
       web3Provider: this.#web3Provider,
       ethersProvider: this.#ethersProvider,
       erasureUsers: this.#erasureUsers,

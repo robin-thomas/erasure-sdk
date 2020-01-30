@@ -58,8 +58,6 @@ typings/
 .env
 
 dist
-artifacts
-src/keys.json
 erasure-docs
 ipfs
 orbitdb

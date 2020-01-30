@@ -11,10 +11,12 @@ import { abi as countdownContractAbi } from "../../artifacts/CountdownGriefing.j
 
 class ErasureAgreement {
   #abi = null;
-  #nmr = null;
   #type = "";
+  #token = null;
+  #tokenId = null;
   #staker = null;
   #contract = null;
+  #griefRatio = null;
   #counterparty = null;
   #protocolVersion = "";
   #ethersProvider = null;
@@ -32,6 +34,9 @@ class ErasureAgreement {
   constructor({
     type,
     staker,
+    token,
+    tokenId,
+    griefRatio,
     counterparty,
     ethersProvider,
     protocolVersion,
@@ -39,6 +44,9 @@ class ErasureAgreement {
   }) {
     this.#type = type;
     this.#staker = staker;
+    this.#token = token;
+    this.#tokenId = tokenId;
+    this.#griefRatio = griefRatio;
     this.#counterparty = counterparty;
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
@@ -115,6 +123,17 @@ class ErasureAgreement {
   };
 
   /**
+   * Get the tokenId
+   *
+   * @memberof ErasureAgreement
+   * @method tokenId
+   * @returns {integer} tokenId
+   */
+  tokenId = () => {
+    return this.#tokenId;
+  };
+
+  /**
    * Called by staker to increase the stake
    *
    * @memberof ErasureAgreement
@@ -128,7 +147,10 @@ class ErasureAgreement {
       throw new Error(`stake() can be called only by staker: ${this.staker()}`);
     }
 
-    const tx = await this.contract().increaseStake(Ethers.parseEther(amount));
+    const stakeAmount = Ethers.parseEther(amount);
+    await this.#token.approve(this.tokenId(), this.address(), stakeAmount);
+
+    const tx = await this.contract().increaseStake(stakeAmount);
     return await tx.wait();
   };
 
@@ -150,7 +172,10 @@ class ErasureAgreement {
       );
     }
 
-    const tx = await this.contract().increaseStake(Ethers.parseEther(amount));
+    const rewardAmount = Ethers.parseEther(amount);
+    await this.#token.approve(this.tokenId(), this.address(), rewardAmount);
+
+    const tx = await this.contract().increaseStake(rewardAmount);
     return await tx.wait();
   };
 
@@ -174,10 +199,11 @@ class ErasureAgreement {
       );
     }
 
-    const tx = await this.contract().punish(
-      Ethers.parseEther(amount),
-      Buffer.from(message)
-    );
+    const punishAmount = Ethers.parseEther(amount);
+    const expectedCost = punishAmount.mul(this.#griefRatio);
+    await this.#token.approve(this.tokenId(), this.address(), expectedCost);
+
+    const tx = await this.contract().punish(punishAmount, Buffer.from(message));
     const receipt = await tx.wait();
 
     const events = receipt.events.reduce((p, c) => {

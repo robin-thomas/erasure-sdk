@@ -1,7 +1,11 @@
 {
   "ganache": {
     "port": 8545,
-    "unlocked_accounts": ["0x9608010323ed882a38ede9211d7691102b4f0ba0"],
+    "unlocked_accounts": [
+      "0xb5b06a16621616875A6C2637948bF98eA57c58fa",
+      "0x9608010323ed882a38ede9211d7691102b4f0ba0",
+      "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95"
+    ],
     "default_balance_ether": 10000,
     "total_accounts": 10,
     "hardfork": "constantinople"

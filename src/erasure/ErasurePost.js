@@ -153,6 +153,7 @@ class ErasurePost {
           const {
             buyer,
             seller,
+            tokenId,
             paymentAmount,
             stakeAmount,
             staticMetadataB58
@@ -167,11 +168,12 @@ class ErasurePost {
           ) {
             escrows.push(
               this.#escrowFactory.createClone({
-                escrowAddress,
                 buyer,
                 seller,
+                tokenId,
                 stakeAmount,
                 paymentAmount,
+                escrowAddress,
                 proofhash: metadata.proofhash
               })
             );
@@ -248,6 +250,7 @@ class ErasurePost {
         const {
           buyer,
           seller,
+          tokenId,
           paymentAmount,
           stakeAmount,
           staticMetadataB58
@@ -263,11 +266,12 @@ class ErasurePost {
           ) {
             escrows.push(
               this.#escrowFactory.createClone({
-                escrowAddress,
                 buyer,
                 seller,
+                tokenId,
                 stakeAmount,
                 paymentAmount,
+                escrowAddress,
                 proofhash: metadata.proofhash
               })
             );
