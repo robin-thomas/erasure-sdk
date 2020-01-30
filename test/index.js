@@ -626,6 +626,7 @@ describe("ErasureClient", () => {
 
   describe("Countdown Griefing (staking with NMR)", () => {
     let agreement,
+      griefRatio = "2",
       currentStake = "0";
 
     before(async () => {
@@ -633,7 +634,7 @@ describe("ErasureClient", () => {
         operator: account,
         staker: account,
         counterparty: account,
-        griefRatio: "1",
+        griefRatio,
         griefRatioType: 2,
         countdownLength
       }));
@@ -661,14 +662,17 @@ describe("ErasureClient", () => {
     });
 
     it("#punish", async () => {
-      const { receipt } = await agreement.punish(
+      const { cost, receipt } = await agreement.punish(
         punishAmount,
         "This is a punishment"
       );
 
-      let amount = "";
-      [currentStake, amount] = subStake(currentStake, receipt.logs[1].data);
-      assert.ok(Number(amount).toString() === punishAmount);
+      const punish = (Number(punishAmount) * Number(griefRatio)).toString();
+      assert.ok(Number(cost).toString() === punish);
+
+      // cost is taken from the account balance.
+      // punishment is taken from the existing stake
+      currentStake = (Number(currentStake) - Number(punishAmount)).toString();
     });
 
     it("#release", async () => {

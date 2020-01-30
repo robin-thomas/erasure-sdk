@@ -175,7 +175,7 @@ class ErasureClient {
         });
 
         // Found the type.
-        let tokenId, staker, counterparty;
+        let tokenId, staker, griefRatio, counterparty;
         if (results.length > 0) {
           switch (type) {
             case "feed":
@@ -210,6 +210,7 @@ class ErasureClient {
               ({
                 tokenId,
                 staker,
+                griefRatio,
                 counterparty
               } = this.#agreementFactory.decodeParams(results[0].data, false));
 
@@ -218,6 +219,7 @@ class ErasureClient {
                 type,
                 tokenId,
                 staker,
+                griefRatio,
                 counterparty
               });
 
@@ -225,6 +227,7 @@ class ErasureClient {
               ({
                 tokenId,
                 staker,
+                griefRatio,
                 counterparty
               } = this.#agreementFactory.decodeParams(results[0].data));
 
@@ -233,6 +236,7 @@ class ErasureClient {
                 type,
                 tokenId,
                 staker,
+                griefRatio,
                 counterparty
               });
           }

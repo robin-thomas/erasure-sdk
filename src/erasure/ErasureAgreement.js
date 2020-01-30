@@ -16,6 +16,7 @@ class ErasureAgreement {
   #tokenId = null;
   #staker = null;
   #contract = null;
+  #griefRatio = null;
   #counterparty = null;
   #protocolVersion = "";
   #ethersProvider = null;
@@ -35,6 +36,7 @@ class ErasureAgreement {
     staker,
     token,
     tokenId,
+    griefRatio,
     counterparty,
     ethersProvider,
     protocolVersion,
@@ -44,6 +46,7 @@ class ErasureAgreement {
     this.#staker = staker;
     this.#token = token;
     this.#tokenId = tokenId;
+    this.#griefRatio = griefRatio;
     this.#counterparty = counterparty;
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
@@ -196,11 +199,9 @@ class ErasureAgreement {
       );
     }
 
-    // TODO: derive the expectedCost and approve() that instead.
-    // expectedCost = punishAmount.mul(griefRatio)
-
     const punishAmount = Ethers.parseEther(amount);
-    await this.#token.approve(this.tokenId(), this.address(), punishAmount);
+    const expectedCost = punishAmount.mul(this.#griefRatio);
+    await this.#token.approve(this.tokenId(), this.address(), expectedCost);
 
     const tx = await this.contract().punish(punishAmount, Buffer.from(message));
     const receipt = await tx.wait();

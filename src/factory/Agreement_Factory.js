@@ -110,6 +110,7 @@ class Agreement_Factory {
         token: this.#token,
         tokenId,
         staker,
+        griefRatio,
         counterparty,
         ethersProvider: this.#ethersProvider,
         type:
@@ -122,12 +123,20 @@ class Agreement_Factory {
     };
   };
 
-  createClone = ({ address, type, tokenId, staker, counterparty }) => {
+  createClone = ({
+    address,
+    type,
+    tokenId,
+    staker,
+    griefRatio,
+    counterparty
+  }) => {
     return new ErasureAgreement({
       staker,
       counterparty,
       type,
       tokenId,
+      griefRatio,
       token: this.#token,
       agreementAddress: address,
       ethersProvider: this.#ethersProvider,
