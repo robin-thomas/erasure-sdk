@@ -20,6 +20,7 @@ class ErasureFeed {
   #web3Provider = null;
   #ethersProvider = null;
   #protocolVersion = "";
+  #creationReceipt = null;
 
   /**
    * @constructor
@@ -28,6 +29,7 @@ class ErasureFeed {
    * @param {string} config.feedAddress
    * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
+   * @param {Object} config.creationReceipt
    */
   constructor({
     owner,
@@ -35,7 +37,8 @@ class ErasureFeed {
     web3Provider,
     ethersProvider,
     protocolVersion,
-    escrowFactory
+    escrowFactory,
+    creationReceipt
   }) {
     this.#owner = owner;
     this.#feedAddress = feedAddress;
@@ -43,6 +46,7 @@ class ErasureFeed {
     this.#web3Provider = web3Provider;
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
+    this.#creationReceipt = creationReceipt;
 
     this.#contract = new ethers.Contract(
       feedAddress,
@@ -73,6 +77,17 @@ class ErasureFeed {
   };
 
   /**
+   * Get the creationReceipt of this feed
+   *
+   * @memberof ErasureFeed
+   * @method creationReceipt
+   * @returns {Object}
+   */
+  creationReceipt = () => {
+    return this.#creationReceipt;
+  };
+
+  /**
    * Get the address of the owner of this feed
    *
    * @memberof ErasureFeed
@@ -91,7 +106,7 @@ class ErasureFeed {
    * @method createPost
    * @param {string} data - raw data to be posted
    * @param {string} [proofhash]
-   * @returns {Promise<ErasurePostWithReceipt>}
+   * @returns {Promise<ErasurePost>}
    * {@link https://github.com/erasureprotocol/erasure-protocol#track-record-through-posts-and-feeds}
    */
   createPost = async (data, proofhash = null) => {
@@ -128,20 +143,18 @@ class ErasureFeed {
       }
 
       const tx = await this.contract().submitHash(proofhash);
-      const receipt = await tx.wait();
+      const creationReceipt = await tx.wait();
 
-      return {
-        receipt,
-        post: new ErasurePost({
-          proofhash,
-          owner: this.owner(),
-          feedAddress: this.address(),
-          escrowFactory: this.#escrowFactory,
-          web3Provider: this.#web3Provider,
-          ethersProvider: this.#ethersProvider,
-          protocolVersion: this.#protocolVersion
-        })
-      };
+      return new ErasurePost({
+        proofhash,
+        owner: this.owner(),
+        feedAddress: this.address(),
+        escrowFactory: this.#escrowFactory,
+        web3Provider: this.#web3Provider,
+        ethersProvider: this.#ethersProvider,
+        protocolVersion: this.#protocolVersion,
+        creationReceipt: creationReceipt
+      });
     } catch (err) {
       throw err;
     }

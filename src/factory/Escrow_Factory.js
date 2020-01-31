@@ -90,7 +90,7 @@ class Escrow_Factory {
    * @param {string} config.greifRatioType
    * @param {string} config.agreementCountdown
    * @param {string} config.metadata
-   * @returns {Promise<EscrowWithReceipt>}
+   * @returns {Promise<ErasureEscrow>}
    */
   create = async ({
     operator,
@@ -145,25 +145,23 @@ class Escrow_Factory {
 
       // Creates the contract.
       const tx = await this.contract().create(callData);
-      const receipt = await tx.wait();
+      const creationReceipt = await tx.wait();
 
-      return {
-        receipt,
-        escrow: new ErasureEscrow({
-          buyer,
-          seller,
-          tokenId,
-          stakeAmount,
-          paymentAmount,
-          token: this.#token,
-          web3Provider: this.#web3Provider,
-          ethersProvider: this.#ethersProvider,
-          proofhash: JSON.parse(metadata).proofhash,
-          erasureUsers: this.#erasureUsers,
-          escrowAddress: receipt.logs[0].address,
-          protocolVersion: this.#protocolVersion
-        })
-      };
+      return new ErasureEscrow({
+        buyer,
+        seller,
+        tokenId,
+        stakeAmount,
+        paymentAmount,
+        token: this.#token,
+        web3Provider: this.#web3Provider,
+        ethersProvider: this.#ethersProvider,
+        proofhash: JSON.parse(metadata).proofhash,
+        erasureUsers: this.#erasureUsers,
+        escrowAddress: creationReceipt.logs[0].address,
+        protocolVersion: this.#protocolVersion,
+        creationReceipt: creationReceipt
+      });
     } catch (err) {
       throw err;
     }

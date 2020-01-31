@@ -101,13 +101,13 @@ describe("ErasureClient", () => {
     await client.mintMockTokens("1000");
     await client.mintMockTokens("1000", constants.TOKEN_TYPES.DAI);
 
-    ({ feed } = await client.createFeed());
+    feed = await client.createFeed();
     assert.ok(Ethers.isAddress(feed.address()));
 
     const _feed = await client.getObject(feed.address());
     assert.ok(feed.address() === _feed.address());
 
-    ({ post } = await feed.createPost(rawData));
+    post = await feed.createPost(rawData);
     const data = await IPFS.get(post.proofhash().multihash);
     assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
 
@@ -116,7 +116,7 @@ describe("ErasureClient", () => {
 
   describe("Feed", () => {
     it("Create a feed with a post", async () => {
-      const { feed } = await client.createFeed({ data: rawData });
+      const feed = await client.createFeed({ data: rawData });
       assert.ok(Ethers.isAddress(feed.address()));
 
       const _feed = await client.getObject(feed.address());
@@ -138,7 +138,7 @@ describe("ErasureClient", () => {
 
     it("Create a feed with invalid post proofhash", async () => {
       try {
-        const { feed } = await client.createFeed({
+        const feed = await client.createFeed({
           proofhash: "fake_proofhash"
         });
         assert.fail("Test supposed to fail");
@@ -148,7 +148,7 @@ describe("ErasureClient", () => {
     });
 
     it("Create a feed with a post and reveal it", async () => {
-      const { feed } = await client.createFeed({ data: rawData });
+      const feed = await client.createFeed({ data: rawData });
       assert.ok(Ethers.isAddress(feed.address()));
 
       const post = (await feed.getPosts())[0];
@@ -173,7 +173,7 @@ describe("ErasureClient", () => {
     });
 
     it("Create a post with proofhash", async () => {
-      const { post } = await feed.createPost(null, proofhash);
+      const post = await feed.createPost(null, proofhash);
       const data = await IPFS.get(post.proofhash().multihash);
       assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)));
 
@@ -224,7 +224,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -235,7 +235,7 @@ describe("ErasureClient", () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR);
 
@@ -262,7 +262,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -273,7 +273,7 @@ describe("ErasureClient", () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR);
 
@@ -309,7 +309,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -320,7 +320,7 @@ describe("ErasureClient", () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR);
 
@@ -360,7 +360,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -371,7 +371,7 @@ describe("ErasureClient", () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
 
         const _escrow = await client.getObject(escrow.address());
@@ -413,7 +413,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -425,7 +425,7 @@ describe("ErasureClient", () => {
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
 
@@ -452,7 +452,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -464,7 +464,7 @@ describe("ErasureClient", () => {
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
 
@@ -500,7 +500,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -512,7 +512,7 @@ describe("ErasureClient", () => {
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
 
@@ -552,7 +552,7 @@ describe("ErasureClient", () => {
       let escrow;
 
       it("create an escrow", async () => {
-        ({ escrow } = await client.createEscrow({
+        escrow = await client.createEscrow({
           operator: account,
           buyer: account,
           seller: account,
@@ -564,7 +564,7 @@ describe("ErasureClient", () => {
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
           metadata: JSON.stringify({ proofhash: post.proofhash().proofhash })
-        }));
+        });
         assert.ok(Ethers.isAddress(escrow.address()));
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI);
 
@@ -605,7 +605,7 @@ describe("ErasureClient", () => {
   describe("Get Posts of a Feed", () => {
     let feed;
     before(async () => {
-      ({ feed } = await client.createFeed());
+      feed = await client.createFeed();
       assert.ok(Ethers.isAddress(feed.address()));
     });
 
@@ -630,14 +630,14 @@ describe("ErasureClient", () => {
       currentStake = "0";
 
     before(async () => {
-      ({ agreement } = await client.createAgreement({
+      agreement = await client.createAgreement({
         operator: account,
         staker: account,
         counterparty: account,
         griefRatio,
         griefRatioType: 2,
         countdownLength
-      }));
+      });
       assert.ok(Ethers.isAddress(agreement.address()));
       assert.ok(agreement.tokenId() === constants.TOKEN_TYPES.NMR);
 
@@ -714,13 +714,13 @@ describe("ErasureClient", () => {
       currentStake = "0";
 
     before(async () => {
-      ({ agreement } = await client.createAgreement({
+      agreement = await client.createAgreement({
         tokenId: constants.TOKEN_TYPES.DAI,
         operator: account,
         counterparty: account,
         griefRatio: "1",
         griefRatioType: 2
-      }));
+      });
       assert.ok(Ethers.isAddress(agreement.address()));
       assert.ok(agreement.tokenId() === constants.TOKEN_TYPES.DAI);
 

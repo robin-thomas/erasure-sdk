@@ -12,7 +12,6 @@ import Ethers from "../utils/Ethers";
 import { abi } from "@erasure/abis/src/v1.3.0/abis/Feed_Factory.json";
 
 class Feed_Factory {
-  #receipt = null;
   #registry = null;
   #network = null;
   #contract = null;
@@ -62,7 +61,7 @@ class Feed_Factory {
    *
    * @param {address} operator
    * @param {string} metadata
-   * @returns {Promise<Feed>}
+   * @returns {Promise<ErasureFeed>}
    */
   create = async ({ operator, metadata }) => {
     try {
@@ -78,19 +77,17 @@ class Feed_Factory {
 
       // Creates the contract.
       const tx = await this.#contract.create(callData);
-      const receipt = await tx.wait();
+      const creationReceipt = await tx.wait();
 
-      return {
-        receipt,
-        feed: new ErasureFeed({
-          owner: operator,
-          web3Provider: this.#web3Provider,
-          ethersProvider: this.#ethersProvider,
-          feedAddress: receipt.logs[0].address,
-          escrowFactory: this.#escrowFactory,
-          protocolVersion: this.#protocolVersion
-        })
-      };
+      return new ErasureFeed({
+        owner: operator,
+        web3Provider: this.#web3Provider,
+        ethersProvider: this.#ethersProvider,
+        feedAddress: creationReceipt.logs[0].address,
+        escrowFactory: this.#escrowFactory,
+        protocolVersion: this.#protocolVersion,
+        creationReceipt: creationReceipt
+      });
     } catch (err) {
       throw err;
     }

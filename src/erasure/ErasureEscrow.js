@@ -32,6 +32,7 @@ class ErasureEscrow {
   #web3Provider = null;
   #ethersProvider = null;
   #protocolVersion = "";
+  #creationReceipt = null;
 
   /**
    * @constructor
@@ -44,6 +45,7 @@ class ErasureEscrow {
    * @param {string} config.escrowAddress
    * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
+   * @param {Object} config.creationReceipt
    */
   constructor({
     token,
@@ -57,7 +59,8 @@ class ErasureEscrow {
     erasureUsers,
     web3Provider,
     ethersProvider,
-    protocolVersion
+    protocolVersion,
+    creationReceipt
   }) {
     this.#token = token;
     this.#buyer = buyer;
@@ -72,6 +75,7 @@ class ErasureEscrow {
     this.#web3Provider = web3Provider;
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
+    this.#creationReceipt = creationReceipt;
 
     this.#contract = new ethers.Contract(
       escrowAddress,
@@ -104,6 +108,17 @@ class ErasureEscrow {
    */
   address = () => {
     return this.#escrowAddress;
+  };
+
+  /**
+   * Get the creationReceipt of this escrow
+   *
+   * @memberof ErasureEscrow
+   * @method creationReceipt
+   * @returns {Object}
+   */
+  creationReceipt = () => {
+    return this.#creationReceipt;
   };
 
   /**
