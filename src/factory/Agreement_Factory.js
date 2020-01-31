@@ -14,16 +14,10 @@ import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/Count
 
 class Agreement_Factory {
   #token = null;
-  #registry = null;
   #contract = null;
 
   constructor({ token }) {
     this.#token = token;
-
-    this.#registry = {
-      SimpleGriefing_Factory: Config.store.registry.SimpleGriefing_Factory,
-      CountdownGriefing_Factory: Config.store.registry.CountdownGriefing_Factory
-    };
   }
 
   /**
@@ -59,14 +53,8 @@ class Agreement_Factory {
       agreementType = "SimpleGriefing_Factory";
     }
 
-    let address;
-    if (process.env.NODE_ENV === "test") {
-      address = this.#registry[agreementType];
-    } else {
-      address = this.#registry[Config.store.network][agreementType];
-    }
     const contract = new ethers.Contract(
-      address,
+      Config.store.registry[agreementType],
       abi,
       Ethers.getWallet(Config.store.ethersProvider)
     );
