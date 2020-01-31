@@ -1,28 +1,20 @@
 import { ethers } from "ethers";
 
 import Box from "../utils/3Box";
+import Config from "../utils/Config";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
 import { abi } from "@erasure/abis/src/v1.3.0/abis/Erasure_Users.json";
 
 class Erasure_Users {
-  #registry = {};
-  #network = null;
   #contract = null;
-  #web3Provider = null;
-  #ethersProvider = null;
 
-  constructor({ registry, network, web3Provider, ethersProvider }) {
-    this.#network = network;
-    this.#web3Provider = web3Provider;
-    this.#ethersProvider = ethersProvider;
-
-    this.#registry = registry.Erasure_Users;
+  constructor() {
     this.#contract = new ethers.Contract(
-      this.#registry,
+      Config.store.registry.Erasure_Users,
       abi,
-      Ethers.getWallet(this.#ethersProvider)
+      Ethers.getWallet(Config.store.ethersProvider)
     );
   }
 
@@ -33,15 +25,15 @@ class Erasure_Users {
    */
   registerUser = async () => {
     // Check if the user alrady exists in Box storage.
-    let keypair = await Box.getKeyPair(this.#web3Provider);
+    let keypair = await Box.getKeyPair(Config.store.web3Provider);
     if (keypair === null) {
-      keypair = await Crypto.asymmetric.genKeyPair(this.#ethersProvider);
-      Box.setKeyPair(keypair, this.#web3Provider);
+      keypair = await Crypto.asymmetric.genKeyPair(Config.store.ethersProvider);
+      Box.setKeyPair(keypair, Config.store.web3Provider);
     }
 
     // Register the publicKey in Erasure_Users.
     const publicKey = Buffer.from(keypair.key.publicKey).toString("hex");
-    const address = await Ethers.getAccount(this.#ethersProvider);
+    const address = await Ethers.getAccount(Config.store.ethersProvider);
     const data = await this.getUserData(address);
 
     if (data === null || data === undefined || data === "0x") {

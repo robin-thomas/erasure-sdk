@@ -1,30 +1,21 @@
 import { ethers } from "ethers";
 
+import Config from "../utils/Config";
 import Ethers from "../utils/Ethers";
 
 import { abi } from "@erasure/abis/src/v1.3.0/abis/MockERC20.json";
 
 class DAI {
-  #registry = {};
-  #network = null;
   #contract = null;
-  #ethersProvider = null;
 
   /**
    * @constructor
-   * @param {Object} config
-   * @param {string} config.network
-   * @param {Object} config.ethersProvider
    */
-  constructor({ registry, network, ethersProvider }) {
-    this.#network = network;
-    this.#ethersProvider = ethersProvider;
-
-    this.#registry = registry.DAI;
+  constructor() {
     this.#contract = new ethers.Contract(
-      this.#registry,
+      Config.store.registry.DAI,
       abi,
-      Ethers.getWallet(this.#ethersProvider)
+      Ethers.getWallet(Config.store.ethersProvider)
     );
   }
 

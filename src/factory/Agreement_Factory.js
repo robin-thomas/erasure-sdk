@@ -5,6 +5,7 @@ import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
 
 import ErasureAgreement from "../erasure/ErasureAgreement";
 
@@ -13,21 +14,15 @@ import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/Count
 
 class Agreement_Factory {
   #token = null;
-  #registry = {};
-  #network = null;
+  #registry = null;
   #contract = null;
-  #ethersProvider = null;
-  #protocolVersion = "";
 
-  constructor({ token, registry, network, ethersProvider, protocolVersion }) {
+  constructor({ token }) {
     this.#token = token;
-    this.#network = network;
-    this.#ethersProvider = ethersProvider;
-    this.#protocolVersion = protocolVersion;
 
     this.#registry = {
-      SimpleGriefing_Factory: registry.SimpleGriefing_Factory,
-      CountdownGriefing_Factory: registry.CountdownGriefing_Factory
+      SimpleGriefing_Factory: Config.store.registry.SimpleGriefing_Factory,
+      CountdownGriefing_Factory: Config.store.registry.CountdownGriefing_Factory
     };
   }
 
@@ -68,12 +63,12 @@ class Agreement_Factory {
     if (process.env.NODE_ENV === "test") {
       address = this.#registry[agreementType];
     } else {
-      address = this.#registry[this.#network][agreementType];
+      address = this.#registry[Config.store.network][agreementType];
     }
     const contract = new ethers.Contract(
       address,
       abi,
-      Ethers.getWallet(this.#ethersProvider)
+      Ethers.getWallet(Config.store.ethersProvider)
     );
 
     const ipfsHash = await IPFS.add(metadata);
@@ -112,10 +107,10 @@ class Agreement_Factory {
       staker,
       griefRatio,
       counterparty,
-      ethersProvider: this.#ethersProvider,
+      ethersProvider: Config.store.ethersProvider,
       type:
         agreementType === "CountdownGriefing_Factory" ? "countdown" : "simple",
-      protocolVersion: this.#protocolVersion,
+      protocolVersion: Config.store.protocolVersion,
       agreementAddress: creationReceipt.logs[0].address,
       creationReceipt: creationReceipt
     });
@@ -137,8 +132,8 @@ class Agreement_Factory {
       griefRatio,
       token: this.#token,
       agreementAddress: address,
-      ethersProvider: this.#ethersProvider,
-      protocolVersion: this.#protocolVersion
+      ethersProvider: Config.store.ethersProvider,
+      protocolVersion: Config.store.protocolVersion
     });
   };
 

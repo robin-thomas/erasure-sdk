@@ -1,31 +1,21 @@
 import { ethers } from "ethers";
 
+import Config from "../utils/Config";
 import Ethers from "../utils/Ethers";
 
 import { abi } from "@erasure/abis/src/v1.3.0/abis/MockNMR.json";
 
 class NMR {
-  #registry = {};
-  #network = null;
   #contract = null;
-  #ethersProvider = null;
 
   /**
    * @constructor
-   * @param {Object} config
-   * @param {address} config.registry
-   * @param {string} config.network
-   * @param {Object} config.ethersProvider
    */
-  constructor({ registry, network, ethersProvider }) {
-    this.#network = network;
-    this.#ethersProvider = ethersProvider;
-
-    this.#registry = registry.NMR;
+  constructor() {
     this.#contract = new ethers.Contract(
-      this.#registry,
+      Config.store.registry.NMR,
       abi,
-      Ethers.getWallet(this.#ethersProvider)
+      Ethers.getWallet(Config.store.ethersProvider)
     );
   }
 
@@ -36,7 +26,7 @@ class NMR {
    */
   allowance = async spender => {
     try {
-      const operator = await Ethers.getAccount(this.#ethersProvider);
+      const operator = await Ethers.getAccount(Config.store.ethersProvider);
 
       return this.#contract.allowance(operator, spender);
     } catch (err) {

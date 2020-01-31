@@ -14,8 +14,7 @@ import Agreement_Factory from "./factory/Agreement_Factory";
 import IPFS from "./utils/IPFS";
 import Utils from "./utils/Utils";
 import Ethers from "./utils/Ethers";
-
-// import contracts from "./contracts.json";
+import Config from "./utils/Config";
 
 class ErasureClient {
   #token = null;
@@ -69,7 +68,7 @@ class ErasureClient {
    */
   async login() {
     try {
-      const opts = {
+      Config.store = {
         registry: this.#registry,
         network: (await this.#ethersProvider.getNetwork()).name,
         web3Provider: this.#web3Provider,
@@ -80,27 +79,24 @@ class ErasureClient {
       if (process.env.NODE_ENV !== "test") {
         const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`);
 
-        opts.registry = Object.keys(contracts).reduce((p, c) => {
-          p[c] = contracts[c][opts.network];
+        Config.store.registry = Object.keys(contracts).reduce((p, c) => {
+          p[c] = contracts[c][Config.store.network];
         }, {});
       }
 
-      const dai = new DAI(opts);
-      const nmr = new NMR(opts);
-      this.#token = new Token({ dai, nmr });
-
-      this.#erasureUsers = new Erasure_Users(opts);
+      this.#token = new Token({
+        dai: new DAI(),
+        nmr: new NMR()
+      });
+      this.#erasureUsers = new Erasure_Users();
       this.#escrowFactory = new Escrow_Factory({
-        ...opts,
         token: this.#token,
         erasureUsers: this.#erasureUsers
       });
       this.#feedFactory = new Feed_Factory({
-        ...opts,
         escrowFactory: this.#escrowFactory
       });
       this.#agreementFactory = new Agreement_Factory({
-        ...opts,
         token: this.#token
       });
 
