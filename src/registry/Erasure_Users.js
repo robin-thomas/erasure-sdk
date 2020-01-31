@@ -18,25 +18,12 @@ class Erasure_Users {
     this.#web3Provider = web3Provider;
     this.#ethersProvider = ethersProvider;
 
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.Erasure_Users;
-      this.#contract = new ethers.Contract(
-        this.#registry,
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, network) => {
-        p[network] = registry[network].Erasure_Users;
-        return p;
-      }, {});
-
-      this.#contract = new ethers.Contract(
-        this.#registry[this.#network],
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    }
+    this.#registry = registry.Erasure_Users;
+    this.#contract = new ethers.Contract(
+      this.#registry,
+      abi,
+      Ethers.getWallet(this.#ethersProvider)
+    );
   }
 
   /**

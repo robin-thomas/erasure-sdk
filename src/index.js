@@ -15,7 +15,7 @@ import IPFS from "./utils/IPFS";
 import Utils from "./utils/Utils";
 import Ethers from "./utils/Ethers";
 
-import contracts from "./contracts.json";
+// import contracts from "./contracts.json";
 
 class ErasureClient {
   #token = null;
@@ -42,6 +42,7 @@ class ErasureClient {
    * @param {string} config.ipfs.protocol
    */
   constructor({ protocolVersion, web3Provider, registry, ipfs }) {
+    this.#registry = null;
     this.#web3Provider = null;
     this.#ethersProvider = null;
     this.#protocolVersion = protocolVersion;
@@ -55,10 +56,9 @@ class ErasureClient {
       throw new Error("Need to provide a web3Provider!");
     }
 
-    this.#registry =
-      process.env.NODE_ENV === "test"
-        ? registry
-        : contracts[this.#protocolVersion];
+    if (process.env.NODE_ENV === "test") {
+      this.#registry = registry;
+    }
   }
 
   /**
@@ -76,6 +76,14 @@ class ErasureClient {
         ethersProvider: this.#ethersProvider,
         protocolVersion: this.#protocolVersion
       };
+
+      if (process.env.NODE_ENV !== "test") {
+        const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`);
+
+        opts.registry = Object.keys(contracts).reduce((p, c) => {
+          p[c] = contracts[c][opts.network];
+        }, {});
+      }
 
       const dai = new DAI(opts);
       const nmr = new NMR(opts);

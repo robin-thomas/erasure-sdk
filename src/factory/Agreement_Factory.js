@@ -25,22 +25,10 @@ class Agreement_Factory {
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
 
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = {
-        SimpleGriefing_Factory: registry.SimpleGriefing_Factory,
-        CountdownGriefing_Factory: registry.CountdownGriefing_Factory
-      };
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, c) => {
-        if (p[c] === undefined) {
-          p[c] = {};
-        }
-
-        p[c].SimpleGriefing_Factory = registry[c].SimpleGriefing_Factory;
-        p[c].CountdownGriefing_Factory = registry[c].CountdownGriefing_Factory;
-        return p;
-      }, {});
-    }
+    this.#registry = {
+      SimpleGriefing_Factory: registry.SimpleGriefing_Factory,
+      CountdownGriefing_Factory: registry.CountdownGriefing_Factory
+    };
   }
 
   /**

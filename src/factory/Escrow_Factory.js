@@ -39,25 +39,12 @@ class Escrow_Factory {
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
 
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.CountdownGriefingEscrow_Factory;
-      this.#contract = new ethers.Contract(
-        this.#registry,
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, c) => {
-        p[c] = registry[c].CountdownGriefingEscrow_Factory;
-        return p;
-      }, {});
-
-      this.#contract = new ethers.Contract(
-        this.#registry[this.#network],
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    }
+    this.#registry = registry.CountdownGriefingEscrow_Factory;
+    this.#contract = new ethers.Contract(
+      this.#registry,
+      abi,
+      Ethers.getWallet(this.#ethersProvider)
+    );
   }
 
   /**

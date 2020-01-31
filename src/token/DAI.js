@@ -20,25 +20,12 @@ class DAI {
     this.#network = network;
     this.#ethersProvider = ethersProvider;
 
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.DAI;
-      this.#contract = new ethers.Contract(
-        this.#registry,
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, network) => {
-        p[network] = registry[network].DAI;
-        return p;
-      }, {});
-
-      this.#contract = new ethers.Contract(
-        this.#registry[this.#network],
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    }
+    this.#registry = registry.DAI;
+    this.#contract = new ethers.Contract(
+      this.#registry,
+      abi,
+      Ethers.getWallet(this.#ethersProvider)
+    );
   }
 
   /**

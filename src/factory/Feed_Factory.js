@@ -35,25 +35,12 @@ class Feed_Factory {
     this.#web3Provider = web3Provider;
     this.#ethersProvider = ethersProvider;
 
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.Feed_Factory;
-      this.#contract = new ethers.Contract(
-        this.#registry,
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, c) => {
-        p[c] = registry[c].Feed_Factory;
-        return p;
-      }, {});
-
-      this.#contract = new ethers.Contract(
-        this.#registry[this.#network],
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    }
+    this.#registry = registry.Feed_Factory;
+    this.#contract = new ethers.Contract(
+      this.#registry,
+      abi,
+      Ethers.getWallet(this.#ethersProvider)
+    );
   }
 
   /**
