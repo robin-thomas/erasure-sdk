@@ -16,6 +16,7 @@ class ErasurePost {
   #web3Provider = null;
   #ethersProvider = null;
   #protocolVersion = "";
+  #creationReceipt = null;
 
   /**
    * @constructor
@@ -25,6 +26,7 @@ class ErasurePost {
    * @param {address} config.feedAddress
    * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
+   * @param {Object} config.creationReceipt
    */
   constructor({
     owner,
@@ -33,7 +35,8 @@ class ErasurePost {
     escrowFactory,
     web3Provider,
     ethersProvider,
-    protocolVersion
+    protocolVersion,
+    creationReceipt
   }) {
     this.#owner = owner;
     this.#proofhash = proofhash;
@@ -42,6 +45,7 @@ class ErasurePost {
     this.#web3Provider = web3Provider;
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
+    this.#creationReceipt = creationReceipt;
   }
 
   /**
@@ -65,10 +69,33 @@ class ErasurePost {
    *
    * @memberof ErasurePost
    * @method owner
-   * @returns {Promise} address of the owner
+   * @returns {string} address of the owner
    */
   owner = () => {
     return this.#owner;
+  };
+
+  /**
+   *
+   * Get the address of the feed of this post
+   *
+   * @memberof ErasurePost
+   * @method feedAddress
+   * @returns {string} address of the feed
+   */
+  feedAddress = () => {
+    return this.#feedAddress;
+  };
+
+  /**
+   * Get the creationReceipt of this post
+   *
+   * @memberof ErasurePost
+   * @method creationReceipt
+   * @returns {Object}
+   */
+  creationReceipt = () => {
+    return this.#creationReceipt;
   };
 
   #metadata = async () => {

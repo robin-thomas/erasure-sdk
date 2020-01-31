@@ -17,24 +17,6 @@ import Ethers from "./utils/Ethers";
 
 import contracts from "./contracts.json";
 
-/**
- * @typedef {Object} ErasureFeedWithReceipt
- * @property {ErasureFeed} feed
- * @property {Receipt} receipt
- */
-
-/**
- * @typedef {Object} ErasureEscrowWithReceipt
- * @property {ErasureFeed} escrow
- * @property {Receipt} receipt
- */
-
-/**
- * @typedef {Object} ErasureAgreementWithReceipt
- * @property {ErasureAgreement} agreement
- * @property {Receipt} receipt
- */
-
 class ErasureClient {
   #token = null;
   #registry = {};
@@ -127,6 +109,8 @@ class ErasureClient {
    * @returns {Promise<(ErasureFeed|ErasurePost|ErasureEscrow|ErasureAgreement)>} Erasure object
    */
   async getObject(address) {
+    // TODO:
+    // Need to set creationReceipt.
     try {
       // Check if address is proofhash. If yes, then its ErasurePost.
       if (Utils.isProofhash(address) || (await IPFS.isHash(address))) {
@@ -260,7 +244,7 @@ class ErasureClient {
    * @param {string} [config.proofhash] optional initial post
    * @param {string} [config.data] optional initial post raw data
    * @param {string} [config.metadata] optional metadata
-   * @returns {Promise<ErasureFeedWithReceipt>}
+   * @returns {Promise<ErasureFeed>}
    */
   async createFeed(opts) {
     let { operator, data, proofhash, metadata } = opts || {};
@@ -276,7 +260,7 @@ class ErasureClient {
       throw new Error(`Invalid proofhash: ${proofhash}`);
     }
 
-    const { feed, receipt } = await this.#feedFactory.create({
+    const feed = await this.#feedFactory.create({
       operator,
       metadata
     });
@@ -288,10 +272,7 @@ class ErasureClient {
       await feed.createPost(data, null);
     }
 
-    return {
-      feed,
-      receipt
-    };
+    return feed;
   }
 
   /**
@@ -309,7 +290,7 @@ class ErasureClient {
    * @param {string} config.griefRatioType
    * @param {string} config.agreementCountdown
    * @param {string} [config.metadata]
-   * @returns {Promise<ErasureEscrowWithReceipt>}
+   * @returns {Promise<ErasureEscrow>}
    */
   async createEscrow({
     operator,
@@ -331,7 +312,7 @@ class ErasureClient {
 
     buyer = buyer || operator;
 
-    return await this.#escrowFactory.create({
+    return this.#escrowFactory.create({
       operator,
       buyer,
       seller,
@@ -357,7 +338,7 @@ class ErasureClient {
    * @param {string} config.griefRatioType
    * @param {string} [config.countdownLength] - creates a simple griefing agreement if not set
    * @param {string} [config.metadata]
-   * @returns {Promise<ErasureAgreementWithReceipt>}
+   * @returns {Promise<ErasureAgreement>}
    */
   async createAgreement({
     operator,
@@ -383,7 +364,7 @@ class ErasureClient {
         throw new Error(`Counterparty ${counterparty} is not an address`);
       }
 
-      return await this.#agreementFactory.create({
+      return this.#agreementFactory.create({
         operator,
         staker,
         counterparty,

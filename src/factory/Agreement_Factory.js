@@ -43,6 +43,20 @@ class Agreement_Factory {
     }
   }
 
+  /**
+   * Create a new agreement
+   *
+   * @param {Object} config
+   * @param {string} config.operator
+   * @param {string} config.staker
+   * @param {string} config.counterparty
+   * @param {number} config.tokenId
+   * @param {string} config.griefRatio
+   * @param {string} config.griefRatioType
+   * @param {string} config.agreementCountdown
+   * @param {string} config.metadata
+   * @returns {Promise<ErasureAgreement>}
+   */
   create = async ({
     operator,
     staker,
@@ -102,25 +116,21 @@ class Agreement_Factory {
     );
 
     const tx = await contract.create(callData);
-    const receipt = await tx.wait();
+    const creationReceipt = await tx.wait();
 
-    return {
-      receipt,
-      agreement: new ErasureAgreement({
-        token: this.#token,
-        tokenId,
-        staker,
-        griefRatio,
-        counterparty,
-        ethersProvider: this.#ethersProvider,
-        type:
-          agreementType === "CountdownGriefing_Factory"
-            ? "countdown"
-            : "simple",
-        protocolVersion: this.#protocolVersion,
-        agreementAddress: receipt.logs[0].address
-      })
-    };
+    return new ErasureAgreement({
+      token: this.#token,
+      tokenId,
+      staker,
+      griefRatio,
+      counterparty,
+      ethersProvider: this.#ethersProvider,
+      type:
+        agreementType === "CountdownGriefing_Factory" ? "countdown" : "simple",
+      protocolVersion: this.#protocolVersion,
+      agreementAddress: creationReceipt.logs[0].address,
+      creationReceipt: creationReceipt
+    });
   };
 
   createClone = ({

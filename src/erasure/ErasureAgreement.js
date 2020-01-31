@@ -21,6 +21,7 @@ class ErasureAgreement {
   #protocolVersion = "";
   #ethersProvider = null;
   #agreementAddress = null;
+  #creationReceipt = null;
 
   /**
    * @param {Object} config
@@ -30,6 +31,7 @@ class ErasureAgreement {
    * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
    * @param {address} config.agreementAddress
+   * @param {Object} config.creationReceipt
    */
   constructor({
     type,
@@ -40,7 +42,8 @@ class ErasureAgreement {
     counterparty,
     ethersProvider,
     protocolVersion,
-    agreementAddress
+    agreementAddress,
+    creationReceipt
   }) {
     this.#type = type;
     this.#staker = staker;
@@ -51,6 +54,7 @@ class ErasureAgreement {
     this.#ethersProvider = ethersProvider;
     this.#protocolVersion = protocolVersion;
     this.#agreementAddress = agreementAddress;
+    this.#creationReceipt = creationReceipt;
 
     if (type === "countdown") {
       this.#abi = countdownContractAbi;
@@ -85,6 +89,17 @@ class ErasureAgreement {
    */
   address = () => {
     return this.#agreementAddress;
+  };
+
+  /**
+   * Get the creationReceipt of this agreement
+   *
+   * @memberof ErasureAgreement
+   * @method creationReceipt
+   * @returns {Object}
+   */
+  creationReceipt = () => {
+    return this.#creationReceipt;
   };
 
   /**
