@@ -2,8 +2,7 @@ import { ethers } from "ethers";
 
 import Ethers from "../utils/Ethers";
 
-import { abi as contractAbi } from "../../artifacts/NMR.json";
-import { abi as mockContractAbi } from "@erasure/abis/src/v1.3.0/abis/MockNMR.json";
+import { abi } from "@erasure/abis/src/v1.3.0/abis/MockNMR.json";
 
 class NMR {
   #registry = {};
@@ -26,7 +25,7 @@ class NMR {
       this.#registry = registry.NMR;
       this.#contract = new ethers.Contract(
         this.#registry,
-        mockContractAbi,
+        abi,
         Ethers.getWallet(this.#ethersProvider)
       );
     } else {
@@ -35,19 +34,11 @@ class NMR {
         return p;
       }, {});
 
-      if (network === "homestead") {
-        this.#contract = new ethers.Contract(
-          this.#registry[this.#network],
-          contractAbi,
-          Ethers.getWallet(this.#ethersProvider)
-        );
-      } else {
-        this.#contract = new ethers.Contract(
-          this.#registry[this.#network],
-          mockContractAbi,
-          Ethers.getWallet(this.#ethersProvider)
-        );
-      }
+      this.#contract = new ethers.Contract(
+        this.#registry[this.#network],
+        abi,
+        Ethers.getWallet(this.#ethersProvider)
+      );
     }
   }
 
