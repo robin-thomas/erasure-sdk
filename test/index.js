@@ -136,6 +136,53 @@ describe("ErasureClient", () => {
       );
     });
 
+    it("Create a feed and stake it", async () => {
+      const feed = await client.createFeed({});
+      assert.ok(Ethers.isAddress(feed.address()));
+
+      // set amounts
+      const stakeNMR = "10.0";
+      const stakeDAI = "0.5";
+      const difference = "9.5";
+
+      // deposit NMR
+      await feed.depositStake(constants.TOKEN_TYPES.NMR, stakeNMR);
+      assert.ok(
+        (await feed.getStakeByTokenID(constants.TOKEN_TYPES.NMR)) === stakeNMR
+      );
+      assert.ok((await feed.getStake()).NMR === stakeNMR);
+
+      // deposit DAI
+      await feed.depositStake(constants.TOKEN_TYPES.DAI, stakeDAI);
+      assert.ok(
+        (await feed.getStakeByTokenID(constants.TOKEN_TYPES.DAI)) === stakeDAI
+      );
+      assert.ok((await feed.getStake()).DAI === stakeDAI);
+
+      // withdraw some NMR
+      await feed.withdrawStake(constants.TOKEN_TYPES.NMR, stakeDAI);
+      assert.ok(
+        (await feed.getStakeByTokenID(constants.TOKEN_TYPES.NMR)) === difference
+      );
+      assert.ok((await feed.getStake()).NMR === difference);
+      assert.ok(
+        (await feed.getStakeByTokenID(constants.TOKEN_TYPES.DAI)) === stakeDAI
+      );
+      assert.ok((await feed.getStake()).DAI === stakeDAI);
+
+      // withdraw all
+      await feed.withdrawStake(constants.TOKEN_TYPES.NMR);
+      await feed.withdrawStake(constants.TOKEN_TYPES.DAI);
+      assert.ok(
+        (await feed.getStakeByTokenID(constants.TOKEN_TYPES.NMR)) === "0.0"
+      );
+      assert.ok((await feed.getStake()).NMR === "0.0");
+      assert.ok(
+        (await feed.getStakeByTokenID(constants.TOKEN_TYPES.DAI)) === "0.0"
+      );
+      assert.ok((await feed.getStake()).DAI === "0.0");
+    });
+
     it("Create a feed with invalid post proofhash", async () => {
       try {
         const feed = await client.createFeed({

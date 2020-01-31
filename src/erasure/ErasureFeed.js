@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { constants } from "@erasure/crypto-ipfs";
 
 import ErasurePost from "./ErasurePost";
 import Escrow_Factory from "../factory/Escrow_Factory";
@@ -13,6 +14,7 @@ import { abi } from "@erasure/abis/src/v1.3.0/abis/Feed.json";
 
 class ErasureFeed {
   #owner = null;
+  #tokenManager = null;
   #numSold = 0;
   #contract = null;
   #feedAddress = null;
@@ -26,6 +28,7 @@ class ErasureFeed {
    * @constructor
    * @param {Object} config
    * @param {string} config.owner
+   * @param {Object} config.tokenManager
    * @param {string} config.feedAddress
    * @param {Object} config.web3Provider
    * @param {string} config.protocolVersion
@@ -33,6 +36,7 @@ class ErasureFeed {
    */
   constructor({
     owner,
+    tokenManager,
     feedAddress,
     web3Provider,
     ethersProvider,
@@ -41,6 +45,7 @@ class ErasureFeed {
     creationReceipt
   }) {
     this.#owner = owner;
+    this.#tokenManager = tokenManager;
     this.#feedAddress = feedAddress;
     this.#escrowFactory = escrowFactory;
     this.#web3Provider = web3Provider;
@@ -96,6 +101,70 @@ class ErasureFeed {
    */
   owner = () => {
     return this.#owner;
+  };
+
+  /**
+   * Get the amount of a tokens staked on this feed
+   *
+   * @memberof ErasureFeed
+   * @method getStake
+   * @returns {Promise} amount of tokens at stake
+   */
+  getStake = async () => {
+    return {
+      NMR: Ethers.formatEther(
+        await this.#contract.getStake(constants.TOKEN_TYPES.NMR)
+      ),
+      DAI: Ethers.formatEther(
+        await this.#contract.getStake(constants.TOKEN_TYPES.DAI)
+      )
+    };
+  };
+
+  /**
+   * Get the amount of a tokens staked on this feed
+   *
+   * @memberof ErasureFeed
+   * @method getStakeByTokenID
+   * @param {integer} tokenID - token identifier for the erasure protocol
+   * @returns {Promise} amount of tokens at stake
+   */
+  getStakeByTokenID = async tokenID => {
+    const stake = await this.#contract.getStake(tokenID);
+    return Ethers.formatEther(stake);
+  };
+
+  /**
+   * Deposit tokens as a stake on this feed
+   *
+   * @memberof ErasureFeed
+   * @method depositStake
+   * @param {integer} tokenID - token identifier for the erasure protocol
+   * @param {decimal} amount - amount of tokens to deposit
+   * @returns {Promise} transaction receipt
+   */
+  depositStake = async (tokenID, amount) => {
+    const stakeAmount = Ethers.parseEther(amount);
+    await this.#tokenManager.approve(tokenID, this.address(), stakeAmount);
+
+    return this.#contract.depositStake(tokenID, stakeAmount);
+  };
+
+  /**
+   * Withdraw tokens as a stake on this feed
+   *
+   * @memberof ErasureFeed
+   * @method withdrawStake
+   * @param {integer} tokenID - token identifier for the erasure protocol
+   * @param {decimal} [amount] - amount of tokens to withdraw, defaults to full amount
+   * @returns {Promise} transaction receipt
+   */
+  withdrawStake = async (tokenID, amount = null) => {
+    if (amount === null) {
+      amount = await this.getStakeByTokenID(tokenID);
+    }
+    const stakeAmount = Ethers.parseEther(amount);
+    return this.#contract.withdrawStake(tokenID, stakeAmount);
   };
 
   /**
