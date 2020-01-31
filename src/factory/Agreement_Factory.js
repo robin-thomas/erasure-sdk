@@ -1,46 +1,23 @@
 import { ethers } from "ethers";
 import { constants } from "@erasure/crypto-ipfs";
 
+import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json";
+import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json";
+
+import ErasureAgreement from "../erasure/ErasureAgreement";
+
 import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Ethers from "../utils/Ethers";
-
-import ErasureAgreement from "../erasure/ErasureAgreement";
-
-import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json";
-import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json";
+import Config from "../utils/Config";
 
 class Agreement_Factory {
   #token = null;
-  #registry = {};
-  #network = null;
   #contract = null;
-  #ethersProvider = null;
-  #protocolVersion = "";
 
-  constructor({ token, registry, network, ethersProvider, protocolVersion }) {
+  constructor({ token }) {
     this.#token = token;
-    this.#network = network;
-    this.#ethersProvider = ethersProvider;
-    this.#protocolVersion = protocolVersion;
-
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = {
-        SimpleGriefing_Factory: registry.SimpleGriefing_Factory,
-        CountdownGriefing_Factory: registry.CountdownGriefing_Factory
-      };
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, c) => {
-        if (p[c] === undefined) {
-          p[c] = {};
-        }
-
-        p[c].SimpleGriefing_Factory = registry[c].SimpleGriefing_Factory;
-        p[c].CountdownGriefing_Factory = registry[c].CountdownGriefing_Factory;
-        return p;
-      }, {});
-    }
   }
 
   /**
@@ -76,16 +53,10 @@ class Agreement_Factory {
       agreementType = "SimpleGriefing_Factory";
     }
 
-    let address;
-    if (process.env.NODE_ENV === "test") {
-      address = this.#registry[agreementType];
-    } else {
-      address = this.#registry[this.#network][agreementType];
-    }
     const contract = new ethers.Contract(
-      address,
+      Config.store.registry[agreementType],
       abi,
-      Ethers.getWallet(this.#ethersProvider)
+      Ethers.getWallet(Config.store.ethersProvider)
     );
 
     const ipfsHash = await IPFS.add(metadata);
@@ -124,10 +95,10 @@ class Agreement_Factory {
       staker,
       griefRatio,
       counterparty,
-      ethersProvider: this.#ethersProvider,
+      ethersProvider: Config.store.ethersProvider,
       type:
         agreementType === "CountdownGriefing_Factory" ? "countdown" : "simple",
-      protocolVersion: this.#protocolVersion,
+      protocolVersion: Config.store.protocolVersion,
       agreementAddress: creationReceipt.logs[0].address,
       creationReceipt: creationReceipt
     });
@@ -149,8 +120,8 @@ class Agreement_Factory {
       griefRatio,
       token: this.#token,
       agreementAddress: address,
-      ethersProvider: this.#ethersProvider,
-      protocolVersion: this.#protocolVersion
+      ethersProvider: Config.store.ethersProvider,
+      protocolVersion: Config.store.protocolVersion
     });
   };
 

@@ -4,7 +4,6 @@ import ganache from "ganache-cli";
 import Ethers from "../src/utils/Ethers";
 
 import testConfig from "./test.json";
-import contractConfig from "../src/contracts.json";
 import appConfig from "../src/config.json";
 
 // Setup ganache
@@ -18,6 +17,24 @@ const protocolVersion = "v1.3.0";
 const provider = new ethers.providers.JsonRpcProvider();
 const signer = provider.getSigner();
 const abiEncoder = new ethers.utils.AbiCoder();
+
+const contracts = [
+  "MockUniswapFactory",
+  "NMR",
+  "DAI",
+  "Erasure_Posts",
+  "Erasure_Escrows",
+  "Erasure_Users",
+  "Erasure_Agreements",
+  "Feed",
+  "Feed_Factory",
+  "SimpleGriefing",
+  "SimpleGriefing_Factory",
+  "CountdownGriefing",
+  "CountdownGriefing_Factory",
+  "CountdownGriefingEscrow",
+  "CountdownGriefingEscrow_Factory"
+];
 
 // Deployer addresses
 const daiDeployAddress = "0xb5b06a16621616875A6C2637948bF98eA57c58fa";
@@ -39,6 +56,7 @@ const deployContract = async (contractName, params, _signer) => {
   const artifact = require(`@erasure/abis/src/${protocolVersion}/abis/${
     contractName === "DAI" ? "MockERC20" : contractName
   }.json`);
+
   const factory = new ethers.ContractFactory(
     artifact.abi,
     artifact.bytecode,
@@ -160,17 +178,10 @@ const deployNMR = async uniswapFactory => {
 };
 
 const deploy = async () => {
-  let contractRegistry = {};
-
   await fundSigner(uniswapSigner);
 
-  const contracts = {
-    MockUniswapFactory: "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95",
-    NMR: "",
-    ...contractConfig[protocolVersion].rinkeby
-  };
-
-  for (const contractName of Object.keys(contracts)) {
+  let contractRegistry = {};
+  for (const contractName of contracts) {
     let contract = null;
     if (contractName === "MockUniswapFactory") {
       contract = await deployContract(contractName, [], signer);

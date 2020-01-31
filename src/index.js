@@ -14,16 +14,16 @@ import Agreement_Factory from "./factory/Agreement_Factory";
 import IPFS from "./utils/IPFS";
 import Utils from "./utils/Utils";
 import Ethers from "./utils/Ethers";
-
-import contracts from "./contracts.json";
+import Config from "./utils/Config";
 
 class ErasureClient {
-  #token = null;
+  #ipfs = null;
   #registry = {};
   #web3Provider = null;
   #ethersProvider = null;
   #protocolVersion = "";
 
+  #token = null;
   #feedFactory = null;
   #erasureUsers = null;
   #escrowFactory = null;
@@ -42,9 +42,17 @@ class ErasureClient {
    * @param {string} config.ipfs.protocol
    */
   constructor({ protocolVersion, web3Provider, registry, ipfs }) {
+    this.#ipfs = null;
+    this.#registry = null;
     this.#web3Provider = null;
     this.#ethersProvider = null;
     this.#protocolVersion = protocolVersion;
+
+    if (ipfs !== undefined && ipfs !== null) {
+      this.#ipfs = ipfs;
+    } else {
+      this.#ipfs = require("./config.json").ipfs;
+    }
 
     if (web3Provider !== undefined && web3Provider !== null) {
       this.#web3Provider = web3Provider;
@@ -55,10 +63,9 @@ class ErasureClient {
       throw new Error("Need to provide a web3Provider!");
     }
 
-    this.#registry =
-      process.env.NODE_ENV === "test"
-        ? registry
-        : contracts[this.#protocolVersion];
+    if (process.env.NODE_ENV === "test") {
+      this.#registry = registry;
+    }
   }
 
   /**
@@ -69,7 +76,8 @@ class ErasureClient {
    */
   async login() {
     try {
-      const opts = {
+      Config.store = {
+        ipfs: this.#ipfs,
         registry: this.#registry,
         network: (await this.#ethersProvider.getNetwork()).name,
         web3Provider: this.#web3Provider,
@@ -77,22 +85,27 @@ class ErasureClient {
         protocolVersion: this.#protocolVersion
       };
 
-      const dai = new DAI(opts);
-      const nmr = new NMR(opts);
-      this.#token = new Token({ dai, nmr });
+      if (process.env.NODE_ENV !== "test") {
+        const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`);
 
-      this.#erasureUsers = new Erasure_Users(opts);
+        Config.store.registry = Object.keys(contracts).reduce((p, c) => {
+          p[c] = contracts[c][Config.store.network];
+        }, {});
+      }
+
+      this.#token = new Token({
+        dai: new DAI(),
+        nmr: new NMR()
+      });
+      this.#erasureUsers = new Erasure_Users();
       this.#escrowFactory = new Escrow_Factory({
-        ...opts,
         token: this.#token,
         erasureUsers: this.#erasureUsers
       });
       this.#feedFactory = new Feed_Factory({
-        ...opts,
         escrowFactory: this.#escrowFactory
       });
       this.#agreementFactory = new Agreement_Factory({
-        ...opts,
         token: this.#token
       });
 

@@ -1,45 +1,22 @@
 import { ethers } from "ethers";
 
+import Config from "../utils/Config";
 import Ethers from "../utils/Ethers";
 
 import { abi } from "@erasure/abis/src/v1.3.0/abis/MockNMR.json";
 
 class NMR {
-  #registry = {};
-  #network = null;
   #contract = null;
-  #ethersProvider = null;
 
   /**
    * @constructor
-   * @param {Object} config
-   * @param {address} config.registry
-   * @param {string} config.network
-   * @param {Object} config.ethersProvider
    */
-  constructor({ registry, network, ethersProvider }) {
-    this.#network = network;
-    this.#ethersProvider = ethersProvider;
-
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.NMR;
-      this.#contract = new ethers.Contract(
-        this.#registry,
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, network) => {
-        p[network] = registry[network].NMR;
-        return p;
-      }, {});
-
-      this.#contract = new ethers.Contract(
-        this.#registry[this.#network],
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    }
+  constructor() {
+    this.#contract = new ethers.Contract(
+      Config.store.registry.NMR,
+      abi,
+      Ethers.getWallet(Config.store.ethersProvider)
+    );
   }
 
   /**
@@ -49,7 +26,7 @@ class NMR {
    */
   allowance = async spender => {
     try {
-      const operator = await Ethers.getAccount(this.#ethersProvider);
+      const operator = await Ethers.getAccount(Config.store.ethersProvider);
 
       return this.#contract.allowance(operator, spender);
     } catch (err) {

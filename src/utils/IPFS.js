@@ -1,7 +1,7 @@
 import Ipfs from "ipfs-http-client";
 import { multihash } from "@erasure/crypto-ipfs";
 
-import config from "../config.json";
+import Config from "./Config";
 
 const IPFS = {
   ipfs: null,
@@ -15,9 +15,9 @@ const IPFS = {
   getClient: () => {
     if (IPFS.ipfs === null) {
       IPFS.ipfs = new Ipfs({
-        host: config.ipfs.host,
-        port: config.ipfs.port,
-        protocol: config.ipfs.protocol
+        host: Config.store.ipfs.host,
+        port: Config.store.ipfs.port,
+        protocol: Config.store.ipfs.protocol
       });
     }
 

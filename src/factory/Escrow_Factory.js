@@ -7,6 +7,7 @@ import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
+import Config from "../utils/Config";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
@@ -23,41 +24,15 @@ class Escrow_Factory {
   #ethersProvider = null;
   #protocolVersion = "";
 
-  constructor({
-    token,
-    registry,
-    network,
-    erasureUsers,
-    web3Provider,
-    ethersProvider,
-    protocolVersion
-  }) {
+  constructor({ token, erasureUsers }) {
     this.#token = token;
-    this.#network = network;
     this.#erasureUsers = erasureUsers;
-    this.#web3Provider = web3Provider;
-    this.#ethersProvider = ethersProvider;
-    this.#protocolVersion = protocolVersion;
 
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.CountdownGriefingEscrow_Factory;
-      this.#contract = new ethers.Contract(
-        this.#registry,
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, c) => {
-        p[c] = registry[c].CountdownGriefingEscrow_Factory;
-        return p;
-      }, {});
-
-      this.#contract = new ethers.Contract(
-        this.#registry[this.#network],
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    }
+    this.#contract = new ethers.Contract(
+      Config.store.registry.CountdownGriefingEscrow_Factory,
+      abi,
+      Ethers.getWallet(Config.store.ethersProvider)
+    );
   }
 
   /**
@@ -154,12 +129,12 @@ class Escrow_Factory {
         stakeAmount,
         paymentAmount,
         token: this.#token,
-        web3Provider: this.#web3Provider,
-        ethersProvider: this.#ethersProvider,
+        web3Provider: Config.store.web3Provider,
+        ethersProvider: Config.store.ethersProvider,
         proofhash: JSON.parse(metadata).proofhash,
         erasureUsers: this.#erasureUsers,
         escrowAddress: creationReceipt.logs[0].address,
-        protocolVersion: this.#protocolVersion,
+        protocolVersion: Config.store.protocolVersion,
         creationReceipt: creationReceipt
       });
     } catch (err) {
@@ -185,10 +160,10 @@ class Escrow_Factory {
       paymentAmount,
       escrowAddress,
       token: this.#token,
-      web3Provider: this.#web3Provider,
-      ethersProvider: this.#ethersProvider,
+      web3Provider: Config.store.web3Provider,
+      ethersProvider: Config.store.ethersProvider,
       erasureUsers: this.#erasureUsers,
-      protocolVersion: this.#protocolVersion
+      protocolVersion: Config.store.protocolVersion
     });
   };
 

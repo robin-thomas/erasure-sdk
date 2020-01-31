@@ -6,54 +6,24 @@ import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
+import Config from "../utils/Config";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
 import { abi } from "@erasure/abis/src/v1.3.0/abis/Feed_Factory.json";
 
 class Feed_Factory {
-  #registry = null;
-  #network = null;
   #contract = null;
   #escrowFactory = null;
-  #web3Provider = null;
-  #ethersProvider = null;
-  #protocolVersion = "";
 
-  constructor({
-    registry,
-    network,
-    web3Provider,
-    ethersProvider,
-    protocolVersion,
-    escrowFactory
-  }) {
-    this.#network = network;
+  constructor({ escrowFactory }) {
     this.#escrowFactory = escrowFactory;
-    this.#protocolVersion = protocolVersion;
 
-    this.#web3Provider = web3Provider;
-    this.#ethersProvider = ethersProvider;
-
-    if (process.env.NODE_ENV === "test") {
-      this.#registry = registry.Feed_Factory;
-      this.#contract = new ethers.Contract(
-        this.#registry,
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    } else {
-      this.#registry = Object.keys(registry).reduce((p, c) => {
-        p[c] = registry[c].Feed_Factory;
-        return p;
-      }, {});
-
-      this.#contract = new ethers.Contract(
-        this.#registry[this.#network],
-        abi,
-        Ethers.getWallet(this.#ethersProvider)
-      );
-    }
+    this.#contract = new ethers.Contract(
+      Config.store.registry.Feed_Factory,
+      abi,
+      Ethers.getWallet(Config.store.ethersProvider)
+    );
   }
 
   /**
@@ -81,11 +51,11 @@ class Feed_Factory {
 
       return new ErasureFeed({
         owner: operator,
-        web3Provider: this.#web3Provider,
-        ethersProvider: this.#ethersProvider,
+        web3Provider: Config.store.web3Provider,
+        ethersProvider: Config.store.ethersProvider,
         feedAddress: creationReceipt.logs[0].address,
         escrowFactory: this.#escrowFactory,
-        protocolVersion: this.#protocolVersion,
+        protocolVersion: Config.store.protocolVersion,
         creationReceipt: creationReceipt
       });
     } catch (err) {
@@ -94,7 +64,7 @@ class Feed_Factory {
   };
 
   createClone = async address => {
-    const logs = await this.#ethersProvider.getLogs({
+    const logs = await Config.store.ethersProvider.getLogs({
       address,
       fromBlock: 0,
       topics: [ethers.utils.id("OperatorUpdated(address)")]
@@ -104,16 +74,16 @@ class Feed_Factory {
     return new ErasureFeed({
       owner,
       feedAddress: address,
-      web3Provider: this.#web3Provider,
-      ethersProvider: this.#ethersProvider,
+      web3Provider: Config.store.web3Provider,
+      ethersProvider: Config.store.ethersProvider,
       escrowFactory: this.#escrowFactory,
-      protocolVersion: this.#protocolVersion
+      protocolVersion: Config.store.protocolVersion
     });
   };
 
   getFeeds = async (user = null) => {
     try {
-      const results = await this.#ethersProvider.getLogs({
+      const results = await Config.store.ethersProvider.getLogs({
         address: this.#contract.address,
         topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")],
         fromBlock: 0
@@ -133,10 +103,10 @@ class Feed_Factory {
             new ErasureFeed({
               owner,
               feedAddress,
-              web3Provider: this.#web3Provider,
-              ethersProvider: this.#ethersProvider,
+              web3Provider: Config.store.web3Provider,
+              ethersProvider: Config.store.ethersProvider,
               escrowFactory: this.#escrowFactory,
-              protocolVersion: this.#protocolVersion
+              protocolVersion: Config.store.protocolVersion
             })
           );
         }
