@@ -1,16 +1,16 @@
 import { ethers } from "ethers";
 import { constants } from "@erasure/crypto-ipfs";
 
+import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json";
+import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json";
+
+import ErasureAgreement from "../erasure/ErasureAgreement";
+
 import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Ethers from "../utils/Ethers";
 import Config from "../utils/Config";
-
-import ErasureAgreement from "../erasure/ErasureAgreement";
-
-import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json";
-import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json";
 
 class Agreement_Factory {
   #token = null;

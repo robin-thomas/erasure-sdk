@@ -17,12 +17,13 @@ import Ethers from "./utils/Ethers";
 import Config from "./utils/Config";
 
 class ErasureClient {
-  #token = null;
+  #ipfs = null;
   #registry = {};
   #web3Provider = null;
   #ethersProvider = null;
   #protocolVersion = "";
 
+  #token = null;
   #feedFactory = null;
   #erasureUsers = null;
   #escrowFactory = null;
@@ -41,10 +42,17 @@ class ErasureClient {
    * @param {string} config.ipfs.protocol
    */
   constructor({ protocolVersion, web3Provider, registry, ipfs }) {
+    this.#ipfs = null;
     this.#registry = null;
     this.#web3Provider = null;
     this.#ethersProvider = null;
     this.#protocolVersion = protocolVersion;
+
+    if (ipfs !== undefined && ipfs !== null) {
+      this.#ipfs = ipfs;
+    } else {
+      this.#ipfs = require("./config.json").ipfs;
+    }
 
     if (web3Provider !== undefined && web3Provider !== null) {
       this.#web3Provider = web3Provider;
@@ -69,6 +77,7 @@ class ErasureClient {
   async login() {
     try {
       Config.store = {
+        ipfs: this.#ipfs,
         registry: this.#registry,
         network: (await this.#ethersProvider.getNetwork()).name,
         web3Provider: this.#web3Provider,
