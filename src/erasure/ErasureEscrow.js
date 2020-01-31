@@ -7,7 +7,7 @@ import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import { abi } from "../../artifacts/CountdownGriefingEscrow.json";
+import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow.json";
 
 const ESCROW_STATES = {
   IS_OPEN: 0, // initialized but no deposits made

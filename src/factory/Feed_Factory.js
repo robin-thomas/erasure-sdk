@@ -9,7 +9,7 @@ import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 
-import { abi } from "../../artifacts/Feed_Factory.json";
+import { abi } from "@erasure/abis/src/v1.3.0/abis/Feed_Factory.json";
 
 class Feed_Factory {
   #receipt = null;
