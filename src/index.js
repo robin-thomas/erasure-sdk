@@ -109,6 +109,8 @@ class ErasureClient {
    * @returns {Promise<(ErasureFeed|ErasurePost|ErasureEscrow|ErasureAgreement)>} Erasure object
    */
   async getObject(address) {
+    // TODO:
+    // Need to set creationReceipt.
     try {
       // Check if address is proofhash. If yes, then its ErasurePost.
       if (Utils.isProofhash(address) || (await IPFS.isHash(address))) {
