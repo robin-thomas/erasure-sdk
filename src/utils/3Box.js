@@ -1,17 +1,17 @@
-import { openBox } from "3box";
+import { openBox } from '3box'
 
-import Ethers from "./Ethers";
+import Ethers from './Ethers'
 
-import { app } from "../config.json";
+import { app } from '../config.json'
 
 const Box = {
   space: null,
 
-  DATASTORE_FEEDS: "feeds",
-  DATASTORE_GRIEFINGS: "griefings",
+  DATASTORE_FEEDS: 'feeds',
+  DATASTORE_GRIEFINGS: 'griefings',
 
-  KEYSTORE_SYMMETRIC: "symmetric",
-  KEYSTORE_ASYMMETRIC: "asymmetric",
+  KEYSTORE_SYMMETRIC: 'symmetric',
+  KEYSTORE_ASYMMETRIC: 'asymmetric',
 
   /**
    * create a new 3Box space client
@@ -20,14 +20,14 @@ const Box = {
    */
   getClient: async (web3Provider = null) => {
     if (Box.space === null) {
-      const account = (await web3Provider.eth.getAccounts())[0];
-      const box = await openBox(account, web3Provider.currentProvider);
+      const account = (await web3Provider.eth.getAccounts())[0]
+      const box = await openBox(account, web3Provider.currentProvider)
 
-      await box.syncDone;
-      Box.space = await box.openSpace(app.name);
+      await box.syncDone
+      Box.space = await box.openSpace(app.name)
     }
 
-    return Box.space;
+    return Box.space
   },
 
   /**
@@ -38,10 +38,10 @@ const Box = {
    */
   set: async (key, value, web3Provider = null) => {
     try {
-      const client = await Box.getClient(web3Provider);
-      await client.private.set(key, value);
+      const client = await Box.getClient(web3Provider)
+      await client.private.set(key, value)
     } catch (err) {
-      throw err;
+      throw err
     }
   },
 
@@ -53,10 +53,10 @@ const Box = {
    */
   get: async (key, web3Provider = null) => {
     try {
-      const client = await Box.getClient(web3Provider);
-      return await client.private.get(key);
+      const client = await Box.getClient(web3Provider)
+      return await client.private.get(key)
     } catch (err) {
-      throw err;
+      throw err
     }
   },
 
@@ -67,18 +67,18 @@ const Box = {
    * @returns {Object} keypair
    */
   getKeyPair: async (web3Provider = null) => {
-    const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC, web3Provider);
+    const keypair = await Box.get(Box.KEYSTORE_ASYMMETRIC, web3Provider)
     if (keypair === null) {
-      return null;
+      return null
     }
 
     return {
       ...keypair,
       key: {
-        publicKey: new Uint8Array(keypair.key.publicKey.split(",")),
-        secretKey: new Uint8Array(keypair.key.secretKey.split(","))
-      }
-    };
+        publicKey: new Uint8Array(keypair.key.publicKey.split(',')),
+        secretKey: new Uint8Array(keypair.key.secretKey.split(',')),
+      },
+    }
   },
 
   /**
@@ -93,32 +93,32 @@ const Box = {
         ...keypair,
         key: {
           publicKey: keypair.key.publicKey.toString(),
-          secretKey: keypair.key.secretKey.toString()
-        }
+          secretKey: keypair.key.secretKey.toString(),
+        },
       },
-      web3Provider
-    );
+      web3Provider,
+    )
   },
 
   getSymKey: async (keyhash, web3Provider = null) => {
-    const keystore = await Box.get(Box.KEYSTORE_SYMMETRIC, web3Provider);
+    const keystore = await Box.get(Box.KEYSTORE_SYMMETRIC, web3Provider)
     if (keystore === null || keystore[keyhash] === undefined) {
-      return null;
+      return null
     }
 
-    return keystore[keyhash];
+    return keystore[keyhash]
   },
 
   setSymKey: async (keyhash, key, web3Provider = null) => {
-    let keystore = await Box.get(Box.KEYSTORE_SYMMETRIC, web3Provider);
+    let keystore = await Box.get(Box.KEYSTORE_SYMMETRIC, web3Provider)
     if (keystore === null) {
-      keystore = {};
+      keystore = {}
     }
 
-    keystore[keyhash] = key;
+    keystore[keyhash] = key
 
-    await Box.set(Box.KEYSTORE_SYMMETRIC, keystore, web3Provider);
-  }
-};
+    await Box.set(Box.KEYSTORE_SYMMETRIC, keystore, web3Provider)
+  },
+}
 
-export default Box;
+export default Box

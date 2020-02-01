@@ -1,38 +1,38 @@
-import { ethers } from "ethers";
-import { constants } from "@erasure/crypto-ipfs";
+import { ethers } from 'ethers'
+import { constants } from '@erasure/crypto-ipfs'
 
-import ErasureEscrow from "../erasure/ErasureEscrow";
+import ErasureEscrow from '../erasure/ErasureEscrow'
 
-import Abi from "../utils/Abi";
-import Box from "../utils/3Box";
-import IPFS from "../utils/IPFS";
-import Utils from "../utils/Utils";
-import Config from "../utils/Config";
-import Crypto from "../utils/Crypto";
-import Ethers from "../utils/Ethers";
+import Abi from '../utils/Abi'
+import Box from '../utils/3Box'
+import IPFS from '../utils/IPFS'
+import Utils from '../utils/Utils'
+import Config from '../utils/Config'
+import Crypto from '../utils/Crypto'
+import Ethers from '../utils/Ethers'
 
-import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow_Factory.json";
+import { abi } from '@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow_Factory.json'
 
 class Escrow_Factory {
-  #token = null;
-  #receipt = null;
-  #registry = null;
-  #network = null;
-  #contract = null;
-  #erasureUsers = null;
-  #web3Provider = null;
-  #ethersProvider = null;
-  #protocolVersion = "";
+  #token = null
+  #receipt = null
+  #registry = null
+  #network = null
+  #contract = null
+  #erasureUsers = null
+  #web3Provider = null
+  #ethersProvider = null
+  #protocolVersion = ''
 
   constructor({ token, erasureUsers }) {
-    this.#token = token;
-    this.#erasureUsers = erasureUsers;
+    this.#token = token
+    this.#erasureUsers = erasureUsers
 
     this.#contract = new ethers.Contract(
       Config.store.registry.CountdownGriefingEscrow_Factory,
       abi,
-      Ethers.getWallet(Config.store.ethersProvider)
-    );
+      Ethers.getWallet(Config.store.ethersProvider),
+    )
   }
 
   /**
@@ -43,12 +43,12 @@ class Escrow_Factory {
    * @returns {Object} contract object
    */
   contract = () => {
-    return this.#contract;
-  };
+    return this.#contract
+  }
 
   address = () => {
-    return this.contract().address;
-  };
+    return this.contract().address
+  }
 
   /**
    * Create a new escrow
@@ -78,32 +78,32 @@ class Escrow_Factory {
     griefRatio,
     griefRatioType,
     agreementCountdown,
-    metadata
+    metadata,
   }) => {
     try {
-      metadata = metadata || "";
+      metadata = metadata || ''
 
       // Convert the ipfs hash to multihash hex code.
-      const staticMetadataB58 = await IPFS.add(metadata);
-      const staticMetadata = await IPFS.hashToHex(staticMetadataB58);
+      const staticMetadataB58 = await IPFS.add(metadata)
+      const staticMetadata = await IPFS.hashToHex(staticMetadataB58)
 
       const agreementParams = Abi.encode(
-        ["uint256", "uint8", "uint256"],
-        [Ethers.parseEther(griefRatio), griefRatioType, agreementCountdown]
-      );
+        ['uint256', 'uint8', 'uint256'],
+        [Ethers.parseEther(griefRatio), griefRatioType, agreementCountdown],
+      )
 
       const callData = Abi.encodeWithSelector(
-        "initialize",
+        'initialize',
         [
-          "address",
-          "address",
-          "address",
-          "uint8",
-          "uint256",
-          "uint256",
-          "uint256",
-          "bytes",
-          "bytes"
+          'address',
+          'address',
+          'address',
+          'uint8',
+          'uint256',
+          'uint256',
+          'uint256',
+          'bytes',
+          'bytes',
         ],
         [
           operator,
@@ -114,13 +114,13 @@ class Escrow_Factory {
           Ethers.parseEther(stakeAmount),
           escrowCountdown,
           staticMetadata,
-          agreementParams
-        ]
-      );
+          agreementParams,
+        ],
+      )
 
       // Creates the contract.
-      const tx = await this.contract().create(callData);
-      const creationReceipt = await tx.wait();
+      const tx = await this.contract().create(callData)
+      const creationReceipt = await tx.wait()
 
       return new ErasureEscrow({
         buyer,
@@ -135,12 +135,12 @@ class Escrow_Factory {
         erasureUsers: this.#erasureUsers,
         escrowAddress: creationReceipt.logs[0].address,
         protocolVersion: Config.store.protocolVersion,
-        creationReceipt: creationReceipt
-      });
+        creationReceipt: creationReceipt,
+      })
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   createClone = ({
     buyer,
@@ -149,7 +149,8 @@ class Escrow_Factory {
     proofhash,
     stakeAmount,
     paymentAmount,
-    escrowAddress
+    escrowAddress,
+    creationReceipt,
   }) => {
     return new ErasureEscrow({
       buyer,
@@ -163,38 +164,39 @@ class Escrow_Factory {
       web3Provider: Config.store.web3Provider,
       ethersProvider: Config.store.ethersProvider,
       erasureUsers: this.#erasureUsers,
-      protocolVersion: Config.store.protocolVersion
-    });
-  };
+      protocolVersion: Config.store.protocolVersion,
+      creationReceipt,
+    })
+  }
 
   decodeParams = (data, encodedCalldata = true) => {
     const abiTypes = [
-      "address",
-      "address",
-      "address",
-      "uint8",
-      "uint256",
-      "uint256",
-      "uint256",
-      "bytes",
-      "bytes"
-    ];
+      'address',
+      'address',
+      'address',
+      'uint8',
+      'uint256',
+      'uint256',
+      'uint256',
+      'bytes',
+      'bytes',
+    ]
 
-    let result;
+    let result
     if (encodedCalldata) {
       result = Abi.decodeWithSelector(
-        "initialize",
+        'initialize',
         abiTypes,
-        Abi.decode(["bytes"], data)[0]
-      );
+        Abi.decode(['bytes'], data)[0],
+      )
     } else {
-      result = Abi.decode(abiTypes, data);
+      result = Abi.decode(abiTypes, data)
     }
 
     const agreementParams = Abi.decode(
-      ["uint256", "uint8", "uint256"],
-      result[8]
-    );
+      ['uint256', 'uint8', 'uint256'],
+      result[8],
+    )
 
     return {
       operator: Ethers.getAddress(result[0]),
@@ -208,10 +210,10 @@ class Escrow_Factory {
       agreementParams: {
         griefRatio: Ethers.formatEther(agreementParams[0]).toString(),
         griefRatioType: agreementParams[1],
-        agreementCountdown: agreementParams[2]
-      }
-    };
-  };
+        agreementCountdown: agreementParams[2],
+      },
+    }
+  }
 }
 
-export default Escrow_Factory;
+export default Escrow_Factory

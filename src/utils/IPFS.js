@@ -1,7 +1,7 @@
-import Ipfs from "ipfs-http-client";
-import { multihash } from "@erasure/crypto-ipfs";
+import Ipfs from 'ipfs-http-client'
+import { multihash } from '@erasure/crypto-ipfs'
 
-import Config from "./Config";
+import Config from './Config'
 
 const IPFS = {
   ipfs: null,
@@ -17,11 +17,11 @@ const IPFS = {
       IPFS.ipfs = new Ipfs({
         host: Config.store.ipfs.host,
         port: Config.store.ipfs.port,
-        protocol: Config.store.ipfs.protocol
-      });
+        protocol: Config.store.ipfs.protocol,
+      })
     }
 
-    return IPFS.ipfs;
+    return IPFS.ipfs
   },
 
   /**
@@ -32,20 +32,20 @@ const IPFS = {
    */
   add: async (data, retry = true) => {
     try {
-      if (process.env.NODE_ENV === "test") {
-        const hash = await IPFS.getHash(data);
-        IPFS.keystore[hash] = data;
-        return hash;
+      if (process.env.NODE_ENV === 'test') {
+        const hash = await IPFS.getHash(data)
+        IPFS.keystore[hash] = data
+        return hash
       }
 
-      const content = Buffer.from(data);
-      const results = await IPFS.getClient().add(content);
-      return results[0].hash;
+      const content = Buffer.from(data)
+      const results = await IPFS.getClient().add(content)
+      return results[0].hash
     } catch (err) {
       if (retry) {
-        return await IPFS.add(data, false);
+        return await IPFS.add(data, false)
       } else {
-        throw err;
+        throw err
       }
     }
   },
@@ -58,17 +58,17 @@ const IPFS = {
    */
   get: async (hash, retry = true) => {
     try {
-      if (process.env.NODE_ENV === "test") {
-        return IPFS.keystore[hash];
+      if (process.env.NODE_ENV === 'test') {
+        return IPFS.keystore[hash]
       }
 
-      const results = await IPFS.getClient().get(hash);
-      return results[0].content.toString();
+      const results = await IPFS.getClient().get(hash)
+      return results[0].content.toString()
     } catch (err) {
       if (retry) {
-        return await IPFS.get(hash, false);
+        return await IPFS.get(hash, false)
       } else {
-        throw err;
+        throw err
       }
     }
   },
@@ -81,17 +81,17 @@ const IPFS = {
    */
   getHash: async data => {
     try {
-      if (data === "") {
-        return "QmaRwA91m9Rdfaq9u3FH1fdMVxw1wFPjKL38czkWMxh3KB";
+      if (data === '') {
+        return 'QmaRwA91m9Rdfaq9u3FH1fdMVxw1wFPjKL38czkWMxh3KB'
       }
 
       return await multihash({
         input: data,
-        inputType: "raw",
-        outputType: "b58"
-      });
+        inputType: 'raw',
+        outputType: 'b58',
+      })
     } catch (err) {
-      throw err;
+      throw err
     }
   },
 
@@ -99,22 +99,22 @@ const IPFS = {
     try {
       return await multihash({
         input: hash,
-        inputType: "b58",
-        outputType: "hex"
-      });
+        inputType: 'b58',
+        outputType: 'hex',
+      })
     } catch (err) {
-      throw err;
+      throw err
     }
   },
 
   isHash: async hash => {
     try {
-      await IPFS.hashToHex(hash);
-      return true;
+      await IPFS.hashToHex(hash)
+      return true
     } catch (err) {
-      return false;
+      return false
     }
-  }
-};
+  },
+}
 
-export default IPFS;
+export default IPFS
