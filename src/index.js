@@ -183,7 +183,6 @@ class ErasureClient {
               let {
                 buyer,
                 seller,
-                tokenId,
                 stakeAmount,
                 paymentAmount,
                 staticMetadataB58
@@ -191,6 +190,11 @@ class ErasureClient {
                 results[0].data,
                 false /* encodedCalldata */
               );
+
+              ({ tokenId } = this.#escrowFactory.decodeParams(
+                results[0].data,
+                false /* encodedCalldata */
+              ));
 
               const metadata = await IPFS.get(staticMetadataB58);
 

@@ -1,36 +1,44 @@
 {
   "name": "@robinthomas/erasure-sdk",
-  "version": "1.0.12",
-  "description": "",
+  "version": "1.0.15",
+  "description": "Erasure SDK",
   "main": "dist/index.js",
   "homepage": "https://github.com/robin-thomas/erasure-sdk#readme",
   "scripts": {
     "build": "webpack --mode=production",
     "start": "webpack --watch",
-    "test": "NODE_ENV=test mocha --require @babel/register --exit --bail -t 1200000 test/index.js",
-    "coverage": "nyc npm run test",
+    "test": "NODE_ENV=test mocha --require esm test/index.js",
+    "babel-test": "NODE_ENV=test mocha --require @babel/register test/index.js",
+    "coverage": "nyc npm run babel-test",
     "doc:generate": "jsdoc src/* --destination erasure-docs -c jsdoc.json",
     "doc:deploy": "npm run doc:generate && now ./erasure-docs",
     "deploy": "npm run build && npm publish --access public"
   },
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robin-thomas/erasure-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/robin-thomas/erasure-sdk/issues"
+  },
   "devDependencies": {
     "3box": "^1.16.1",
-    "@babel/cli": "^7.8.3",
-    "@babel/core": "^7.8.3",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-transform-runtime": "^7.8.3",
-    "@babel/polyfill": "^7.8.3",
-    "@babel/preset-env": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
     "@babel/register": "^7.8.3",
-    "@babel/runtime": "^7.8.3",
+    "@babel/runtime": "^7.8.4",
     "@erasure/abis": "^1.3.13",
     "@erasure/crypto-ipfs": "^1.2.4",
     "babel-loader": "^8.0.6",
     "bip39": "^3.0.2",
     "bs58": "^4.0.1",
     "docdash": "^1.1.1",
+    "esm": "^3.2.25",
     "ethereumjs-util": "^6.2.0",
     "ethereumjs-wallet": "^0.6.3",
     "ethers": "^4.0.43",
@@ -39,13 +47,14 @@
     "ipfs-http-client": "^41.0.0",
     "jsdoc": "^3.6.3",
     "lint-staged": "^9.2.5",
-    "mocha": "^7.0.0",
+    "mocha": "^6.2.2",
     "nyc": "^15.0.0",
     "prettier": "^1.18.2",
     "web3": "^1.2.5-rc.0",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
   },
+  "dependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -57,12 +66,9 @@
       "git add"
     ]
   },
-  "dependencies": {},
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/robin-thomas/erasure-sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/robin-thomas/erasure-sdk/issues"
+  "mocha": {
+    "bail": true,
+    "exit": true,
+    "timeout": 1200000
   }
 }
