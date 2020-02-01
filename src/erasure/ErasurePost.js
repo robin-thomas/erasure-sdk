@@ -7,6 +7,7 @@ import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
 
 class ErasurePost {
   #owner = null;
@@ -96,6 +97,20 @@ class ErasurePost {
    */
   creationReceipt = () => {
     return this.#creationReceipt;
+  };
+
+  /**
+   * Get the creation timestamp of this post
+   *
+   * @memberof ErasurePost
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber
+    );
+    return block.timestamp;
   };
 
   #metadata = async () => {

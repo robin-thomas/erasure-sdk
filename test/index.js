@@ -106,6 +106,10 @@ describe("ErasureClient", () => {
 
     const _feed = await client.getObject(feed.address());
     assert.ok(feed.address() === _feed.address());
+    assert.equal(
+      await _feed.getCreationTimestamp(),
+      await feed.getCreationTimestamp()
+    );
 
     post = await feed.createPost(rawData);
     const data = await IPFS.get(post.proofhash().multihash);
@@ -121,7 +125,6 @@ describe("ErasureClient", () => {
 
       const _feed = await client.getObject(feed.address());
       assert.ok(feed.address() === _feed.address());
-
       assert.ok(feed.owner() === account);
 
       const post = (await feed.getPosts())[0];
@@ -133,6 +136,10 @@ describe("ErasureClient", () => {
       const _post = await client.getObject(post.proofhash().proofhash);
       assert.ok(
         JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+      assert.equal(
+        await _post.getCreationTimestamp(),
+        await post.getCreationTimestamp()
       );
     });
 
@@ -288,6 +295,10 @@ describe("ErasureClient", () => {
 
         const _escrow = await client.getObject(escrow.address());
         assert.ok(escrow.address() === _escrow.address());
+        assert.equal(
+          await _escrow.getCreationTimestamp(),
+          await escrow.getCreationTimestamp()
+        );
       });
 
       it("#depositStake", async () => {
@@ -690,6 +701,10 @@ describe("ErasureClient", () => {
 
       const _countdown = await client.getObject(agreement.address());
       assert.ok(agreement.address() === _countdown.address());
+      assert.equal(
+        await _countdown.getCreationTimestamp(),
+        await agreement.getCreationTimestamp()
+      );
     });
 
     it("#stake", async () => {
@@ -774,6 +789,10 @@ describe("ErasureClient", () => {
       const _simple = await client.getObject(agreement.address());
       assert.ok(agreement.address() === _simple.address());
       assert.ok(_simple.tokenId() === constants.TOKEN_TYPES.DAI);
+      assert.equal(
+        await _simple.getCreationTimestamp(),
+        await agreement.getCreationTimestamp()
+      );
 
       await agreement.checkStatus();
     });

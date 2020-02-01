@@ -66,7 +66,7 @@ class Feed_Factory {
     }
   };
 
-  createClone = async address => {
+  createClone = async (address, creationReceipt) => {
     const logs = await Config.store.ethersProvider.getLogs({
       address,
       fromBlock: 0,
@@ -80,7 +80,8 @@ class Feed_Factory {
       web3Provider: Config.store.web3Provider,
       ethersProvider: Config.store.ethersProvider,
       escrowFactory: this.#escrowFactory,
-      protocolVersion: Config.store.protocolVersion
+      protocolVersion: Config.store.protocolVersion,
+      creationReceipt
     });
   };
 

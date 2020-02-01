@@ -6,6 +6,7 @@ import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
 
 import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow.json";
 
@@ -119,6 +120,20 @@ class ErasureEscrow {
    */
   creationReceipt = () => {
     return this.#creationReceipt;
+  };
+
+  /**
+   * Get the creation timestamp of this escrow
+   *
+   * @memberof ErasureEscrow
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber
+    );
+    return block.timestamp;
   };
 
   /**

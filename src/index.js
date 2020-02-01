@@ -175,9 +175,12 @@ class ErasureClient {
         // Found the type.
         let tokenId, staker, griefRatio, counterparty;
         if (results.length > 0) {
+          const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
+            results[0].transactionHash
+          );
           switch (type) {
             case "feed":
-              return this.#feedFactory.createClone(address);
+              return this.#feedFactory.createClone(address, creationReceipt);
 
             case "escrow":
               let {
@@ -205,7 +208,8 @@ class ErasureClient {
                 stakeAmount,
                 paymentAmount,
                 proofhash: JSON.parse(metadata).proofhash,
-                escrowAddress: address
+                escrowAddress: address,
+                creationReceipt
               });
 
             case "simple":
@@ -222,7 +226,8 @@ class ErasureClient {
                 tokenId,
                 staker,
                 griefRatio,
-                counterparty
+                counterparty,
+                creationReceipt
               });
 
             case "countdown":
@@ -239,7 +244,8 @@ class ErasureClient {
                 tokenId,
                 staker,
                 griefRatio,
-                counterparty
+                counterparty,
+                creationReceipt
               });
           }
         }

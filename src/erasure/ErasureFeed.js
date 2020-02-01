@@ -4,11 +4,13 @@ import { constants } from "@erasure/crypto-ipfs";
 import ErasurePost from "./ErasurePost";
 import Escrow_Factory from "../factory/Escrow_Factory";
 
+import Abi from "../utils/Abi";
 import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
 
 import { abi } from "@erasure/abis/src/v1.3.0/abis/Feed.json";
 
@@ -90,6 +92,20 @@ class ErasureFeed {
    */
   creationReceipt = () => {
     return this.#creationReceipt;
+  };
+
+  /**
+   * Get the creation timestamp of this feed
+   *
+   * @memberof ErasureFeed
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber
+    );
+    return block.timestamp;
   };
 
   /**
@@ -222,7 +238,7 @@ class ErasureFeed {
         web3Provider: this.#web3Provider,
         ethersProvider: this.#ethersProvider,
         protocolVersion: this.#protocolVersion,
-        creationReceipt: creationReceipt
+        creationReceipt
       });
     } catch (err) {
       throw err;
@@ -230,6 +246,19 @@ class ErasureFeed {
   };
 
   createClone = async proofhash => {
+    const logs = await Config.store.ethersProvider.getLogs({
+      address: this.address(),
+      fromBlock: 0,
+      topics: [ethers.utils.id("HashSubmitted(bytes32)")]
+    });
+    const found = logs.find(element => {
+      if (element.data === proofhash) {
+        return element;
+      }
+    });
+    const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
+      found.transactionHash
+    );
     return new ErasurePost({
       proofhash,
       owner: this.owner(),
@@ -237,7 +266,8 @@ class ErasureFeed {
       escrowFactory: this.#escrowFactory,
       web3Provider: this.#web3Provider,
       ethersProvider: this.#ethersProvider,
-      protocolVersion: this.#protocolVersion
+      protocolVersion: this.#protocolVersion,
+      creationReceipt
     });
   };
 
@@ -258,6 +288,9 @@ class ErasureFeed {
     let posts = [];
     if (results && results.length > 0) {
       for (const result of results) {
+        const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
+          result.transactionHash
+        );
         posts.push(
           new ErasurePost({
             owner: this.owner(),
@@ -266,7 +299,8 @@ class ErasureFeed {
             web3Provider: this.#web3Provider,
             ethersProvider: this.#ethersProvider,
             escrowFactory: this.#escrowFactory,
-            protocolVersion: this.#protocolVersion
+            protocolVersion: this.#protocolVersion,
+            creationReceipt
           })
         );
       }

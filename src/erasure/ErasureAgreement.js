@@ -4,6 +4,7 @@ import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
 import ErasurePost from "./ErasurePost";
 
 import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing.json";
@@ -100,6 +101,20 @@ class ErasureAgreement {
    */
   creationReceipt = () => {
     return this.#creationReceipt;
+  };
+
+  /**
+   * Get the creation timestamp of this agreement
+   *
+   * @memberof ErasureAgreement
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber
+    );
+    return block.timestamp;
   };
 
   /**

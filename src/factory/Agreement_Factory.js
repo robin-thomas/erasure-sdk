@@ -110,7 +110,8 @@ class Agreement_Factory {
     tokenId,
     staker,
     griefRatio,
-    counterparty
+    counterparty,
+    creationReceipt
   }) => {
     return new ErasureAgreement({
       staker,
@@ -121,7 +122,8 @@ class Agreement_Factory {
       token: this.#token,
       agreementAddress: address,
       ethersProvider: Config.store.ethersProvider,
-      protocolVersion: Config.store.protocolVersion
+      protocolVersion: Config.store.protocolVersion,
+      creationReceipt
     });
   };
 

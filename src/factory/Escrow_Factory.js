@@ -149,7 +149,8 @@ class Escrow_Factory {
     proofhash,
     stakeAmount,
     paymentAmount,
-    escrowAddress
+    escrowAddress,
+    creationReceipt
   }) => {
     return new ErasureEscrow({
       buyer,
@@ -163,7 +164,8 @@ class Escrow_Factory {
       web3Provider: Config.store.web3Provider,
       ethersProvider: Config.store.ethersProvider,
       erasureUsers: this.#erasureUsers,
-      protocolVersion: Config.store.protocolVersion
+      protocolVersion: Config.store.protocolVersion,
+      creationReceipt
     });
   };
 
