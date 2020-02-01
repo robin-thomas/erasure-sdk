@@ -1,5 +1,5 @@
 const Config = {
-  store: {}
-};
+  store: {},
+}
 
-export default Config;
+export default Config

@@ -1,12 +1,12 @@
-import { ethers } from "ethers";
+import { ethers } from 'ethers'
 
-import Config from "../utils/Config";
-import Ethers from "../utils/Ethers";
+import Config from '../utils/Config'
+import Ethers from '../utils/Ethers'
 
-import { abi } from "@erasure/abis/src/v1.3.0/abis/MockERC20.json";
+import { abi } from '@erasure/abis/src/v1.3.0/abis/MockERC20.json'
 
 class DAI {
-  #contract = null;
+  #contract = null
 
   /**
    * @constructor
@@ -15,8 +15,8 @@ class DAI {
     this.#contract = new ethers.Contract(
       Config.store.registry.DAI,
       abi,
-      Ethers.getWallet(Config.store.ethersProvider)
-    );
+      Ethers.getWallet(Config.store.ethersProvider),
+    )
   }
 
   /**
@@ -27,12 +27,12 @@ class DAI {
    */
   approve = async (spender, value = Ethers.MaxUint256()) => {
     try {
-      const tx = await this.#contract.approve(spender, value);
-      return await tx.wait();
+      const tx = await this.#contract.approve(spender, value)
+      return await tx.wait()
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   /**
    * Mints some mock DAI tokens
@@ -43,12 +43,12 @@ class DAI {
    */
   mintMockTokens = async (to, value) => {
     try {
-      const tx = await this.#contract.mintMockTokens(to, value);
-      return await tx.wait();
+      const tx = await this.#contract.mintMockTokens(to, value)
+      return await tx.wait()
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 }
 
-export default DAI;
+export default DAI

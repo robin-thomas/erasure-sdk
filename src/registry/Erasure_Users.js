@@ -1,21 +1,21 @@
-import { ethers } from "ethers";
+import { ethers } from 'ethers'
 
-import Box from "../utils/3Box";
-import Config from "../utils/Config";
-import Crypto from "../utils/Crypto";
-import Ethers from "../utils/Ethers";
+import Box from '../utils/3Box'
+import Config from '../utils/Config'
+import Crypto from '../utils/Crypto'
+import Ethers from '../utils/Ethers'
 
-import { abi } from "@erasure/abis/src/v1.3.0/abis/Erasure_Users.json";
+import { abi } from '@erasure/abis/src/v1.3.0/abis/Erasure_Users.json'
 
 class Erasure_Users {
-  #contract = null;
+  #contract = null
 
   constructor() {
     this.#contract = new ethers.Contract(
       Config.store.registry.Erasure_Users,
       abi,
-      Ethers.getWallet(Config.store.ethersProvider)
-    );
+      Ethers.getWallet(Config.store.ethersProvider),
+    )
   }
 
   /**
@@ -25,22 +25,22 @@ class Erasure_Users {
    */
   registerUser = async () => {
     // Check if the user alrady exists in Box storage.
-    let keypair = await Box.getKeyPair(Config.store.web3Provider);
+    let keypair = await Box.getKeyPair(Config.store.web3Provider)
     if (keypair === null) {
-      keypair = await Crypto.asymmetric.genKeyPair(Config.store.ethersProvider);
-      Box.setKeyPair(keypair, Config.store.web3Provider);
+      keypair = await Crypto.asymmetric.genKeyPair(Config.store.ethersProvider)
+      Box.setKeyPair(keypair, Config.store.web3Provider)
     }
 
     // Register the publicKey in Erasure_Users.
-    const publicKey = Buffer.from(keypair.key.publicKey).toString("hex");
-    const address = await Ethers.getAccount(Config.store.ethersProvider);
-    const data = await this.getUserData(address);
+    const publicKey = Buffer.from(keypair.key.publicKey).toString('hex')
+    const address = await Ethers.getAccount(Config.store.ethersProvider)
+    const data = await this.getUserData(address)
 
-    if (data === null || data === undefined || data === "0x") {
-      const tx = await this.#contract.registerUser(`0x${publicKey}`);
-      return await tx.wait();
+    if (data === null || data === undefined || data === '0x') {
+      const tx = await this.#contract.registerUser(`0x${publicKey}`)
+      return await tx.wait()
     }
-  };
+  }
 
   /**
    * Retrieve the PubKey of a registered user
@@ -50,11 +50,11 @@ class Erasure_Users {
    */
   getUserData = async address => {
     try {
-      return await this.#contract.getUserData(address);
+      return await this.#contract.getUserData(address)
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 }
 
-export default Erasure_Users;
+export default Erasure_Users
