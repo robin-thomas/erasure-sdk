@@ -12,7 +12,9 @@
     "coverage": "nyc npm run babel-test",
     "doc:generate": "jsdoc src/* --destination erasure-docs -c jsdoc.json",
     "doc:deploy": "npm run doc:generate && now ./erasure-docs",
-    "deploy": "npm run build && npm publish --access public"
+    "deploy": "npm run build && npm publish --access public",
+    "format": "prettier -c 'test/**/*.js' 'src/**/*.js' --config .prettierrc",
+    "format-write": "prettier -c 'test/**/*.js' 'src/**/*.js' --config .prettierrc --write"
   },
   "author": "Robin Thomas <robinthomas2591@gmail.com>",
   "license": "MIT",

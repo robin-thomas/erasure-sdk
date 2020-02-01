@@ -1,7 +1,7 @@
-import { createHash } from "crypto";
-import { crypto as cryptoIpfs } from "@erasure/crypto-ipfs";
+import { createHash } from 'crypto'
+import { crypto as cryptoIpfs } from '@erasure/crypto-ipfs'
 
-import Ethers from "./Ethers";
+import Ethers from './Ethers'
 
 const Crypto = {
   symmetric: {
@@ -28,7 +28,7 @@ const Crypto = {
      * @param {string} key - symmetric key
      * @returns {string} decrypted string
      */
-    decrypt: (key, msg) => cryptoIpfs.symmetric.decryptMessage(key, msg)
+    decrypt: (key, msg) => cryptoIpfs.symmetric.decryptMessage(key, msg),
   },
 
   asymmetric: {
@@ -39,27 +39,27 @@ const Crypto = {
      */
     genKeyPair: async (ethersProvider = null) => {
       try {
-        const operator = await Ethers.getAccount(ethersProvider);
+        const operator = await Ethers.getAccount(ethersProvider)
 
-        const msg = `I am signing this message to generate my ErasureClient keypair as ${operator}`;
+        const msg = `I am signing this message to generate my ErasureClient keypair as ${operator}`
         const signature = await Ethers.getWallet(ethersProvider).signMessage(
-          msg
-        );
+          msg,
+        )
 
-        const salt = createHash("sha256")
+        const salt = createHash('sha256')
           .update(operator)
-          .digest("base64");
+          .digest('base64')
 
-        const key = cryptoIpfs.asymmetric.generateKeyPair(signature, salt);
+        const key = cryptoIpfs.asymmetric.generateKeyPair(signature, salt)
 
         return {
           msg,
           signature,
           key,
-          salt
-        };
+          salt,
+        }
       } catch (err) {
-        throw err;
+        throw err
       }
     },
 
@@ -83,7 +83,7 @@ const Crypto = {
         msg,
         nonce,
         keypair.key.publicKey,
-        keypair.key.secretKey
+        keypair.key.secretKey,
       ),
 
     /**
@@ -99,9 +99,9 @@ const Crypto = {
         msg,
         nonce,
         keypair.key.publicKey,
-        keypair.key.secretKey
-      )
-  }
-};
+        keypair.key.secretKey,
+      ),
+  },
+}
 
-export default Crypto;
+export default Crypto

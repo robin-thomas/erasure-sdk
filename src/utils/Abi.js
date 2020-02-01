@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers } from 'ethers'
 
 const Abi = {
   /**
@@ -10,11 +10,11 @@ const Abi = {
    * @param {Array<any>} abiValues
    */
   encodeWithSelector: (fnName, abiTypes, abiValues) => {
-    const abiEncoder = new ethers.utils.AbiCoder();
-    const initData = abiEncoder.encode(abiTypes, abiValues);
-    const selector = Abi.createSelector(fnName, abiTypes);
+    const abiEncoder = new ethers.utils.AbiCoder()
+    const initData = abiEncoder.encode(abiTypes, abiValues)
+    const selector = Abi.createSelector(fnName, abiTypes)
 
-    return selector + initData.slice(2);
+    return selector + initData.slice(2)
   },
 
   /**
@@ -24,8 +24,8 @@ const Abi = {
    * @param {Array<any>} abiValues
    */
   encode: (abiTypes, abiValues) => {
-    const abiEncoder = new ethers.utils.AbiCoder();
-    return abiEncoder.encode(abiTypes, abiValues);
+    const abiEncoder = new ethers.utils.AbiCoder()
+    return abiEncoder.encode(abiTypes, abiValues)
   },
 
   /**
@@ -37,11 +37,11 @@ const Abi = {
    * @param {string} callData
    */
   decodeWithSelector: (fnName, abiTypes, callData) => {
-    const selector = Abi.createSelector(fnName, abiTypes);
-    const data = callData.replace(selector.substr(2), "");
+    const selector = Abi.createSelector(fnName, abiTypes)
+    const data = callData.replace(selector.substr(2), '')
 
-    const abiEncoder = new ethers.utils.AbiCoder();
-    return abiEncoder.decode(abiTypes, data);
+    const abiEncoder = new ethers.utils.AbiCoder()
+    return abiEncoder.decode(abiTypes, data)
   },
 
   /**
@@ -51,8 +51,8 @@ const Abi = {
    * @param {string} callData
    */
   decode: (abiTypes, callData) => {
-    const abiEncoder = new ethers.utils.AbiCoder();
-    return abiEncoder.decode(abiTypes, callData);
+    const abiEncoder = new ethers.utils.AbiCoder()
+    return abiEncoder.decode(abiTypes, callData)
   },
 
   /**
@@ -62,16 +62,16 @@ const Abi = {
    * @param {Array<string>} abiTypes
    */
   createSelector: (fnName, abiTypes) => {
-    const joinedTypes = abiTypes.join(",");
-    const fnSignature = `${fnName}(${joinedTypes})`;
+    const joinedTypes = abiTypes.join(',')
+    const fnSignature = `${fnName}(${joinedTypes})`
 
     const selector = ethers.utils.hexDataSlice(
       ethers.utils.keccak256(ethers.utils.toUtf8Bytes(fnSignature)),
       0,
-      4
-    );
-    return selector;
-  }
-};
+      4,
+    )
+    return selector
+  },
+}
 
-export default Abi;
+export default Abi

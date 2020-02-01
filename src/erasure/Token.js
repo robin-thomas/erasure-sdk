@@ -1,11 +1,11 @@
-import { ethers } from "ethers";
-import { constants } from "@erasure/crypto-ipfs";
+import { ethers } from 'ethers'
+import { constants } from '@erasure/crypto-ipfs'
 
-import Ethers from "../utils/Ethers";
+import Ethers from '../utils/Ethers'
 
 class Token {
-  #dai = null;
-  #nmr = null;
+  #dai = null
+  #nmr = null
 
   /**
    * @constructor
@@ -14,8 +14,8 @@ class Token {
    * @param {Object} config.nmr
    */
   constructor({ dai, nmr }) {
-    this.#dai = dai;
-    this.#nmr = nmr;
+    this.#dai = dai
+    this.#nmr = nmr
   }
 
   /**
@@ -26,24 +26,24 @@ class Token {
    */
   approve = async (tokenId, spender, value) => {
     try {
-      let currentAllowance = Ethers.parseEther("0");
+      let currentAllowance = Ethers.parseEther('0')
 
       switch (tokenId) {
         case constants.TOKEN_TYPES.NMR:
-          currentAllowance = this.#nmr.allowance(spender);
+          currentAllowance = this.#nmr.allowance(spender)
           return await this.#nmr.changeApproval(
             spender,
             currentAllowance,
-            value
-          );
+            value,
+          )
 
         case constants.TOKEN_TYPES.DAI:
-          return await this.#dai.approve(spender, value);
+          return await this.#dai.approve(spender, value)
       }
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   /**
    * Mints some mock tokens
@@ -56,17 +56,17 @@ class Token {
     try {
       switch (tokenId) {
         case constants.TOKEN_TYPES.NMR:
-          await this.#nmr.mintMockTokens(to, value);
-          break;
+          await this.#nmr.mintMockTokens(to, value)
+          break
 
         case constants.TOKEN_TYPES.DAI:
-          await this.#dai.mintMockTokens(to, value);
-          break;
+          await this.#dai.mintMockTokens(to, value)
+          break
       }
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 }
 
-export default Token;
+export default Token

@@ -1,12 +1,12 @@
-import { ethers } from "ethers";
+import { ethers } from 'ethers'
 
-import Config from "../utils/Config";
-import Ethers from "../utils/Ethers";
+import Config from '../utils/Config'
+import Ethers from '../utils/Ethers'
 
-import { abi } from "@erasure/abis/src/v1.3.0/abis/MockNMR.json";
+import { abi } from '@erasure/abis/src/v1.3.0/abis/MockNMR.json'
 
 class NMR {
-  #contract = null;
+  #contract = null
 
   /**
    * @constructor
@@ -15,8 +15,8 @@ class NMR {
     this.#contract = new ethers.Contract(
       Config.store.registry.NMR,
       abi,
-      Ethers.getWallet(Config.store.ethersProvider)
-    );
+      Ethers.getWallet(Config.store.ethersProvider),
+    )
   }
 
   /**
@@ -26,13 +26,13 @@ class NMR {
    */
   allowance = async spender => {
     try {
-      const operator = await Ethers.getAccount(Config.store.ethersProvider);
+      const operator = await Ethers.getAccount(Config.store.ethersProvider)
 
-      return this.#contract.allowance(operator, spender);
+      return this.#contract.allowance(operator, spender)
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   /**
    * Change the approval so that NMR could be staked
@@ -43,19 +43,19 @@ class NMR {
   changeApproval = async (
     spender,
     oldValue = 0,
-    newValue = Ethers.MaxUint256()
+    newValue = Ethers.MaxUint256(),
   ) => {
     try {
       const tx = await this.#contract.changeApproval(
         spender,
         oldValue,
-        newValue
-      );
-      return await tx.wait();
+        newValue,
+      )
+      return await tx.wait()
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   /**
    * Mints some mock NMR tokens
@@ -66,12 +66,12 @@ class NMR {
    */
   mintMockTokens = async (to, value) => {
     try {
-      const tx = await this.#contract.mintMockTokens(to, value);
-      return await tx.wait();
+      const tx = await this.#contract.mintMockTokens(to, value)
+      return await tx.wait()
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 }
 
-export default NMR;
+export default NMR

@@ -1,14 +1,14 @@
-import { ethers } from "ethers";
-import { constants } from "@erasure/crypto-ipfs";
+import { ethers } from 'ethers'
+import { constants } from '@erasure/crypto-ipfs'
 
-import Abi from "../utils/Abi";
-import Box from "../utils/3Box";
-import IPFS from "../utils/IPFS";
-import Crypto from "../utils/Crypto";
-import Ethers from "../utils/Ethers";
-import Config from "../utils/Config";
+import Abi from '../utils/Abi'
+import Box from '../utils/3Box'
+import IPFS from '../utils/IPFS'
+import Crypto from '../utils/Crypto'
+import Ethers from '../utils/Ethers'
+import Config from '../utils/Config'
 
-import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow.json";
+import { abi } from '@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow.json'
 
 const ESCROW_STATES = {
   IS_OPEN: 0, // initialized but no deposits made
@@ -16,24 +16,24 @@ const ESCROW_STATES = {
   ONLY_PAYMENT_DEPOSITED: 2, // only payment deposit completed
   IS_DEPOSITED: 3, // both payment and stake deposit are completed
   IS_FINALIZED: 4, // the escrow completed successfully
-  IS_CANCELLED: 5 // the escrow was cancelled
-};
+  IS_CANCELLED: 5, // the escrow was cancelled
+}
 
 class ErasureEscrow {
-  #token = null;
-  #buyer = null;
-  #seller = null;
-  #tokenId = null;
-  #contract = null;
-  #proofhash = null;
-  #stakeAmount = null;
-  #paymentAmount = null;
-  #erasureUsers = null;
-  #escrowAddress = null;
-  #web3Provider = null;
-  #ethersProvider = null;
-  #protocolVersion = "";
-  #creationReceipt = null;
+  #token = null
+  #buyer = null
+  #seller = null
+  #tokenId = null
+  #contract = null
+  #proofhash = null
+  #stakeAmount = null
+  #paymentAmount = null
+  #erasureUsers = null
+  #escrowAddress = null
+  #web3Provider = null
+  #ethersProvider = null
+  #protocolVersion = ''
+  #creationReceipt = null
 
   /**
    * @constructor
@@ -61,32 +61,32 @@ class ErasureEscrow {
     web3Provider,
     ethersProvider,
     protocolVersion,
-    creationReceipt
+    creationReceipt,
   }) {
-    this.#token = token;
-    this.#buyer = buyer;
-    this.#seller = seller;
-    this.#tokenId = tokenId;
-    this.#proofhash = proofhash;
-    this.#stakeAmount = stakeAmount;
-    this.#paymentAmount = paymentAmount;
-    this.#escrowAddress = escrowAddress;
+    this.#token = token
+    this.#buyer = buyer
+    this.#seller = seller
+    this.#tokenId = tokenId
+    this.#proofhash = proofhash
+    this.#stakeAmount = stakeAmount
+    this.#paymentAmount = paymentAmount
+    this.#escrowAddress = escrowAddress
 
-    this.#erasureUsers = erasureUsers;
-    this.#web3Provider = web3Provider;
-    this.#ethersProvider = ethersProvider;
-    this.#protocolVersion = protocolVersion;
-    this.#creationReceipt = creationReceipt;
+    this.#erasureUsers = erasureUsers
+    this.#web3Provider = web3Provider
+    this.#ethersProvider = ethersProvider
+    this.#protocolVersion = protocolVersion
+    this.#creationReceipt = creationReceipt
 
     this.#contract = new ethers.Contract(
       escrowAddress,
       abi,
-      Ethers.getWallet(this.#ethersProvider)
-    );
+      Ethers.getWallet(this.#ethersProvider),
+    )
   }
 
   static get ESCROW_STATES() {
-    return ESCROW_STATES;
+    return ESCROW_STATES
   }
 
   /**
@@ -97,8 +97,8 @@ class ErasureEscrow {
    * @returns {Object} contract object
    */
   contract = () => {
-    return this.#contract;
-  };
+    return this.#contract
+  }
 
   /**
    * Get the address of this escrow
@@ -108,8 +108,8 @@ class ErasureEscrow {
    * @returns {address} address of the escrow
    */
   address = () => {
-    return this.#escrowAddress;
-  };
+    return this.#escrowAddress
+  }
 
   /**
    * Get the creationReceipt of this escrow
@@ -119,8 +119,22 @@ class ErasureEscrow {
    * @returns {Object}
    */
   creationReceipt = () => {
-    return this.#creationReceipt;
-  };
+    return this.#creationReceipt
+  }
+
+  /**
+   * Get the creation timestamp of this escrow
+   *
+   * @memberof ErasureEscrow
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber,
+    )
+    return block.timestamp
+  }
 
   /**
    * Get the creation timestamp of this escrow
@@ -144,8 +158,8 @@ class ErasureEscrow {
    * @returns {address} address of the seller
    */
   seller = () => {
-    return this.#seller;
-  };
+    return this.#seller
+  }
 
   /**
    * Get the address of the buyer of this escrow
@@ -155,8 +169,8 @@ class ErasureEscrow {
    * @returns {address} address of the buyer
    */
   buyer = () => {
-    return this.#buyer;
-  };
+    return this.#buyer
+  }
 
   /**
    * Get the tokenId
@@ -166,8 +180,8 @@ class ErasureEscrow {
    * @returns {integer} tokenId
    */
   tokenId = () => {
-    return this.#tokenId;
-  };
+    return this.#tokenId
+  }
 
   /**
    * Get the escrow status
@@ -177,8 +191,8 @@ class ErasureEscrow {
    * @returns {number} escrow status
    */
   getEscrowStatus = async () => {
-    return await this.contract().getEscrowStatus();
-  };
+    return await this.contract().getEscrowStatus()
+  }
 
   /**
    * Called by seller to deposit the stake
@@ -190,33 +204,33 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   depositStake = async () => {
-    const operator = await Ethers.getAccount(this.#ethersProvider);
+    const operator = await Ethers.getAccount(this.#ethersProvider)
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.seller())) {
       throw new Error(
-        `depositStake() can only be called by the seller: ${this.seller()}`
-      );
+        `depositStake() can only be called by the seller: ${this.seller()}`,
+      )
     }
 
-    const stakeAmount = Ethers.parseEther(this.#stakeAmount);
-    await this.#token.approve(this.tokenId(), this.address(), stakeAmount);
+    const stakeAmount = Ethers.parseEther(this.#stakeAmount)
+    await this.#token.approve(this.tokenId(), this.address(), stakeAmount)
 
-    const tx = await this.contract().depositStake();
-    const receipt = await tx.wait();
+    const tx = await this.contract().depositStake()
+    const receipt = await tx.wait()
 
     // If the payment is already deposited, also send the encrypted symkey
-    let agreementAddress = null;
+    let agreementAddress = null
     const isFinalized =
       (await this.getEscrowStatus()) ===
-      ErasureEscrow.ESCROW_STATES.IS_FINALIZED;
+      ErasureEscrow.ESCROW_STATES.IS_FINALIZED
     if (isFinalized) {
-      ({ agreementAddress } = await this.finalize(true /* finalized */));
+      ;({ agreementAddress } = await this.finalize(true /* finalized */))
     }
 
     return {
       receipt,
-      ...(agreementAddress ? { agreementAddress } : {})
-    };
-  };
+      ...(agreementAddress ? { agreementAddress } : {}),
+    }
+  }
 
   /**
    * Called by buyer to deposit the payment
@@ -226,19 +240,19 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   depositPayment = async () => {
-    const operator = await Ethers.getAccount(this.#ethersProvider);
+    const operator = await Ethers.getAccount(this.#ethersProvider)
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.buyer())) {
       throw new Error(
-        `depositPayment() can only be called by the seller: ${this.buyer()}`
-      );
+        `depositPayment() can only be called by the seller: ${this.buyer()}`,
+      )
     }
 
-    const paymentAmount = Ethers.parseEther(this.#paymentAmount);
-    await this.#token.approve(this.tokenId(), this.address(), paymentAmount);
+    const paymentAmount = Ethers.parseEther(this.#paymentAmount)
+    await this.#token.approve(this.tokenId(), this.address(), paymentAmount)
 
-    const tx = await this.contract().depositPayment();
-    return await tx.wait();
-  };
+    const tx = await this.contract().depositPayment()
+    return await tx.wait()
+  }
 
   /**
    * Called by seller to finalize and submit the encrypted symkey
@@ -249,62 +263,62 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipts
    */
   finalize = async (finalized = false) => {
-    const keypair = await Box.getKeyPair(this.#web3Provider);
+    const keypair = await Box.getKeyPair(this.#web3Provider)
     if (keypair === null) {
-      throw new Error("Cannot find the keypair of this user!");
+      throw new Error('Cannot find the keypair of this user!')
     }
 
-    const symKey = await Box.getSymKey(this.#proofhash, this.#web3Provider);
-    const publicKey = await this.#erasureUsers.getUserData(this.buyer());
+    const symKey = await Box.getSymKey(this.#proofhash, this.#web3Provider)
+    const publicKey = await this.#erasureUsers.getUserData(this.buyer())
     const buyerKeypair = {
       key: {
-        publicKey: Uint8Array.from(Buffer.from(publicKey.substr(2), "hex")),
-        secretKey: keypair.key.secretKey
-      }
-    };
+        publicKey: Uint8Array.from(Buffer.from(publicKey.substr(2), 'hex')),
+        secretKey: keypair.key.secretKey,
+      },
+    }
 
     // Encrypt the symKey
-    const nonce = Crypto.asymmetric.genNonce();
+    const nonce = Crypto.asymmetric.genNonce()
     const encryptedSymKey = Crypto.asymmetric.encrypt(
       symKey,
       nonce,
-      buyerKeypair
-    );
+      buyerKeypair,
+    )
 
     // Finalize.
-    let receipt;
+    let receipt
     if (!finalized) {
-      const tx = await this.contract().finalize();
-      receipt = await tx.wait();
+      const tx = await this.contract().finalize()
+      receipt = await tx.wait()
     }
 
     // get the agreement address.
     const results = await this.#ethersProvider.getLogs({
       address: this.address(),
-      topics: [ethers.utils.id("Finalized(address)")],
-      fromBlock: 0
-    });
+      topics: [ethers.utils.id('Finalized(address)')],
+      fromBlock: 0,
+    })
     const agreementAddress = Abi.decode(
-      ["address"],
-      results[results.length - 1].data
-    )[0];
+      ['address'],
+      results[results.length - 1].data,
+    )[0]
 
     // Submit the encrypted SymKey
     const tx = await this.contract().submitData(
       Buffer.from(
         JSON.stringify({
           nonce: nonce.toString(),
-          encryptedSymKey: encryptedSymKey.toString()
-        })
-      )
-    );
-    await tx.wait();
+          encryptedSymKey: encryptedSymKey.toString(),
+        }),
+      ),
+    )
+    await tx.wait()
 
     return {
       receipt,
-      agreementAddress
-    };
-  };
+      agreementAddress,
+    }
+  }
 
   /**
    * Called by seller or buyer to attempt to cancel the escrow
@@ -318,13 +332,13 @@ class ErasureEscrow {
       (await this.getEscrowStatus()) ===
       ErasureEscrow.ESCROW_STATES.IS_DEPOSITED
     ) {
-      const tx = await this.contract().timeout();
-      return await tx.wait();
+      const tx = await this.contract().timeout()
+      return await tx.wait()
     } else {
-      const tx = await this.contract().cancel();
-      return await tx.wait();
+      const tx = await this.contract().cancel()
+      return await tx.wait()
     }
-  };
+  }
 }
 
-export default ErasureEscrow;
+export default ErasureEscrow
