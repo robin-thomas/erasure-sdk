@@ -69,8 +69,9 @@ class ErasurePost {
   }
 
   parseProof = async proofhash => {
+    let proofBlob;
     try {
-      var proofBlob = await IPFS.get(Utils.sha256ToHash(proofhash))
+      proofBlob = await IPFS.get(Utils.sha256ToHash(proofhash))
     } catch (error) {
       console.log('Failed to fetch proofhash from ipfs')
       throw new Error(error)
@@ -172,6 +173,20 @@ class ErasurePost {
     )
     return block.timestamp
   }
+
+  /**
+   * Get the creation timestamp of this post
+   *
+   * @memberof ErasurePost
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber
+    );
+    return block.timestamp;
+  };
 
   #metadata = async () => {
     const staticMetadataB58 = Utils.sha256ToHash(this.proofhash().proofhash)

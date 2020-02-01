@@ -109,6 +109,20 @@ class ErasureFeed {
   }
 
   /**
+   * Get the creation timestamp of this feed
+   *
+   * @memberof ErasureFeed
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber
+    );
+    return block.timestamp;
+  };
+
+  /**
    * Get the address of the owner of this feed
    *
    * @memberof ErasureFeed

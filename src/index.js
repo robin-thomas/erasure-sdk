@@ -213,7 +213,7 @@ class ErasureClient {
               })
 
             case 'simple':
-              ;({
+              ({
                 tokenId,
                 staker,
                 griefRatio,
@@ -231,7 +231,7 @@ class ErasureClient {
               })
 
             case 'countdown':
-              ;({
+              ({
                 tokenId,
                 staker,
                 griefRatio,

@@ -118,6 +118,20 @@ class ErasureAgreement {
   }
 
   /**
+   * Get the creation timestamp of this agreement
+   *
+   * @memberof ErasureAgreement
+   * @method getCreationTimestamp
+   * @returns {integer}
+   */
+  getCreationTimestamp = async () => {
+    const block = await Config.store.ethersProvider.getBlock(
+      this.#creationReceipt.blockNumber
+    );
+    return block.timestamp;
+  };
+
+  /**
    *
    * Get the type of this agreement (simple | countdown)
    *

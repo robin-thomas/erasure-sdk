@@ -135,7 +135,7 @@ describe('ErasureClient', () => {
 
       const _post = await client.getObject(post.proofhash().proofhash)
       assert.ok(
-        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash()),
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
       )
       assert.equal(
         await _post.getCreationTimestamp(),
@@ -218,15 +218,15 @@ describe('ErasureClient', () => {
     it('Create a post', async () => {
       let _post = await client.getObject(post.proofhash().proofhash)
       assert.ok(
-        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash()),
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
       )
       assert.ok(
         JSON.stringify(await _post.proofhash().getProof()) ===
-          JSON.stringify(await post.proofhash().getProof()),
+          JSON.stringify(await post.proofhash().getProof())
       )
       _post = await client.getObject(post.proofhash().multihash)
       assert.ok(
-        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash()),
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
       )
       assert.ok(
         JSON.stringify(await _post.proofhash().getProof()) ===
@@ -305,7 +305,7 @@ describe('ErasureClient', () => {
         assert.ok(escrow.address() === _escrow.address())
         assert.equal(
           await _escrow.getCreationTimestamp(),
-          await escrow.getCreationTimestamp(),
+          await escrow.getCreationTimestamp()
         )
       })
 
