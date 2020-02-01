@@ -103,7 +103,8 @@ class ErasureClient {
         erasureUsers: this.#erasureUsers
       });
       this.#feedFactory = new Feed_Factory({
-        escrowFactory: this.#escrowFactory
+        escrowFactory: this.#escrowFactory,
+        tokenManager: this.#token
       });
       this.#agreementFactory = new Agreement_Factory({
         token: this.#token
@@ -279,7 +280,7 @@ class ErasureClient {
     });
 
     // Create optional post.
-    if (proofhash !== undefined) {
+    if (proofhash !== undefined && proofhash !== null) {
       await feed.createPost(null, proofhash);
     } else if (data !== undefined && data !== null) {
       await feed.createPost(data, null);

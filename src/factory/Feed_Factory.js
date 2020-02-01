@@ -15,9 +15,11 @@ import { abi } from "@erasure/abis/src/v1.3.0/abis/Feed_Factory.json";
 class Feed_Factory {
   #contract = null;
   #escrowFactory = null;
+  #tokenManager = null;
 
-  constructor({ escrowFactory }) {
+  constructor({ escrowFactory, tokenManager }) {
     this.#escrowFactory = escrowFactory;
+    this.#tokenManager = tokenManager;
 
     this.#contract = new ethers.Contract(
       Config.store.registry.Feed_Factory,
@@ -51,6 +53,7 @@ class Feed_Factory {
 
       return new ErasureFeed({
         owner: operator,
+        tokenManager: this.#tokenManager,
         web3Provider: Config.store.web3Provider,
         ethersProvider: Config.store.ethersProvider,
         feedAddress: creationReceipt.logs[0].address,
