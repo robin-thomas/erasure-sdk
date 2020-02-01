@@ -56,11 +56,71 @@ class ErasurePost {
    * @method proofhash
    * @returns {string} bytes32 sha256 proofhash
    * @returns {string} base58 multihash format of the proofhash
+   * @returns {Promise<Object>} proof containing content of post
    */
   proofhash = () => {
     return {
       proofhash: this.#proofhash,
-      multihash: Utils.sha256ToHash(this.#proofhash)
+      multihash: Utils.sha256ToHash(this.#proofhash),
+      getProof: () => {
+        return this.parseProof(this.#proofhash);
+      }
+    };
+  };
+
+  parseProof = async proofhash => {
+    try {
+      var proofBlob = await IPFS.get(Utils.sha256ToHash(proofhash));
+    } catch (error) {
+      console.log("Failed to fetch proofhash from ipfs");
+      throw new Error(error);
+    }
+    const proof = JSON.parse(proofBlob);
+
+    let fetch = {};
+    for (const [key, value] of Object.entries(proof)) {
+      if (key === "creator") {
+        continue;
+      }
+      fetch[key] = {};
+      try {
+        fetch[key].blob = await IPFS.get(value);
+      } catch (error) {
+        fetch[key].error = error;
+      }
+      if (fetch[key].error === undefined) {
+        fetch[key].content = fetch[key].blob;
+      } else {
+        fetch[key].content = null;
+      }
+    }
+
+    if (
+      fetch.datahash.content === null &&
+      fetch.keyhash.content &&
+      fetch.encryptedDatahash.content
+    ) {
+      await IPFS.add(encryptedPost);
+      // Upload the decrypted post data to ipfs.
+      fetch.datahash.content = await Crypto.symmetric.decrypt(
+        fetch.keyhash.content,
+        fetch.encryptedDatahash.content
+      );
+      await IPFS.add(fetch.datahash.content);
+    }
+
+    return {
+      submitter: this.#owner,
+      creator: proof.creator,
+      datahash: proof.datahash,
+      keyhash: proof.keyhash,
+      encryptedDatahash: proof.encryptedDatahash,
+      timestamp: await this.getCreationTimestamp(),
+      data: fetch.datahash.content,
+      key: fetch.keyhash.content,
+      encryptedData: fetch.encryptedDatahash.content,
+      isValid: this.#owner === proof.creator,
+      isRevealed: fetch.datahash.content !== null
     };
   };
 

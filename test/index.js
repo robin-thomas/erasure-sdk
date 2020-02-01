@@ -219,10 +219,17 @@ describe("ErasureClient", () => {
       assert.ok(
         JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
       );
-
+      assert.ok(
+        JSON.stringify(await _post.proofhash().getProof()) ===
+          JSON.stringify(await post.proofhash().getProof())
+      );
       _post = await client.getObject(post.proofhash().multihash);
       assert.ok(
         JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+      );
+      assert.ok(
+        JSON.stringify(await _post.proofhash().getProof()) ===
+          JSON.stringify(await post.proofhash().getProof())
       );
     });
 
