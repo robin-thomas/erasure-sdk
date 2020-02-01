@@ -1,37 +1,38 @@
-import { ethers } from 'ethers'
-import { constants } from '@erasure/crypto-ipfs'
+import { ethers } from "ethers";
+import { constants } from "@erasure/crypto-ipfs";
 
-import { abi as simpleContractAbi } from '@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json'
-import { abi as countdownContractAbi } from '@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json'
+import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json";
+import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json";
 
-import ErasureAgreement from '../erasure/ErasureAgreement'
+import ErasureAgreement from "../erasure/ErasureAgreement";
 
-import Abi from '../utils/Abi'
-import IPFS from '../utils/IPFS'
-import Utils from '../utils/Utils'
-import Ethers from '../utils/Ethers'
-import Config from '../utils/Config'
+import Abi from "../utils/Abi";
+import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
+import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
+import ESP_1001 from "../utils/ESP_1001";
 
 class Agreement_Factory {
-  #token = null
-  #contract = null
+  #token = null;
+  #contract = null;
 
   constructor({ token }) {
-    this.#token = token
+    this.#token = token;
   }
 
   /**
    * Create a new agreement
    *
    * @param {Object} config
-   * @param {string} config.operator
+   * @param {string} [config.operator]
    * @param {string} config.staker
    * @param {string} config.counterparty
    * @param {number} config.tokenId
    * @param {string} config.griefRatio
    * @param {string} config.griefRatioType
    * @param {string} config.agreementCountdown
-   * @param {string} config.metadata
+   * @param {Object} [config.metadata] optional metadata object to add to erasure object
    * @returns {Promise<ErasureAgreement>}
    */
   create = async ({
@@ -44,35 +45,39 @@ class Agreement_Factory {
     countdownLength,
     metadata,
   }) => {
-    let abi, agreementType
+    let abi, agreementType;
     if (countdownLength !== undefined) {
-      abi = countdownContractAbi
-      agreementType = 'CountdownGriefing_Factory'
+      abi = countdownContractAbi;
+      agreementType = "CountdownGriefing_Factory";
     } else {
-      abi = simpleContractAbi
-      agreementType = 'SimpleGriefing_Factory'
+      abi = simpleContractAbi;
+      agreementType = "SimpleGriefing_Factory";
     }
 
     const contract = new ethers.Contract(
       Config.store.registry[agreementType],
       abi,
       Ethers.getWallet(Config.store.ethersProvider),
-    )
+    );
 
-    const ipfsHash = await IPFS.add(metadata)
-    const staticMetadata = await IPFS.hashToHex(ipfsHash)
+    let encodedMetadata;
+    if (metadata === undefined) {
+      encodedMetadata = "0x";
+    } else {
+      encodedMetadata = await ESP_1001.encodeMetadata(metadata);
+    }
 
     const callData = Abi.encodeWithSelector(
-      'initialize',
+      "initialize",
       [
-        'address',
-        'address',
-        'address',
-        'uint8',
-        'uint256',
-        'uint8',
-        ...(countdownLength !== undefined ? ['uint256'] : []),
-        'bytes',
+        "address",
+        "address",
+        "address",
+        "uint8",
+        "uint256",
+        "uint8",
+        ...(countdownLength !== undefined ? ["uint256"] : []),
+        "bytes",
       ],
       [
         operator,
@@ -82,12 +87,12 @@ class Agreement_Factory {
         Ethers.parseEther(griefRatio),
         griefRatioType,
         ...(countdownLength !== undefined ? [countdownLength] : []),
-        staticMetadata,
+        encodedMetadata,
       ],
-    )
+    );
 
-    const tx = await contract.create(callData)
-    const creationReceipt = await tx.wait()
+    const tx = await contract.create(callData);
+    const creationReceipt = await tx.wait();
 
     return new ErasureAgreement({
       token: this.#token,
@@ -96,11 +101,12 @@ class Agreement_Factory {
       griefRatio,
       counterparty,
       type:
-        agreementType === 'CountdownGriefing_Factory' ? 'countdown' : 'simple',
+        agreementType === "CountdownGriefing_Factory" ? "countdown" : "simple",
       agreementAddress: creationReceipt.logs[0].address,
-      creationReceipt: creationReceipt,
-    })
-  }
+      creationReceipt,
+      encodedMetadata,
+    });
+  };
 
   createClone = ({
     address,
@@ -110,51 +116,62 @@ class Agreement_Factory {
     griefRatio,
     counterparty,
     creationReceipt,
+    encodedMetadata,
   }) => {
     return new ErasureAgreement({
+      token: this.#token,
+      tokenId,
       staker,
+      griefRatio,
       counterparty,
       type,
-      tokenId,
-      griefRatio,
-      token: this.#token,
       agreementAddress: address,
       creationReceipt,
-    })
-  }
+      encodedMetadata,
+    });
+  };
 
   decodeParams = (data, countdown = true) => {
-    const result = Abi.decode(
-      [
-        'address',
-        'address',
-        'address',
-        'uint8',
-        'uint256',
-        'uint8',
-        ...(countdown === true ? ['uint256'] : []),
-        'bytes',
-      ],
-      data,
-    )
-
-    return {
-      operator: result[0],
-      staker: result[1],
-      counterparty: result[2],
-      tokenId: result[3],
-      griefRatio: Ethers.formatEther(result[4].toString()),
-      griefRatioType: result[5],
-      ...(countdown === true
-        ? {
-            countdownLength: result[6].toNumber(),
-            metadata: Utils.hexToHash(result[7]),
-          }
-        : {
-            metadata: Utils.hexToHash(result[6]),
-          }),
+    if (countdown) {
+      const result = Abi.decode(
+        [
+          "address",
+          "address",
+          "address",
+          "uint8",
+          "uint256",
+          "uint8",
+          "uint256",
+          "bytes",
+        ],
+        data,
+      );
+      return {
+        operator: result[0],
+        staker: result[1],
+        counterparty: result[2],
+        tokenId: result[3],
+        griefRatio: Ethers.formatEther(result[4].toString()),
+        griefRatioType: result[5],
+        countdownLength: result[6].toNumber(),
+        encodedMetadata: result[7],
+      };
+    } else {
+      const result = Abi.decode(
+        ["address", "address", "address", "uint8", "uint256", "uint8", "bytes"],
+        data,
+      );
+      return {
+        operator: result[0],
+        staker: result[1],
+        counterparty: result[2],
+        tokenId: result[3],
+        griefRatio: Ethers.formatEther(result[4].toString()),
+        griefRatioType: result[5],
+        encodedMetadata: result[6],
+      };
     }
-  }
+  };
 }
 
-export default Agreement_Factory
+export default Agreement_Factory;

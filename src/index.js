@@ -15,6 +15,7 @@ import IPFS from './utils/IPFS'
 import Utils from './utils/Utils'
 import Ethers from './utils/Ethers'
 import Config from './utils/Config'
+import ESP_1001 from './utils/ESP_1001'
 
 class ErasureClient {
   #ipfs = null
@@ -195,13 +196,13 @@ class ErasureClient {
             case 'feed':
               return this.#feedFactory.createClone(address, creationReceipt)
 
-            case 'escrow':
+            case 'escrow': {
               let {
                 buyer,
                 seller,
                 stakeAmount,
                 paymentAmount,
-                staticMetadataB58,
+                encodedMetadata,
               } = this.#escrowFactory.decodeParams(
                 results[0].data,
                 false /* encodedCalldata */,
@@ -212,26 +213,25 @@ class ErasureClient {
                 false /* encodedCalldata */,
               ))
 
-              const metadata = await IPFS.get(staticMetadataB58)
-
               return this.#escrowFactory.createClone({
                 buyer,
                 seller,
                 tokenId,
                 stakeAmount,
                 paymentAmount,
-                proofhash: JSON.parse(metadata).proofhash,
                 escrowAddress: address,
                 creationReceipt,
+                encodedMetadata,
               })
-
-            case 'simple':
-              ({
+            }
+            case 'simple': {
+              let {
                 tokenId,
                 staker,
                 griefRatio,
                 counterparty,
-              } = this.#agreementFactory.decodeParams(results[0].data, false))
+                encodedMetadata,
+              } = this.#agreementFactory.decodeParams(results[0].data, false)
 
               return this.#agreementFactory.createClone({
                 address,
@@ -241,15 +241,17 @@ class ErasureClient {
                 griefRatio,
                 counterparty,
                 creationReceipt,
+                encodedMetadata,
               })
-
-            case 'countdown':
-              ({
+            }
+            case 'countdown': {
+              let {
                 tokenId,
                 staker,
                 griefRatio,
                 counterparty,
-              } = this.#agreementFactory.decodeParams(results[0].data))
+                encodedMetadata,
+              } = this.#agreementFactory.decodeParams(results[0].data)
 
               return this.#agreementFactory.createClone({
                 address,
@@ -259,7 +261,9 @@ class ErasureClient {
                 griefRatio,
                 counterparty,
                 creationReceipt,
+                encodedMetadata,
               })
+            }
           }
         }
       }
@@ -291,7 +295,7 @@ class ErasureClient {
       throw new Error(`Operator ${operator} is not an address`)
     }
 
-    metadata = metadata || ''
+    metadata = metadata || undefined
 
     if (proofhash !== undefined && !Utils.isProofhash(proofhash)) {
       throw new Error(`Invalid proofhash: ${proofhash}`)
@@ -347,6 +351,8 @@ class ErasureClient {
       throw new Error(`Operator ${operator} is not an address`)
     }
 
+    metadata = metadata || undefined
+
     buyer = buyer || operator
 
     return this.#escrowFactory.create({
@@ -401,6 +407,8 @@ class ErasureClient {
         throw new Error(`Counterparty ${counterparty} is not an address`)
       }
 
+      metadata = metadata || undefined
+
       return this.#agreementFactory.create({
         operator,
         staker,
@@ -409,7 +417,7 @@ class ErasureClient {
         griefRatioType,
         countdownLength,
         tokenId,
-        metadata: metadata || '',
+        metadata,
       })
     } catch (err) {
       throw err

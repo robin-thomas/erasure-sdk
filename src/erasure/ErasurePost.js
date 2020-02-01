@@ -1,20 +1,20 @@
-import { ethers } from 'ethers'
+import { ethers } from "ethers";
 
-import ErasureEscrow from './ErasureEscrow'
+import ErasureEscrow from "./ErasureEscrow";
 
-import Box from '../utils/3Box'
-import IPFS from '../utils/IPFS'
-import Utils from '../utils/Utils'
-import Crypto from '../utils/Crypto'
-import Ethers from '../utils/Ethers'
-import Config from '../utils/Config'
+import Box from "../utils/3Box";
+import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
+import Crypto from "../utils/Crypto";
+import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
 
 class ErasurePost {
-  #owner = null
-  #proofhash = null
-  #feedAddress = null
-  #escrowFactory = null
-  #creationReceipt = null
+  #owner = null;
+  #proofhash = null;
+  #feedAddress = null;
+  #escrowFactory = null;
+  #creationReceipt = null;
 
   /**
    * @constructor
@@ -31,11 +31,11 @@ class ErasurePost {
     escrowFactory,
     creationReceipt,
   }) {
-    this.#owner = owner
-    this.#proofhash = proofhash
-    this.#feedAddress = feedAddress
-    this.#escrowFactory = escrowFactory
-    this.#creationReceipt = creationReceipt
+    this.#owner = owner;
+    this.#proofhash = proofhash;
+    this.#feedAddress = feedAddress;
+    this.#escrowFactory = escrowFactory;
+    this.#creationReceipt = creationReceipt;
   }
 
   /**
@@ -51,37 +51,37 @@ class ErasurePost {
     return {
       proofhash: this.#proofhash,
       multihash: Utils.sha256ToHash(this.#proofhash),
-      getProof: () => {
-        return this.parseProof(this.#proofhash)
+      parseProof: () => {
+        return this.parseProof(this.#proofhash);
       },
-    }
-  }
+    };
+  };
 
   parseProof = async proofhash => {
     let proofBlob;
     try {
-      proofBlob = await IPFS.get(Utils.sha256ToHash(proofhash))
+      proofBlob = await IPFS.get(Utils.sha256ToHash(proofhash));
     } catch (error) {
-      console.log('Failed to fetch proofhash from ipfs')
-      throw new Error(error)
+      console.log("Failed to fetch proofhash from ipfs");
+      throw new Error(error);
     }
-    const proof = JSON.parse(proofBlob)
+    const proof = JSON.parse(proofBlob);
 
-    let fetch = {}
+    let fetch = {};
     for (const [key, value] of Object.entries(proof)) {
-      if (key === 'creator') {
-        continue
+      if (key === "creator") {
+        continue;
       }
-      fetch[key] = {}
+      fetch[key] = {};
       try {
-        fetch[key].blob = await IPFS.get(value)
+        fetch[key].blob = await IPFS.get(value);
       } catch (error) {
-        fetch[key].error = error
+        fetch[key].error = error;
       }
-      if (fetch[key].error === undefined) {
-        fetch[key].content = fetch[key].blob
+      if (fetch[key].error !== undefined || fetch[key].blob === undefined) {
+        fetch[key].content = undefined;
       } else {
-        fetch[key].content = null
+        fetch[key].content = fetch[key].blob;
       }
     }
 
@@ -90,13 +90,13 @@ class ErasurePost {
       fetch.keyhash.content &&
       fetch.encryptedDatahash.content
     ) {
-      await IPFS.add(encryptedPost)
+      await IPFS.add(encryptedPost);
       // Upload the decrypted post data to ipfs.
       fetch.datahash.content = await Crypto.symmetric.decrypt(
         fetch.keyhash.content,
         fetch.encryptedDatahash.content,
-      )
-      await IPFS.add(fetch.datahash.content)
+      );
+      await IPFS.add(fetch.datahash.content);
     }
 
     return {
@@ -110,9 +110,9 @@ class ErasurePost {
       key: fetch.keyhash.content,
       encryptedData: fetch.encryptedDatahash.content,
       isValid: this.#owner === proof.creator,
-      isRevealed: fetch.datahash.content !== null,
-    }
-  }
+      isRevealed: fetch.datahash.content !== undefined,
+    };
+  };
 
   /**
    *
@@ -123,8 +123,8 @@ class ErasurePost {
    * @returns {string} address of the owner
    */
   owner = () => {
-    return this.#owner
-  }
+    return this.#owner;
+  };
 
   /**
    *
@@ -135,8 +135,8 @@ class ErasurePost {
    * @returns {string} address of the feed
    */
   feedAddress = () => {
-    return this.#feedAddress
-  }
+    return this.#feedAddress;
+  };
 
   /**
    * Get the creationReceipt of this post
@@ -146,8 +146,8 @@ class ErasurePost {
    * @returns {Object}
    */
   creationReceipt = () => {
-    return this.#creationReceipt
-  }
+    return this.#creationReceipt;
+  };
 
   /**
    * Get the creation timestamp of this post
@@ -159,29 +159,9 @@ class ErasurePost {
   getCreationTimestamp = async () => {
     const block = await Config.store.ethersProvider.getBlock(
       this.#creationReceipt.blockNumber,
-    )
-    return block.timestamp
-  }
-
-  /**
-   * Get the creation timestamp of this post
-   *
-   * @memberof ErasurePost
-   * @method getCreationTimestamp
-   * @returns {integer}
-   */
-  getCreationTimestamp = async () => {
-    const block = await Config.store.ethersProvider.getBlock(
-      this.#creationReceipt.blockNumber
     );
     return block.timestamp;
   };
-
-  #metadata = async () => {
-    const staticMetadataB58 = Utils.sha256ToHash(this.proofhash().proofhash)
-    const metadata = await IPFS.get(staticMetadataB58)
-    return JSON.parse(metadata)
-  }
 
   /**
    * Create a new CountdownGriefingEscrow and deposit stake
@@ -199,6 +179,7 @@ class ErasurePost {
    * @param {string} config.griefRatio
    * @param {number} config.griefRatioType
    * @param {number} config.agreementCountdown
+   * @param {Object} [config.metadata]
    * @returns {Promise} address of the escrow
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
@@ -211,12 +192,13 @@ class ErasurePost {
     griefRatio,
     griefRatioType,
     agreementCountdown,
+    metadata,
   }) => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider);
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
       throw new Error(
         `offerSell() can only be called by the owner: ${this.owner()}`,
-      )
+      );
     }
 
     return await this.#escrowFactory.create({
@@ -231,9 +213,9 @@ class ErasurePost {
       griefRatio,
       griefRatioType,
       agreementCountdown,
-      metadata: JSON.stringify({ proofhash: this.proofhash().proofhash }),
-    })
-  }
+      metadata,
+    });
+  };
 
   /**
    * Get all escrows to sell this Post
@@ -246,14 +228,14 @@ class ErasurePost {
     const results = await Config.store.ethersProvider.getLogs({
       address: this.#escrowFactory.address(),
       fromBlock: 0,
-      topics: [ethers.utils.id('InstanceCreated(address,address,bytes)')],
-    })
+      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")],
+    });
 
-    let escrows = []
+    let escrows = [];
     if (results && results.length > 0) {
       for (const result of results) {
-        const creator = Ethers.getAddress(result.topics[2])
-        const escrowAddress = Ethers.getAddress(result.topics[1])
+        const creator = Ethers.getAddress(result.topics[2]);
+        const escrowAddress = Ethers.getAddress(result.topics[1]);
 
         if (creator === this.owner()) {
           const {
@@ -262,34 +244,26 @@ class ErasurePost {
             tokenId,
             paymentAmount,
             stakeAmount,
-            staticMetadataB58,
-          } = this.#escrowFactory.decodeParams(result.data)
+            encodedMetadata,
+          } = this.#escrowFactory.decodeParams(result.data);
 
-          let metadata = await IPFS.get(staticMetadataB58)
-          metadata = JSON.parse(metadata)
-
-          if (
-            metadata.proofhash !== undefined &&
-            metadata.proofhash === this.proofhash().proofhash
-          ) {
-            escrows.push(
-              this.#escrowFactory.createClone({
-                buyer,
-                seller,
-                tokenId,
-                stakeAmount,
-                paymentAmount,
-                escrowAddress,
-                proofhash: metadata.proofhash,
-              }),
-            )
-          }
+          escrows.push(
+            this.#escrowFactory.createClone({
+              buyer,
+              seller,
+              tokenId,
+              stakeAmount,
+              paymentAmount,
+              escrowAddress,
+              encodedMetadata,
+            }),
+          );
         }
       }
     }
 
-    return escrows
-  }
+    return escrows;
+  };
 
   /**
    * Create a new CountdownGriefingEscrow and deposit payment
@@ -306,6 +280,7 @@ class ErasurePost {
    * @param {string} config.ratio
    * @param {number} config.ratioType
    * @param {number} config.agreementCountdown
+   * @param {Object} [config.metadata]
    * @returns {Promise} address of the escrow
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
@@ -317,9 +292,10 @@ class ErasurePost {
     griefRatio,
     griefRatioType,
     agreementCountdown,
+    metadata,
   }) => {
-    const buyer = await Ethers.getAccount(Config.store.ethersProvider)
-    const seller = this.owner()
+    const buyer = await Ethers.getAccount(Config.store.ethersProvider);
+    const seller = this.owner();
 
     return await this.#escrowFactory.create({
       operator: buyer,
@@ -331,9 +307,9 @@ class ErasurePost {
       griefRatio,
       griefRatioType,
       agreementCountdown,
-      metadata: JSON.stringify({ proofhash: this.proofhash().proofhash }),
-    })
-  }
+      metadata,
+    });
+  };
 
   /**
    * Get all escrows to buy this Post
@@ -346,48 +322,40 @@ class ErasurePost {
     const results = await Config.store.ethersProvider.getLogs({
       address: this.#escrowFactory.address(),
       fromBlock: 0,
-      topics: [ethers.utils.id('InstanceCreated(address,address,bytes)')],
-    })
+      topics: [ethers.utils.id("InstanceCreated(address,address,bytes)")],
+    });
 
-    let escrows = []
+    let escrows = [];
     if (results && results.length > 0) {
       for (const result of results) {
-        const escrowAddress = Ethers.getAddress(result.topics[1])
+        const escrowAddress = Ethers.getAddress(result.topics[1]);
         const {
           buyer,
           seller,
           tokenId,
           paymentAmount,
           stakeAmount,
-          staticMetadataB58,
-        } = this.#escrowFactory.decodeParams(result.data)
+          encodedMetadata,
+        } = this.#escrowFactory.decodeParams(result.data);
 
         if (seller === this.owner()) {
-          let metadata = await IPFS.get(staticMetadataB58)
-          metadata = JSON.parse(metadata)
-
-          if (
-            metadata.proofhash !== undefined &&
-            metadata.proofhash === this.proofhash().proofhash
-          ) {
-            escrows.push(
-              this.#escrowFactory.createClone({
-                buyer,
-                seller,
-                tokenId,
-                stakeAmount,
-                paymentAmount,
-                escrowAddress,
-                proofhash: metadata.proofhash,
-              }),
-            )
-          }
+          escrows.push(
+            this.#escrowFactory.createClone({
+              buyer,
+              seller,
+              tokenId,
+              stakeAmount,
+              paymentAmount,
+              escrowAddress,
+              encodedMetadata,
+            }),
+          );
         }
       }
     }
 
-    return escrows
-  }
+    return escrows;
+  };
 
   /**
    * Reveal this post publicly
@@ -400,38 +368,46 @@ class ErasurePost {
    */
   reveal = async () => {
     try {
-      const keypair = await Box.getKeyPair(Config.store.web3Provider)
+      const keypair = await Box.getKeyPair(Config.store.web3Provider);
       if (keypair === null) {
-        throw new Error('Unable to retrieve the keypair')
+        throw new Error("Unable to retrieve the keypair");
       }
 
-      const { keyhash, encryptedDatahash } = await this.#metadata()
-      const symKey = await Box.getSymKey(keyhash, Config.store.web3Provider)
+      const proof = await this.parseProof(this.#proofhash);
+      const symKey = await Box.getSymKey(
+        proof.keyhash,
+        Config.store.web3Provider,
+      );
 
       // Download the encryptedPost from ipfs
-      const encryptedPost = await IPFS.get(encryptedDatahash)
+      const encryptedPost = await IPFS.get(proof.encryptedDatahash);
 
       // Upload the decrypted ost data to ipfs.
-      const post = Crypto.symmetric.decrypt(symKey, encryptedPost)
-      await IPFS.add(post)
+      const post = Crypto.symmetric.decrypt(symKey, encryptedPost);
+      await IPFS.add(post);
 
       // Upload the symKey & return the ipfshash.
-      return await IPFS.add(symKey)
+      return await IPFS.add(symKey);
     } catch (err) {
-      throw err
+      throw err;
     }
-  }
+  };
 
+  /**
+   * Check if the post is publically revealed
+   *
+   * @memberof ErasurePost
+   * @method isRevealed
+   * @returns {Promise} bool true if revealed
+   */
   isRevealed = async () => {
     try {
-      const { keyhash } = await this.#metadata()
-      const symkey = await IPFS.get(keyhash)
-
-      return symkey !== undefined
+      const proof = await this.parseProof(this.#proofhash);
+      return proof.isRevealed;
     } catch (err) {
-      return false
+      return false;
     }
-  }
+  };
 
   /**
    *
@@ -444,27 +420,27 @@ class ErasurePost {
    * @returns {integer} result.numSold - number of times the post was sold
    */
   checkStatus = async () => {
-    let escrows = []
-    escrows.push(...(await this.getBuyOffers()))
-    escrows.push(...(await this.getSellOffers()))
+    let escrows = [];
+    escrows.push(...(await this.getBuyOffers()));
+    escrows.push(...(await this.getSellOffers()));
 
-    let numSold = 0
+    let numSold = 0;
     for (const escrow of escrows) {
       // Check the number of finalized escrows.
       numSold +=
         (await escrow.getEscrowStatus()) ===
         ErasureEscrow.ESCROW_STATES.IS_FINALIZED
           ? 1
-          : 0
+          : 0;
     }
 
-    const revealed = await this.isRevealed()
+    const revealed = await this.isRevealed();
 
     return {
       numSold,
       revealed,
-    }
-  }
+    };
+  };
 }
 
-export default ErasurePost
+export default ErasurePost;
