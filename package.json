@@ -1,6 +1,6 @@
 {
   "name": "@robinthomas/erasure-sdk",
-  "version": "1.0.15",
+  "version": "1.0.17",
   "description": "Erasure SDK",
   "main": "dist/index.js",
   "homepage": "https://github.com/robin-thomas/erasure-sdk#readme",
