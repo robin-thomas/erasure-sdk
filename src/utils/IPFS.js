@@ -30,23 +30,19 @@ const IPFS = {
    * @param {string} data - data to be uploaded to ipfs
    * @returns {Promise} ipfs hash
    */
-  add: async (data, retry = true) => {
+  add: async (data) => {
     try {
-      if (process.env.NODE_ENV === 'test') {
-        const hash = await IPFS.getHash(data)
-        IPFS.keystore[hash] = data
-        return hash
-      }
+      // if (process.env.NODE_ENV === 'test') {
+      //   const hash = await IPFS.getHash(data)
+      //   IPFS.keystore[hash] = data
+      //   return hash
+      // }
 
       const content = Buffer.from(data)
       const results = await IPFS.getClient().add(content)
       return results[0].hash
     } catch (err) {
-      if (retry) {
-        return await IPFS.add(data, false)
-      } else {
-        throw err
-      }
+      throw err
     }
   },
 
@@ -58,9 +54,9 @@ const IPFS = {
    */
   get: async (hash, retry = true) => {
     try {
-      if (process.env.NODE_ENV === 'test') {
-        return IPFS.keystore[hash]
-      }
+      // if (process.env.NODE_ENV === 'test') {
+      //   return IPFS.keystore[hash]
+      // }
 
       const results = await IPFS.getClient().get(hash)
       return results[0].content.toString()

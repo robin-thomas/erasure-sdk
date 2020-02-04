@@ -10,7 +10,6 @@ import {
 } from 'ethereumjs-util/dist/signature'
 import { constants } from '@erasure/crypto-ipfs'
 
-import Deployer from './deploy'
 import ErasureClient from '../src'
 import IPFS from '../src/utils/IPFS'
 import Utils from '../src/utils/Utils'
@@ -70,6 +69,7 @@ describe('ErasureClient', () => {
   const rewardAmount = '10'
   const stakeAmount = '11'
   const countdownLength = 1
+  const protocolVersion = 'v1.3.0';
 
   let post,
     feed,
@@ -80,7 +80,33 @@ describe('ErasureClient', () => {
   let client, account, registry
   before(async () => {
     // Deploy all contracts to ganache.
-    registry = await Deployer()
+    await require("./deploy").setenv();
+
+    const mapper = {
+      FeedFactory: "Feed_Factory",
+      SimpleGriefingFactory: "SimpleGriefing_Factory",
+      CountdownGriefingFactory: "CountdownGriefing_Factory",
+      CountdownGriefingEscrowFactory: "CountdownGriefingEscrow_Factory",
+    };
+
+    registry = require(`@erasure/abis/src/${protocolVersion}`);
+    registry = Object.keys(registry).reduce((p, c) => {
+      if (mapper[c] !== undefined) {
+        if (c === "DAI" || c === "NMR") {
+          p[mapper[c]] = registry[c].mainnet;
+        } else {
+          p[mapper[c]] = registry[c].kovan;
+        }
+      } else {
+        if (c === "DAI" || c === "NMR") {
+          p[c] = registry[c].mainnet;
+        } else {
+          p[c] = registry[c].kovan;
+        }
+      }
+
+      return p;
+    }, {});
 
     const provider = new Web3.providers.HttpProvider(
       `http://localhost:${config.ganache.port}`,
@@ -93,9 +119,13 @@ describe('ErasureClient', () => {
     client = new ErasureClient({
       registry,
       web3Provider,
-      protocolVersion: 'v1.3.0',
+      protocolVersion,
+      ipfs: {
+        protocol: config.ipfs.protocol,
+        host: config.ipfs.host,
+        port: config.ipfs.port.api
+      }
     })
-
     await client.login()
 
     // Mint some mock NMR/DAI tokens.
@@ -128,7 +158,7 @@ describe('ErasureClient', () => {
   describe('Feed', () => {
     it('Create a feed with a post', async () => {
       const feed = await client.createFeed({ data: rawData })
-      assert.ok(Ethers.isAddress(feed.address()))
+      assert.ok(Ethers.isAddress(feed.address()));
 
       const _feed = await client.getObject(feed.address())
       assert.ok(feed.address() === _feed.address())

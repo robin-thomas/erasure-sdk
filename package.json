@@ -7,6 +7,7 @@
   "scripts": {
     "build": "webpack --mode=production",
     "start": "webpack --watch",
+    "setenv": "node --require esm -e 'require(\"./test/deploy\").setenv()'",
     "test": "NODE_ENV=test mocha --require esm test/index.js",
     "babel-test": "NODE_ENV=test mocha --require @babel/register test/index.js",
     "coverage": "nyc npm run babel-test",
@@ -46,6 +47,7 @@
     "ethers": "^4.0.43",
     "ganache-cli": "^6.8.2",
     "husky": "^3.0.5",
+    "ipfs": "^0.40.0",
     "ipfs-http-client": "^41.0.0",
     "jsdoc": "^3.6.3",
     "lint-staged": "^9.2.5",
