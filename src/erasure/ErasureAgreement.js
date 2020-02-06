@@ -372,6 +372,52 @@ class ErasureAgreement {
   checkStatus = async () => {
     return await this.contract().getAgreementStatus()
   }
+
+  /**
+   * Get the state data of the agreement
+   *
+   * @memberof ErasureAgreement
+   * @method getData
+   * @returns {Promise} object with all relevant data
+   */
+  getData = async () => {
+    const type = this.type()
+    const operator = await this.contract().getOperator()
+    const staker = await this.contract().getStaker()
+    const counterparty = await this.contract().getCounterparty()
+    const tokenID = (await this.contract().getToken()).tokenID
+    const currentStake = ethers.utils.formatEther(
+      await this.contract().getStake(),
+    )
+    const { ratio, ratioType } = await this.contract().getRatio(staker)
+    const agreementStatus = await this.contract().getAgreementStatus()
+    const metadata = await this.metadata()
+
+    let agreementLength
+    let agreementDeadline
+    let countdownStatus
+
+    if (type === 'countdown') {
+      agreementLength = await this.contract().getLength()
+      agreementDeadline = await this.contract().getDeadline()
+      countdownStatus = await this.contract().getCountdownStatus()
+    }
+
+    return {
+      operator,
+      staker,
+      counterparty,
+      tokenID,
+      currentStake,
+      ratio,
+      ratioType,
+      agreementLength,
+      agreementDeadline,
+      agreementStatus,
+      countdownStatus,
+      metadata,
+    }
+  }
 }
 
 export default ErasureAgreement
