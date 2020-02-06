@@ -200,6 +200,60 @@ class ErasureEscrow {
   };
 
   /**
+   * Get the state data of the escrow
+   *
+   * @memberof ErasureEscrow
+   * @method getData
+   * @returns {Promise} object with all relevant data
+   */
+  getData = async () => {
+    const operator = await this.contract().getOperator()
+    const seller = await this.contract().getSeller()
+    const buyer = await this.contract().getBuyer()
+    const {
+      tokenID,
+      paymentAmount,
+      stakeAmount,
+      ratio,
+      ratioType,
+      countdownLength,
+    } = await this.contract().getData()
+    const escrowLength = await this.contract().getLength()
+    const escrowDeadline = await this.contract().getDeadline()
+    const escrowStatus = await this.contract().getEscrowStatus()
+    const countdownStatus = await this.contract().getCountdownStatus()
+    const metadata = await this.metadata()
+
+    let datasold
+    if (escrowStatus === 4) {
+      const logs = await this.#ethersProvider.getLogs({
+        address: this.address(),
+        topics: [ethers.utils.id('DataSubmitted(bytes)')],
+        fromBlock: 0,
+      })
+      datasold = Abi.decode(['bytes'], logs[0].data)
+    }
+
+    return {
+      tokenID,
+      paymentAmount: ethers.utils.formatEther(paymentAmount),
+      stakeAmount: ethers.utils.formatEther(stakeAmount),
+      ratio,
+      ratioType,
+      agreementLength: countdownLength,
+      escrowLength,
+      escrowDeadline,
+      escrowStatus,
+      countdownStatus,
+      seller,
+      buyer,
+      operator,
+      metadata,
+      datasold,
+    }
+  }
+
+  /**
    * Called by seller to deposit the stake
    * - If the payment is already deposited, also send the encrypted symkey
    *
