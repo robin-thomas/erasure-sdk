@@ -20,9 +20,6 @@ class Escrow_Factory {
   #network = null
   #contract = null
   #erasureUsers = null
-  #web3Provider = null
-  #ethersProvider = null
-  #protocolVersion = ''
 
   constructor({ token, erasureUsers }) {
     this.#token = token
@@ -129,12 +126,9 @@ class Escrow_Factory {
         stakeAmount,
         paymentAmount,
         token: this.#token,
-        web3Provider: Config.store.web3Provider,
-        ethersProvider: Config.store.ethersProvider,
         proofhash: JSON.parse(metadata).proofhash,
         erasureUsers: this.#erasureUsers,
         escrowAddress: creationReceipt.logs[0].address,
-        protocolVersion: Config.store.protocolVersion,
         creationReceipt: creationReceipt,
       })
     } catch (err) {
@@ -161,10 +155,7 @@ class Escrow_Factory {
       paymentAmount,
       escrowAddress,
       token: this.#token,
-      web3Provider: Config.store.web3Provider,
-      ethersProvider: Config.store.ethersProvider,
       erasureUsers: this.#erasureUsers,
-      protocolVersion: Config.store.protocolVersion,
       creationReceipt,
     })
   }

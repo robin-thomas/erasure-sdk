@@ -14,9 +14,6 @@ class ErasurePost {
   #proofhash = null
   #feedAddress = null
   #escrowFactory = null
-  #web3Provider = null
-  #ethersProvider = null
-  #protocolVersion = ''
   #creationReceipt = null
 
   /**
@@ -25,8 +22,6 @@ class ErasurePost {
    * @param {address} config.owner
    * @param {string} config.proofhash
    * @param {address} config.feedAddress
-   * @param {Object} config.web3Provider
-   * @param {string} config.protocolVersion
    * @param {Object} config.creationReceipt
    */
   constructor({
@@ -34,18 +29,12 @@ class ErasurePost {
     proofhash,
     feedAddress,
     escrowFactory,
-    web3Provider,
-    ethersProvider,
-    protocolVersion,
     creationReceipt,
   }) {
     this.#owner = owner
     this.#proofhash = proofhash
     this.#feedAddress = feedAddress
     this.#escrowFactory = escrowFactory
-    this.#web3Provider = web3Provider
-    this.#ethersProvider = ethersProvider
-    this.#protocolVersion = protocolVersion
     this.#creationReceipt = creationReceipt
   }
 
@@ -223,7 +212,7 @@ class ErasurePost {
     griefRatioType,
     agreementCountdown,
   }) => {
-    const operator = await Ethers.getAccount(this.#ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider)
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
       throw new Error(
         `offerSell() can only be called by the owner: ${this.owner()}`,
@@ -254,7 +243,7 @@ class ErasurePost {
    * @returns {Promise} array of Escrow objects
    */
   getSellOffers = async () => {
-    const results = await this.#ethersProvider.getLogs({
+    const results = await Config.store.ethersProvider.getLogs({
       address: this.#escrowFactory.address(),
       fromBlock: 0,
       topics: [ethers.utils.id('InstanceCreated(address,address,bytes)')],
@@ -329,7 +318,7 @@ class ErasurePost {
     griefRatioType,
     agreementCountdown,
   }) => {
-    const buyer = await Ethers.getAccount(this.#ethersProvider)
+    const buyer = await Ethers.getAccount(Config.store.ethersProvider)
     const seller = this.owner()
 
     return await this.#escrowFactory.create({
@@ -354,7 +343,7 @@ class ErasurePost {
    * @returns {Promise} array of Escrow objects
    */
   getBuyOffers = async () => {
-    const results = await this.#ethersProvider.getLogs({
+    const results = await Config.store.ethersProvider.getLogs({
       address: this.#escrowFactory.address(),
       fromBlock: 0,
       topics: [ethers.utils.id('InstanceCreated(address,address,bytes)')],
@@ -411,13 +400,13 @@ class ErasurePost {
    */
   reveal = async () => {
     try {
-      const keypair = await Box.getKeyPair(this.#web3Provider)
+      const keypair = await Box.getKeyPair(Config.store.web3Provider)
       if (keypair === null) {
         throw new Error('Unable to retrieve the keypair')
       }
 
       const { keyhash, encryptedDatahash } = await this.#metadata()
-      const symKey = await Box.getSymKey(keyhash, this.#web3Provider)
+      const symKey = await Box.getSymKey(keyhash, Config.store.web3Provider)
 
       // Download the encryptedPost from ipfs
       const encryptedPost = await IPFS.get(encryptedDatahash)

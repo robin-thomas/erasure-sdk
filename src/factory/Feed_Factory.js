@@ -54,11 +54,8 @@ class Feed_Factory {
       return new ErasureFeed({
         owner: operator,
         tokenManager: this.#tokenManager,
-        web3Provider: Config.store.web3Provider,
-        ethersProvider: Config.store.ethersProvider,
         feedAddress: creationReceipt.logs[0].address,
         escrowFactory: this.#escrowFactory,
-        protocolVersion: Config.store.protocolVersion,
         creationReceipt: creationReceipt,
       })
     } catch (err) {
@@ -77,10 +74,7 @@ class Feed_Factory {
     return new ErasureFeed({
       owner,
       feedAddress: address,
-      web3Provider: Config.store.web3Provider,
-      ethersProvider: Config.store.ethersProvider,
       escrowFactory: this.#escrowFactory,
-      protocolVersion: Config.store.protocolVersion,
       creationReceipt,
     })
   }
@@ -107,10 +101,7 @@ class Feed_Factory {
             new ErasureFeed({
               owner,
               feedAddress,
-              web3Provider: Config.store.web3Provider,
-              ethersProvider: Config.store.ethersProvider,
               escrowFactory: this.#escrowFactory,
-              protocolVersion: Config.store.protocolVersion,
             }),
           )
         }

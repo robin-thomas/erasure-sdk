@@ -95,10 +95,8 @@ class Agreement_Factory {
       staker,
       griefRatio,
       counterparty,
-      ethersProvider: Config.store.ethersProvider,
       type:
         agreementType === 'CountdownGriefing_Factory' ? 'countdown' : 'simple',
-      protocolVersion: Config.store.protocolVersion,
       agreementAddress: creationReceipt.logs[0].address,
       creationReceipt: creationReceipt,
     })
@@ -121,8 +119,6 @@ class Agreement_Factory {
       griefRatio,
       token: this.#token,
       agreementAddress: address,
-      ethersProvider: Config.store.ethersProvider,
-      protocolVersion: Config.store.protocolVersion,
       creationReceipt,
     })
   }
