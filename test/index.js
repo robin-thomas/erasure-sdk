@@ -769,6 +769,10 @@ describe('ErasureClient', () => {
         JSON.stringify(await _countdown.metadata()),
         JSON.stringify('0x'),
       )
+      assert.equal(
+        JSON.stringify(await _countdown.getData()),
+        JSON.stringify(await agreement.getData()),
+      )
     })
 
     it('#stake', async () => {
@@ -864,6 +868,10 @@ describe('ErasureClient', () => {
       assert.equal(
         JSON.stringify(await _simple.metadata()),
         JSON.stringify('0x'),
+      )
+      assert.equal(
+        JSON.stringify(await _simple.getData()),
+        JSON.stringify(await agreement.getData()),
       )
 
       await agreement.checkStatus()
