@@ -21,9 +21,6 @@ class ErasureFeed {
   #contract = null
   #feedAddress = null
   #escrowFactory = null
-  #web3Provider = null
-  #ethersProvider = null
-  #protocolVersion = ''
   #creationReceipt = null
 
   /**
@@ -32,17 +29,12 @@ class ErasureFeed {
    * @param {string} config.owner
    * @param {Object} config.tokenManager
    * @param {string} config.feedAddress
-   * @param {Object} config.web3Provider
-   * @param {string} config.protocolVersion
    * @param {Object} config.creationReceipt
    */
   constructor({
     owner,
     tokenManager,
     feedAddress,
-    web3Provider,
-    ethersProvider,
-    protocolVersion,
     escrowFactory,
     creationReceipt,
   }) {
@@ -50,15 +42,12 @@ class ErasureFeed {
     this.#tokenManager = tokenManager
     this.#feedAddress = feedAddress
     this.#escrowFactory = escrowFactory
-    this.#web3Provider = web3Provider
-    this.#ethersProvider = ethersProvider
-    this.#protocolVersion = protocolVersion
     this.#creationReceipt = creationReceipt
 
     this.#contract = new ethers.Contract(
       feedAddress,
       abi,
-      Ethers.getWallet(this.#ethersProvider),
+      Ethers.getWallet(Config.store.ethersProvider),
     )
   }
 
@@ -210,7 +199,7 @@ class ErasureFeed {
    */
   createPost = async (data, proofhash = null) => {
     try {
-      const operator = await Ethers.getAccount(this.#ethersProvider)
+      const operator = await Ethers.getAccount(Config.store.ethersProvider)
       if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
         throw new Error(
           `createPost() can only be called by the owner: ${this.owner()}`,
@@ -225,7 +214,7 @@ class ErasureFeed {
         const keyhash = await IPFS.getHash(symKey)
 
         // Store the symKey in the keystore.
-        await Box.setSymKey(keyhash, symKey, this.#web3Provider)
+        await Box.setSymKey(keyhash, symKey, Config.store.web3Provider)
 
         const encryptedPost = Crypto.symmetric.encrypt(symKey, data)
         const encryptedDatahash = await IPFS.add(encryptedPost)
@@ -249,9 +238,6 @@ class ErasureFeed {
         owner: this.owner(),
         feedAddress: this.address(),
         escrowFactory: this.#escrowFactory,
-        web3Provider: this.#web3Provider,
-        ethersProvider: this.#ethersProvider,
-        protocolVersion: this.#protocolVersion,
         creationReceipt,
       })
     } catch (err) {
@@ -278,9 +264,6 @@ class ErasureFeed {
       owner: this.owner(),
       feedAddress: this.address(),
       escrowFactory: this.#escrowFactory,
-      web3Provider: this.#web3Provider,
-      ethersProvider: this.#ethersProvider,
-      protocolVersion: this.#protocolVersion,
       creationReceipt,
     })
   }
@@ -293,7 +276,7 @@ class ErasureFeed {
    * @returns {Promise<ErasurePost[]>} array of ErasurePost objects
    */
   getPosts = async () => {
-    let results = await this.#ethersProvider.getLogs({
+    let results = await Config.store.ethersProvider.getLogs({
       address: this.address(),
       topics: [ethers.utils.id('HashSubmitted(bytes32)')],
       fromBlock: 0,
@@ -310,10 +293,7 @@ class ErasureFeed {
             owner: this.owner(),
             proofhash: result.data,
             feedAddress: this.address(),
-            web3Provider: this.#web3Provider,
-            ethersProvider: this.#ethersProvider,
             escrowFactory: this.#escrowFactory,
-            protocolVersion: this.#protocolVersion,
             creationReceipt,
           }),
         )

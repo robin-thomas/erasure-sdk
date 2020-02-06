@@ -88,8 +88,21 @@ class ErasureClient {
       if (process.env.NODE_ENV !== 'test') {
         const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`)
 
+        const mapper = {
+          FeedFactory: 'Feed_Factory',
+          SimpleGriefingFactory: 'SimpleGriefing_Factory',
+          CountdownGriefingFactory: 'CountdownGriefing_Factory',
+          CountdownGriefingEscrowFactory: 'CountdownGriefingEscrow_Factory',
+        };
+
         Config.store.registry = Object.keys(contracts).reduce((p, c) => {
-          p[c] = contracts[c][Config.store.network]
+          if (mapper[c] !== undefined) {
+            p[mapper[c]] = contracts[c][Config.store.network]
+          } else {
+            p[c] = contracts[c][Config.store.network]
+          }
+
+          return p;
         }, {})
       }
 

@@ -19,8 +19,6 @@ class ErasureAgreement {
   #contract = null
   #griefRatio = null
   #counterparty = null
-  #protocolVersion = ''
-  #ethersProvider = null
   #agreementAddress = null
   #creationReceipt = null
 
@@ -41,8 +39,6 @@ class ErasureAgreement {
     tokenId,
     griefRatio,
     counterparty,
-    ethersProvider,
-    protocolVersion,
     agreementAddress,
     creationReceipt,
   }) {
@@ -52,8 +48,6 @@ class ErasureAgreement {
     this.#tokenId = tokenId
     this.#griefRatio = griefRatio
     this.#counterparty = counterparty
-    this.#ethersProvider = ethersProvider
-    this.#protocolVersion = protocolVersion
     this.#agreementAddress = agreementAddress
     this.#creationReceipt = creationReceipt
 
@@ -66,7 +60,7 @@ class ErasureAgreement {
     this.#contract = new ethers.Contract(
       agreementAddress,
       this.#abi,
-      Ethers.getWallet(this.#ethersProvider),
+      Ethers.getWallet(Config.store.ethersProvider),
     )
   }
 
@@ -186,7 +180,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   stake = async amount => {
-    const operator = await Ethers.getAccount(this.#ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider)
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
       throw new Error(`stake() can be called only by staker: ${this.staker()}`)
     }
@@ -207,7 +201,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   reward = async amount => {
-    const operator = await Ethers.getAccount(this.#ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider)
     if (
       Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
     ) {
@@ -234,7 +228,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   punish = async (amount, message) => {
-    const operator = await Ethers.getAccount(this.#ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider)
     if (
       Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
     ) {
@@ -290,7 +284,7 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipts
    */
   requestWithdraw = async () => {
-    const operator = await Ethers.getAccount(this.#ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider)
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
       throw new Error(
         `requestWithdraw() can be called only by staker: ${this.staker()}`,

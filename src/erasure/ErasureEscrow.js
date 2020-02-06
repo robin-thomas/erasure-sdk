@@ -30,9 +30,6 @@ class ErasureEscrow {
   #paymentAmount = null
   #erasureUsers = null
   #escrowAddress = null
-  #web3Provider = null
-  #ethersProvider = null
-  #protocolVersion = ''
   #creationReceipt = null
 
   /**
@@ -44,8 +41,6 @@ class ErasureEscrow {
    * @param {string} config.stakeAmount
    * @param {string} config.paymentAmount
    * @param {string} config.escrowAddress
-   * @param {Object} config.web3Provider
-   * @param {string} config.protocolVersion
    * @param {Object} config.creationReceipt
    */
   constructor({
@@ -58,9 +53,6 @@ class ErasureEscrow {
     paymentAmount,
     escrowAddress,
     erasureUsers,
-    web3Provider,
-    ethersProvider,
-    protocolVersion,
     creationReceipt,
   }) {
     this.#token = token
@@ -73,15 +65,12 @@ class ErasureEscrow {
     this.#escrowAddress = escrowAddress
 
     this.#erasureUsers = erasureUsers
-    this.#web3Provider = web3Provider
-    this.#ethersProvider = ethersProvider
-    this.#protocolVersion = protocolVersion
     this.#creationReceipt = creationReceipt
 
     this.#contract = new ethers.Contract(
       escrowAddress,
       abi,
-      Ethers.getWallet(this.#ethersProvider),
+      Ethers.getWallet(Config.store.ethersProvider),
     )
   }
 
@@ -204,7 +193,7 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   depositStake = async () => {
-    const operator = await Ethers.getAccount(this.#ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider)
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.seller())) {
       throw new Error(
         `depositStake() can only be called by the seller: ${this.seller()}`,
@@ -240,7 +229,7 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   depositPayment = async () => {
-    const operator = await Ethers.getAccount(this.#ethersProvider)
+    const operator = await Ethers.getAccount(Config.store.ethersProvider)
     if (Ethers.getAddress(operator) !== Ethers.getAddress(this.buyer())) {
       throw new Error(
         `depositPayment() can only be called by the seller: ${this.buyer()}`,
@@ -263,12 +252,12 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipts
    */
   finalize = async (finalized = false) => {
-    const keypair = await Box.getKeyPair(this.#web3Provider)
+    const keypair = await Box.getKeyPair(Config.store.web3Provider)
     if (keypair === null) {
       throw new Error('Cannot find the keypair of this user!')
     }
 
-    const symKey = await Box.getSymKey(this.#proofhash, this.#web3Provider)
+    const symKey = await Box.getSymKey(this.#proofhash, Config.store.web3Provider)
     const publicKey = await this.#erasureUsers.getUserData(this.buyer())
     const buyerKeypair = {
       key: {
@@ -293,7 +282,7 @@ class ErasureEscrow {
     }
 
     // get the agreement address.
-    const results = await this.#ethersProvider.getLogs({
+    const results = await Config.store.ethersProvider.getLogs({
       address: this.address(),
       topics: [ethers.utils.id('Finalized(address)')],
       fromBlock: 0,

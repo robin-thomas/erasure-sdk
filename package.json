@@ -1,6 +1,6 @@
 {
   "name": "@robinthomas/erasure-sdk",
-  "version": "1.0.17",
+  "version": "1.0.20",
   "description": "Erasure SDK",
   "main": "dist/index.js",
   "homepage": "https://github.com/robin-thomas/erasure-sdk#readme",
@@ -34,7 +34,7 @@
     "@babel/preset-env": "^7.8.4",
     "@babel/register": "^7.8.3",
     "@babel/runtime": "^7.8.4",
-    "@erasure/abis": "^1.3.13",
+    "@erasure/abis": "^1.3.15",
     "@erasure/crypto-ipfs": "^1.2.4",
     "babel-loader": "^8.0.6",
     "bip39": "^3.0.2",
@@ -49,14 +49,13 @@
     "ipfs-http-client": "^41.0.0",
     "jsdoc": "^3.6.3",
     "lint-staged": "^9.2.5",
-    "mocha": "^6.2.2",
+    "mocha": "^7.0.1",
     "nyc": "^15.0.0",
     "prettier": "^1.18.2",
-    "web3": "^1.2.5-rc.0",
+    "web3": "^1.2.6",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
   },
-  "dependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
