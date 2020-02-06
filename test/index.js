@@ -359,6 +359,10 @@ describe('ErasureClient', () => {
           JSON.stringify(await _escrow.metadata()),
           JSON.stringify(metadata),
         )
+        assert.equal(
+          JSON.stringify(await _escrow.getData()),
+          JSON.stringify(await escrow.getData()),
+        )
       })
 
       it('#depositStake', async () => {
