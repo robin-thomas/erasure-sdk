@@ -12,10 +12,7 @@
     "hardfork": "constantinople"
   },
   "metamask": {
-<<<<<<< HEAD
-    "mnemonic": "setup globe peanut credit anger urge stand vintage maid tide tennis train"
-=======
-    "mnemonic": "ride eternal rose mixture cricket spell wet pave frozen amateur turn marine"
+    "mnemonic": "tribe doctor logic crop minute carpet ill sustain smart bottom category forest"
   },
   "ipfs": {
     "protocol": "http",
@@ -24,6 +21,5 @@
       "api": "5001",
       "gateway": "8080"
     }
->>>>>>> Add support for local ipfs node
   }
 }
