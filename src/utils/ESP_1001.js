@@ -22,7 +22,7 @@ const ESP_1001 = {
   }) => {
     let ipld_cid
     if (ipfs_metadata) {
-      ipld_cid = await IPFS.add(ipfs_metadata)
+      ipld_cid = await IPFS.add(JSON.stringify(ipfs_metadata))
     }
 
     const stringMetadata = JSON.stringify({
@@ -57,7 +57,7 @@ const ESP_1001 = {
       application: metadataParsed.application,
       app_version: metadataParsed.app_version,
       app_storage: metadataParsed.app_storage,
-      ipfs_metadata: await IPFS.get(metadataParsed.ipld_cid),
+      ipfs_metadata: JSON.parse(await IPFS.get(metadataParsed.ipld_cid)),
     };
   },
 }
