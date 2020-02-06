@@ -5,6 +5,7 @@ import IPFS from '../utils/IPFS'
 import Crypto from '../utils/Crypto'
 import Ethers from '../utils/Ethers'
 import Config from '../utils/Config'
+import ESP_1001 from '../utils/ESP_1001'
 import ErasurePost from './ErasurePost'
 
 import { abi as simpleContractAbi } from '@erasure/abis/src/v1.3.0/abis/SimpleGriefing.json'
@@ -21,16 +22,16 @@ class ErasureAgreement {
   #counterparty = null
   #agreementAddress = null
   #creationReceipt = null
+  #encodedMetadata = null
 
   /**
    * @param {Object} config
    * @param {('simple'|'countdown')} config.type
    * @param {address} config.staker
    * @param {address} config.counterparty
-   * @param {Object} config.web3Provider
-   * @param {string} config.protocolVersion
    * @param {address} config.agreementAddress
    * @param {Object} config.creationReceipt
+   * @param {string} [config.encodedMetadata]
    */
   constructor({
     type,
@@ -41,6 +42,7 @@ class ErasureAgreement {
     counterparty,
     agreementAddress,
     creationReceipt,
+    encodedMetadata,
   }) {
     this.#type = type
     this.#staker = staker
@@ -50,6 +52,7 @@ class ErasureAgreement {
     this.#counterparty = counterparty
     this.#agreementAddress = agreementAddress
     this.#creationReceipt = creationReceipt
+    this.#encodedMetadata = encodedMetadata
 
     if (type === 'countdown') {
       this.#abi = countdownContractAbi
@@ -120,10 +123,10 @@ class ErasureAgreement {
    */
   getCreationTimestamp = async () => {
     const block = await Config.store.ethersProvider.getBlock(
-      this.#creationReceipt.blockNumber
-    );
-    return block.timestamp;
-  };
+      this.#creationReceipt.blockNumber,
+    )
+    return block.timestamp
+  }
 
   /**
    *
@@ -169,6 +172,21 @@ class ErasureAgreement {
    */
   tokenId = () => {
     return this.#tokenId
+  }
+
+  /**
+   * Get the metadata of this agreement
+   *
+   * @memberof ErasureAgreement
+   * @method metadata
+   * @returns {object} metadata
+   */
+  metadata = async () => {
+    if (this.#encodedMetadata !== '0x') {
+      return await ESP_1001.decodeMetadata(this.#encodedMetadata)
+    } else {
+      return this.#encodedMetadata
+    }
   }
 
   /**

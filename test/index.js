@@ -73,7 +73,8 @@ describe('ErasureClient', () => {
 
   let post,
     feed,
-    proofhash = null
+    proofhash,
+    metadata = null
   const rawData = Math.random().toString(36)
 
   let client, account, registry
@@ -116,6 +117,12 @@ describe('ErasureClient', () => {
     assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)))
 
     proofhash = post.proofhash().proofhash
+    metadata = {
+      application: 'Quant',
+      app_version: 'v1.1.0',
+      app_storage: ethers.utils.toUtf8Bytes('on-chain metadata'),
+      ipfs_metadata: 'off-chain metadata',
+    }
   })
 
   describe('Feed', () => {
@@ -135,7 +142,7 @@ describe('ErasureClient', () => {
 
       const _post = await client.getObject(post.proofhash().proofhash)
       assert.ok(
-        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash()),
       )
       assert.equal(
         await _post.getCreationTimestamp(),
@@ -218,19 +225,19 @@ describe('ErasureClient', () => {
     it('Create a post', async () => {
       let _post = await client.getObject(post.proofhash().proofhash)
       assert.ok(
-        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash()),
       )
       assert.ok(
-        JSON.stringify(await _post.proofhash().getProof()) ===
-          JSON.stringify(await post.proofhash().getProof())
+        JSON.stringify(await _post.proofhash().parseProof()) ===
+          JSON.stringify(await post.proofhash().parseProof()),
       )
       _post = await client.getObject(post.proofhash().multihash)
       assert.ok(
-        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash())
+        JSON.stringify(_post.proofhash()) === JSON.stringify(post.proofhash()),
       )
       assert.ok(
-        JSON.stringify(await _post.proofhash().getProof()) ===
-          JSON.stringify(await post.proofhash().getProof()),
+        JSON.stringify(await _post.proofhash().parseProof()) ===
+          JSON.stringify(await post.proofhash().parseProof()),
       )
     })
 
@@ -296,7 +303,7 @@ describe('ErasureClient', () => {
           griefRatio: '1',
           griefRatioType: 2,
           agreementCountdown: countdownLength,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR)
@@ -305,7 +312,15 @@ describe('ErasureClient', () => {
         assert.ok(escrow.address() === _escrow.address())
         assert.equal(
           await _escrow.getCreationTimestamp(),
-          await escrow.getCreationTimestamp()
+          await escrow.getCreationTimestamp(),
+        )
+        assert.equal(
+          JSON.stringify(await escrow.metadata()),
+          JSON.stringify(metadata),
+        )
+        assert.equal(
+          JSON.stringify(await _escrow.metadata()),
+          JSON.stringify(metadata),
         )
       })
 
@@ -338,13 +353,21 @@ describe('ErasureClient', () => {
           griefRatio: '1',
           griefRatioType: 2,
           agreementCountdown: countdownLength,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR)
 
         const _escrow = await client.getObject(escrow.address())
         assert.ok(escrow.address() === _escrow.address())
+        assert.equal(
+          JSON.stringify(await escrow.metadata()),
+          JSON.stringify(metadata),
+        )
+        assert.equal(
+          JSON.stringify(await _escrow.metadata()),
+          JSON.stringify(metadata),
+        )
       })
 
       it('#depositPayment', async () => {
@@ -358,7 +381,9 @@ describe('ErasureClient', () => {
       })
 
       it('#depositStake', async () => {
-        const { receipt, agreementAddress } = await escrow.depositStake()
+        const { receipt, agreementAddress } = await escrow.depositStake(
+          proofhash,
+        )
 
         assert.ok(Ethers.isAddress(agreementAddress))
 
@@ -385,13 +410,21 @@ describe('ErasureClient', () => {
           griefRatio: '1',
           griefRatioType: 2,
           agreementCountdown: countdownLength,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.NMR)
 
         const _escrow = await client.getObject(escrow.address())
         assert.ok(escrow.address() === _escrow.address())
+        assert.equal(
+          JSON.stringify(await escrow.metadata()),
+          JSON.stringify(metadata),
+        )
+        assert.equal(
+          JSON.stringify(await _escrow.metadata()),
+          JSON.stringify(metadata),
+        )
       })
 
       it('#depositStake', async () => {
@@ -415,7 +448,7 @@ describe('ErasureClient', () => {
       })
 
       it('#finalize', async () => {
-        const { agreementAddress, receipt } = await escrow.finalize()
+        const { agreementAddress, receipt } = await escrow.finalize(proofhash)
         const events = receipt.events.map(e => e.event)
         assert.ok(events.includes('Finalized'))
         assert.ok(Ethers.isAddress(agreementAddress))
@@ -436,7 +469,7 @@ describe('ErasureClient', () => {
           griefRatio: '1',
           griefRatioType: 2,
           agreementCountdown: countdownLength,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
 
@@ -490,7 +523,7 @@ describe('ErasureClient', () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI)
@@ -529,7 +562,7 @@ describe('ErasureClient', () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI)
@@ -577,7 +610,7 @@ describe('ErasureClient', () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI)
@@ -607,7 +640,7 @@ describe('ErasureClient', () => {
       })
 
       it('#finalize', async () => {
-        const { agreementAddress, receipt } = await escrow.finalize()
+        const { agreementAddress, receipt } = await escrow.finalize(proofhash)
         const events = receipt.events.map(e => e.event)
         assert.ok(events.includes('Finalized'))
         assert.ok(Ethers.isAddress(agreementAddress))
@@ -629,7 +662,7 @@ describe('ErasureClient', () => {
           griefRatioType: 2,
           agreementCountdown: countdownLength,
           tokenId: constants.TOKEN_TYPES.DAI,
-          metadata: JSON.stringify({ proofhash: post.proofhash().proofhash }),
+          metadata: metadata,
         })
         assert.ok(Ethers.isAddress(escrow.address()))
         assert.ok(escrow.tokenId() === constants.TOKEN_TYPES.DAI)
@@ -712,6 +745,14 @@ describe('ErasureClient', () => {
       assert.equal(
         await _countdown.getCreationTimestamp(),
         await agreement.getCreationTimestamp(),
+      )
+      assert.equal(
+        JSON.stringify(await agreement.metadata()),
+        JSON.stringify('0x'),
+      )
+      assert.equal(
+        JSON.stringify(await _countdown.metadata()),
+        JSON.stringify('0x'),
       )
     })
 
@@ -800,6 +841,14 @@ describe('ErasureClient', () => {
       assert.equal(
         await _simple.getCreationTimestamp(),
         await agreement.getCreationTimestamp(),
+      )
+      assert.equal(
+        JSON.stringify(await agreement.metadata()),
+        JSON.stringify('0x'),
+      )
+      assert.equal(
+        JSON.stringify(await _simple.metadata()),
+        JSON.stringify('0x'),
       )
 
       await agreement.checkStatus()

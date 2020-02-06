@@ -11,12 +11,14 @@ import Utils from '../utils/Utils'
 import Crypto from '../utils/Crypto'
 import Ethers from '../utils/Ethers'
 import Config from '../utils/Config'
+import ESP_1001 from '../utils/ESP_1001'
 
 import { abi } from '@erasure/abis/src/v1.3.0/abis/Feed.json'
 
 class ErasureFeed {
   #owner = null
   #tokenManager = null
+  #encodedMetadata = null
   #numSold = 0
   #contract = null
   #feedAddress = null
@@ -30,6 +32,7 @@ class ErasureFeed {
    * @param {Object} config.tokenManager
    * @param {string} config.feedAddress
    * @param {Object} config.creationReceipt
+   * @param {string} config.encodedMetadata
    */
   constructor({
     owner,
@@ -37,12 +40,14 @@ class ErasureFeed {
     feedAddress,
     escrowFactory,
     creationReceipt,
+    encodedMetadata,
   }) {
     this.#owner = owner
     this.#tokenManager = tokenManager
     this.#feedAddress = feedAddress
     this.#escrowFactory = escrowFactory
     this.#creationReceipt = creationReceipt
+    this.#encodedMetadata = encodedMetadata
 
     this.#contract = new ethers.Contract(
       feedAddress,
@@ -106,10 +111,10 @@ class ErasureFeed {
    */
   getCreationTimestamp = async () => {
     const block = await Config.store.ethersProvider.getBlock(
-      this.#creationReceipt.blockNumber
-    );
-    return block.timestamp;
-  };
+      this.#creationReceipt.blockNumber,
+    )
+    return block.timestamp
+  }
 
   /**
    * Get the address of the owner of this feed
@@ -120,6 +125,21 @@ class ErasureFeed {
    */
   owner = () => {
     return this.#owner
+  }
+
+  /**
+   * Get the metadata of this feed
+   *
+   * @memberof ErasureFeed
+   * @method metadata
+   * @returns {object} metadata
+   */
+  metadata = async () => {
+    if (this.#encodedMetadata !== '0x') {
+      return await ESP_1001.decodeMetadata(this.#encodedMetadata)
+    } else {
+      return this.#encodedMetadata
+    }
   }
 
   /**
