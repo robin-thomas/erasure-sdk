@@ -89,20 +89,8 @@ class ErasureClient {
       if (process.env.NODE_ENV !== 'test') {
         const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`)
 
-        const mapper = {
-          FeedFactory: 'Feed_Factory',
-          SimpleGriefingFactory: 'SimpleGriefing_Factory',
-          CountdownGriefingFactory: 'CountdownGriefing_Factory',
-          CountdownGriefingEscrowFactory: 'CountdownGriefingEscrow_Factory',
-        };
-
         Config.store.registry = Object.keys(contracts).reduce((p, c) => {
-          if (mapper[c] !== undefined) {
-            p[mapper[c]] = contracts[c][Config.store.network]
-          } else {
-            p[c] = contracts[c][Config.store.network]
-          }
-
+          p[c] = contracts[c][Config.store.network]
           return p;
         }, {})
       }
@@ -187,11 +175,11 @@ class ErasureClient {
         })
 
         // Found the type.
-        let tokenId, staker, griefRatio, counterparty
         if (results.length > 0) {
           const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
             results[0].transactionHash,
           )
+
           switch (type) {
             case 'feed':
               return this.#feedFactory.createClone(address, creationReceipt)
@@ -200,6 +188,7 @@ class ErasureClient {
               let {
                 buyer,
                 seller,
+                tokenId,
                 stakeAmount,
                 paymentAmount,
                 encodedMetadata,
@@ -207,11 +196,6 @@ class ErasureClient {
                 results[0].data,
                 false /* encodedCalldata */,
               )
-
-              ;({ tokenId } = this.#escrowFactory.decodeParams(
-                results[0].data,
-                false /* encodedCalldata */,
-              ))
 
               return this.#escrowFactory.createClone({
                 buyer,
@@ -224,6 +208,7 @@ class ErasureClient {
                 encodedMetadata,
               })
             }
+
             case 'simple': {
               let {
                 tokenId,
@@ -244,6 +229,7 @@ class ErasureClient {
                 encodedMetadata,
               })
             }
+
             case 'countdown': {
               let {
                 tokenId,

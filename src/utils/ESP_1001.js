@@ -24,17 +24,19 @@ const ESP_1001 = {
     if (ipfs_metadata) {
       ipld_cid = await IPFS.add(ipfs_metadata)
     }
-    const metadata = {
+
+    const stringMetadata = JSON.stringify({
       metadata_version: 'v1.0.0',
-      application: application,
-      app_version: app_version,
-      app_storage: app_storage,
-      ipld_cid: ipld_cid,
-    }
-    const stringMetadata = JSON.stringify(metadata)
+      application,
+      app_version,
+      app_storage,
+      ipld_cid,
+    });
+
     const hexMetadata = ethers.utils.toUtf8Bytes(stringMetadata)
     return hexMetadata
   },
+
   /**
    * decode ESP-1001 encoded metadata into javascript object
    *
@@ -43,19 +45,20 @@ const ESP_1001 = {
    */
   decodeMetadata: async metadata => {
     const stringMetadata = ethers.utils.toUtf8String(metadata)
+
     const metadataParsed = JSON.parse(stringMetadata)
     if (metadataParsed.metadata_version !== 'v1.0.0') {
       throw new Error(
         `Incorrect metadata version: Expected v1.0.0 and got ${metadataParsed.metadata_version}`,
       )
     }
-    const metadataObject = {
+
+    return {
       application: metadataParsed.application,
       app_version: metadataParsed.app_version,
       app_storage: metadataParsed.app_storage,
       ipfs_metadata: await IPFS.get(metadataParsed.ipld_cid),
-    }
-    return metadataObject
+    };
   },
 }
 

@@ -1,40 +1,32 @@
-import { ethers } from 'ethers'
-import ganache from 'ganache-cli'
+import { createController } from 'ipfsd-ctl'
+import { findBin } from 'ipfsd-ctl/src/utils'
 
-import Ethers from '../src/utils/Ethers'
+import process from "process";
+import { ethers } from "ethers";
+import ganache from "ganache-cli";
 
-import testConfig from './test.json'
-import appConfig from '../src/config.json'
+import Ethers from "../src/utils/Ethers";
 
-// Setup ganache
-const server = ganache.server({
-  ...testConfig.ganache,
-  mnemonic: testConfig.metamask.mnemonic,
-})
-server.listen('8545')
+import testConfig from "./test.json";
 
-const protocolVersion = 'v1.3.0'
-const provider = new ethers.providers.JsonRpcProvider()
-const signer = provider.getSigner()
-const abiEncoder = new ethers.utils.AbiCoder()
+const protocolVersion = "v1.3.0";
+const provider = new ethers.providers.JsonRpcProvider();
+const abiEncoder = new ethers.utils.AbiCoder();
 
-const contracts = [
-  'MockUniswapFactory',
-  'NMR',
-  'DAI',
-  'Erasure_Posts',
-  'Erasure_Escrows',
-  'Erasure_Users',
-  'Erasure_Agreements',
-  'Feed',
-  'Feed_Factory',
-  'SimpleGriefing',
-  'SimpleGriefing_Factory',
-  'CountdownGriefing',
-  'CountdownGriefing_Factory',
-  'CountdownGriefingEscrow',
-  'CountdownGriefingEscrow_Factory',
-]
+const contracts = {
+  Erasure_Users: 1,
+  Erasure_Posts: 5,
+  Erasure_Agreements: 7,
+  Erasure_Escrows: 9,
+  Feed: 11,
+  Feed_Factory: 12,
+  SimpleGriefing: 14,
+  SimpleGriefing_Factory: 15,
+  CountdownGriefing: 17,
+  CountdownGriefing_Factory: 18,
+  CountdownGriefingEscrow: 20,
+  CountdownGriefingEscrow_Factory: 21,
+};
 
 // Deployer addresses
 const daiDeployAddress = '0xb5b06a16621616875A6C2637948bF98eA57c58fa'
@@ -43,9 +35,17 @@ const uniswapFactoryAddress = '0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95'
 
 const uniswapSigner = provider.getSigner(uniswapFactoryAddress)
 
+const getArtifact = (contractName) => {
+  const artifact = require(`@erasure/abis/src/${protocolVersion}/abis/${
+    contractName === "DAI" ? "MockERC20" : contractName
+  }.json`);
+
+  return artifact;
+}
+
 const fundSigner = async _signer => {
   await (
-    await signer.sendTransaction({
+    await provider.getSigner().sendTransaction({
       to: await _signer.getAddress(),
       value: Ethers.parseEther('100'),
     })
@@ -53,9 +53,9 @@ const fundSigner = async _signer => {
 }
 
 const deployContract = async (contractName, params, _signer) => {
-  const artifact = require(`@erasure/abis/src/${protocolVersion}/abis/${
-    contractName === 'DAI' ? 'MockERC20' : contractName
-  }.json`)
+  const artifact = getArtifact(contractName);
+
+  await increaseNonce(_signer, contracts[contractName]);
 
   const factory = new ethers.ContractFactory(
     artifact.abi,
@@ -84,7 +84,7 @@ const deployFactory = async (
   template,
   factory = null,
 ) => {
-  const signer = provider.getSigner()
+  const signer = provider.getSigner("0x13370c1947ba2d27a420bb8e27017952c80a6e6e");
   const factoryContract = await deployContract(
     contractName,
     [registry.address, template.address],
@@ -180,12 +180,18 @@ const deployNMR = async uniswapFactory => {
 const deploy = async () => {
   await fundSigner(uniswapSigner)
 
+  const signer = provider.getSigner("0x13370c1947ba2d27a420bb8e27017952c80a6e6e");
+  const factory = await deployContract('MockUniswapFactory', [], provider.getSigner())
+
+  await fundSigner(signer)
+
   let contractRegistry = {}
-  for (const contractName of contracts) {
+  contractRegistry.NMR = await deployNMR(factory)
+  contractRegistry.DAI = await deployDAI(factory)
+
+  for (const contractName of Object.keys(contracts)) {
     let contract = null
-    if (contractName === 'MockUniswapFactory') {
-      contract = await deployContract(contractName, [], signer)
-    } else if (contractName.endsWith('_Factory')) {
+    if (contractName.endsWith('_Factory')) {
       const name = contractName.replace('_Factory', '')
 
       let factory = null
@@ -200,22 +206,52 @@ const deploy = async () => {
       const template = contractRegistry[name]
       contract = await deployFactory(contractName, registry, template, factory)
     } else {
-      if (contractName === 'DAI') {
-        contract = await deployDAI(contractRegistry.MockUniswapFactory)
-      } else if (contractName === 'NMR') {
-        contract = await deployNMR(contractRegistry.MockUniswapFactory)
-      } else {
-        contract = await deployContract(contractName, [], signer)
-      }
+      contract = await deployContract(contractName, [], signer)
     }
 
     contractRegistry[contractName] = contract
   }
-
-  return Object.keys(contractRegistry).reduce((p, c) => {
-    p[c] = contractRegistry[c].address
-    return p
-  }, {})
 }
 
-export default deploy
+const isPortTaken = (port) => {
+  return new Promise((resolve, reject) => {
+    const tester = require('http').createServer();
+
+    tester.once('error', err => err.code == 'EADDRINUSE' ? resolve(true) : reject(err));
+    tester.once('listening', () => tester.once('close', () => resolve(false)).close());
+    tester.listen(port);
+  });
+};
+
+export const setenv = async () => {
+  try {
+    let flag = await isPortTaken(testConfig.ganache.port)
+    if (!flag) {
+      ganache.server({
+        ...testConfig.ganache,
+        mnemonic: testConfig.metamask.mnemonic
+      }).listen(testConfig.ganache.port);
+
+      await deploy();
+
+      const node = await createController({
+        test: "true",
+        type: "go",
+        ipfsBin: findBin('go'),
+        ipfsOptions: {
+          offline: true,
+          config: {
+            Addresses: {
+              API: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.api}`,
+              Gateway: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.gateway}`
+            }
+          }
+        }
+      });
+
+      process.on('exit', async () => {
+        await node.stop();
+      });
+    }
+  } catch (err) {}
+}

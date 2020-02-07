@@ -4,13 +4,22 @@
     "unlocked_accounts": [
       "0xb5b06a16621616875A6C2637948bF98eA57c58fa",
       "0x9608010323ed882a38ede9211d7691102b4f0ba0",
-      "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95"
+      "0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95",
+      "0x13370c1947ba2d27a420bb8e27017952c80a6e6e"
     ],
     "default_balance_ether": 10000,
     "total_accounts": 10,
     "hardfork": "constantinople"
   },
   "metamask": {
-    "mnemonic": "setup globe peanut credit anger urge stand vintage maid tide tennis train"
+    "mnemonic": "tribe doctor logic crop minute carpet ill sustain smart bottom category forest"
+  },
+  "ipfs": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": {
+      "api": "5001",
+      "gateway": "8080"
+    }
   }
 }

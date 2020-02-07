@@ -10,7 +10,6 @@ import {
 } from 'ethereumjs-util/dist/signature'
 import { constants } from '@erasure/crypto-ipfs'
 
-import Deployer from './deploy'
 import ErasureClient from '../src'
 import IPFS from '../src/utils/IPFS'
 import Utils from '../src/utils/Utils'
@@ -70,6 +69,7 @@ describe('ErasureClient', () => {
   const rewardAmount = '10'
   const stakeAmount = '11'
   const countdownLength = 1
+  const protocolVersion = 'v1.3.0';
 
   let post,
     feed,
@@ -80,7 +80,18 @@ describe('ErasureClient', () => {
   let client, account, registry
   before(async () => {
     // Deploy all contracts to ganache.
-    registry = await Deployer()
+    await require("./deploy").setenv();
+
+    registry = require(`@erasure/abis/src/${protocolVersion}`);
+    registry = Object.keys(registry).reduce((p, c) => {
+      if (c === "DAI" || c === "NMR") {
+        p[c] = registry[c].mainnet;
+      } else {
+        p[c] = registry[c].kovan;
+      }
+
+      return p;
+    }, {});
 
     const provider = new Web3.providers.HttpProvider(
       `http://localhost:${config.ganache.port}`,
@@ -93,9 +104,13 @@ describe('ErasureClient', () => {
     client = new ErasureClient({
       registry,
       web3Provider,
-      protocolVersion: 'v1.3.0',
+      protocolVersion,
+      ipfs: {
+        protocol: config.ipfs.protocol,
+        host: config.ipfs.host,
+        port: config.ipfs.port.api
+      }
     })
-
     await client.login()
 
     // Mint some mock NMR/DAI tokens.
@@ -128,7 +143,7 @@ describe('ErasureClient', () => {
   describe('Feed', () => {
     it('Create a feed with a post', async () => {
       const feed = await client.createFeed({ data: rawData })
-      assert.ok(Ethers.isAddress(feed.address()))
+      assert.ok(Ethers.isAddress(feed.address()));
 
       const _feed = await client.getObject(feed.address())
       assert.ok(feed.address() === _feed.address())
@@ -218,6 +233,28 @@ describe('ErasureClient', () => {
 
       await feed.reveal()
       assert.ok((await feed.checkStatus()).revealed === true)
+    })
+
+    describe('Get Posts of a Feed', () => {
+      let feed
+      before(async () => {
+        feed = await client.createFeed()
+        assert.ok(Ethers.isAddress(feed.address()))
+      })
+
+      it('User with atleast one feed without a post', async () => {
+        const posts = await feed.getPosts()
+        assert.ok(posts.length === 0)
+      })
+
+      it('User with feed(s) with atleast one post', async () => {
+        await feed.createPost(rawData)
+        const posts = await feed.getPosts()
+        assert.ok(posts.length === 1)
+
+        const data = await IPFS.get(posts[0].proofhash().multihash)
+        assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)))
+      })
     })
   })
 
@@ -698,28 +735,6 @@ describe('ErasureClient', () => {
         const events = receipt.events.map(e => e.event)
         assert.ok(events.includes('Cancelled'))
       })
-    })
-  })
-
-  describe('Get Posts of a Feed', () => {
-    let feed
-    before(async () => {
-      feed = await client.createFeed()
-      assert.ok(Ethers.isAddress(feed.address()))
-    })
-
-    it('User with atleast one feed without a post', async () => {
-      const posts = await feed.getPosts()
-      assert.ok(posts.length === 0)
-    })
-
-    it('User with feed(s) with atleast one post', async () => {
-      await feed.createPost(rawData)
-      const posts = await feed.getPosts()
-      assert.ok(posts.length === 1)
-
-      const data = await IPFS.get(posts[0].proofhash().multihash)
-      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)))
     })
   })
 

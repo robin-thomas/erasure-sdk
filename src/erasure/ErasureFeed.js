@@ -169,7 +169,7 @@ class ErasureFeed {
    * @returns {Promise} amount of tokens at stake
    */
   getStakeByTokenID = async tokenID => {
-    const stake = await this.#contract.getStake(tokenID)
+    const stake = await this.contract().getStake(tokenID)
     return Ethers.formatEther(stake)
   }
 
@@ -186,7 +186,7 @@ class ErasureFeed {
     const stakeAmount = Ethers.parseEther(amount)
     await this.#tokenManager.approve(tokenID, this.address(), stakeAmount)
 
-    return this.#contract.depositStake(tokenID, stakeAmount)
+    return this.contract().depositStake(tokenID, stakeAmount)
   }
 
   /**
@@ -203,7 +203,7 @@ class ErasureFeed {
       amount = await this.getStakeByTokenID(tokenID)
     }
     const stakeAmount = Ethers.parseEther(amount)
-    return this.#contract.withdrawStake(tokenID, stakeAmount)
+    return this.contract().withdrawStake(tokenID, stakeAmount)
   }
 
   /**
@@ -271,14 +271,12 @@ class ErasureFeed {
       fromBlock: 0,
       topics: [ethers.utils.id('HashSubmitted(bytes32)')],
     })
-    const found = logs.find(element => {
-      if (element.data === proofhash) {
-        return element
-      }
-    })
+    const found = logs.filter(ele => ele.data === proofhash)[0]
+
     const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
       found.transactionHash,
     )
+
     return new ErasurePost({
       proofhash,
       owner: this.owner(),
@@ -308,6 +306,7 @@ class ErasureFeed {
         const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
           result.transactionHash,
         )
+
         posts.push(
           new ErasurePost({
             owner: this.owner(),
