@@ -190,6 +190,28 @@ class ErasureAgreement {
   };
 
   /**
+   * Get array of punishments of this agreement
+   *
+   * @memberof ErasureAgreement
+   * @method getPunishments
+   * @returns {array}
+   */
+  getPunishments = async () => {
+    const abi = [
+      "event Griefed(address punisher, address staker, uint256 punishment, uint256 cost, bytes message)",
+    ];
+    const iface = new ethers.utils.Interface(abi);
+    const logs = await Config.store.ethersProvider.getLogs({
+      address: this.address(),
+      topics: [iface.events.Griefed.topic],
+      fromBlock: 0,
+    });
+    const parsedLogs = logs.map(log => iface.parseLog(log));
+
+    return parsedLogs;
+  };
+
+  /**
    * Called by staker to increase the stake
    *
    * @memberof ErasureAgreement
