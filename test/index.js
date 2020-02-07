@@ -464,7 +464,6 @@ describe("ErasureClient", () => {
           await (await escrow.getAgreement()).address(),
           agreementAddress,
         );
-        console.log(agreementAddress);
       });
     });
 
@@ -790,10 +789,12 @@ describe("ErasureClient", () => {
     });
 
     it("#punish", async () => {
+      assert.equal((await agreement.getPunishments()).length, 0);
       const { cost, receipt } = await agreement.punish(
         punishAmount,
         "This is a punishment",
       );
+      assert.equal((await agreement.getPunishments()).length, 1);
 
       const punish = (Number(punishAmount) * Number(griefRatio)).toString();
       assert.ok(Number(cost).toString() === punish);
