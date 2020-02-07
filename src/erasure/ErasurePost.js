@@ -241,7 +241,7 @@ class ErasurePost {
           const {
             buyer,
             seller,
-            tokenId,
+            tokenID,
             paymentAmount,
             stakeAmount,
             encodedMetadata,
@@ -251,7 +251,7 @@ class ErasurePost {
             this.#escrowFactory.createClone({
               buyer,
               seller,
-              tokenId,
+              tokenID,
               stakeAmount,
               paymentAmount,
               escrowAddress,
@@ -332,7 +332,7 @@ class ErasurePost {
         const {
           buyer,
           seller,
-          tokenId,
+          tokenID,
           paymentAmount,
           stakeAmount,
           encodedMetadata,
@@ -343,7 +343,7 @@ class ErasurePost {
             this.#escrowFactory.createClone({
               buyer,
               seller,
-              tokenId,
+              tokenID,
               stakeAmount,
               paymentAmount,
               escrowAddress,

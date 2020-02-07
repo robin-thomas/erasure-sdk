@@ -1,34 +1,34 @@
-import { ethers } from 'ethers'
-import { constants } from '@erasure/crypto-ipfs'
+import { ethers } from "ethers";
+import { constants } from "@erasure/crypto-ipfs";
 
-import DAI from './token/DAI'
-import NMR from './token/NMR'
-import Token from './erasure/Token'
+import DAI from "./token/DAI";
+import NMR from "./token/NMR";
+import Token from "./erasure/Token";
 
-import Erasure_Users from './registry/Erasure_Users'
+import Erasure_Users from "./registry/Erasure_Users";
 
-import Feed_Factory from './factory/Feed_Factory'
-import Escrow_Factory from './factory/Escrow_Factory'
-import Agreement_Factory from './factory/Agreement_Factory'
+import Feed_Factory from "./factory/Feed_Factory";
+import Escrow_Factory from "./factory/Escrow_Factory";
+import Agreement_Factory from "./factory/Agreement_Factory";
 
-import IPFS from './utils/IPFS'
-import Utils from './utils/Utils'
-import Ethers from './utils/Ethers'
-import Config from './utils/Config'
-import ESP_1001 from './utils/ESP_1001'
+import IPFS from "./utils/IPFS";
+import Utils from "./utils/Utils";
+import Ethers from "./utils/Ethers";
+import Config from "./utils/Config";
+import ESP_1001 from "./utils/ESP_1001";
 
 class ErasureClient {
-  #ipfs = null
-  #registry = {}
-  #web3Provider = null
-  #ethersProvider = null
-  #protocolVersion = ''
+  #ipfs = null;
+  #registry = {};
+  #web3Provider = null;
+  #ethersProvider = null;
+  #protocolVersion = "";
 
-  #token = null
-  #feedFactory = null
-  #erasureUsers = null
-  #escrowFactory = null
-  #agreementFactory = null
+  #token = null;
+  #feedFactory = null;
+  #erasureUsers = null;
+  #escrowFactory = null;
+  #agreementFactory = null;
 
   /**
    * ErasureClient
@@ -43,29 +43,29 @@ class ErasureClient {
    * @param {string} config.ipfs.protocol
    */
   constructor({ protocolVersion, web3Provider, registry, ipfs }) {
-    this.#ipfs = null
-    this.#registry = null
-    this.#web3Provider = null
-    this.#ethersProvider = null
-    this.#protocolVersion = protocolVersion
+    this.#ipfs = null;
+    this.#registry = null;
+    this.#web3Provider = null;
+    this.#ethersProvider = null;
+    this.#protocolVersion = protocolVersion;
 
     if (ipfs !== undefined && ipfs !== null) {
-      this.#ipfs = ipfs
+      this.#ipfs = ipfs;
     } else {
-      this.#ipfs = require('./config.json').ipfs
+      this.#ipfs = require("./config.json").ipfs;
     }
 
     if (web3Provider !== undefined && web3Provider !== null) {
-      this.#web3Provider = web3Provider
+      this.#web3Provider = web3Provider;
       this.#ethersProvider = new ethers.providers.Web3Provider(
         web3Provider.currentProvider,
-      )
+      );
     } else {
-      throw new Error('Need to provide a web3Provider!')
+      throw new Error("Need to provide a web3Provider!");
     }
 
-    if (process.env.NODE_ENV === 'test') {
-      this.#registry = registry
+    if (process.env.NODE_ENV === "test") {
+      this.#registry = registry;
     }
   }
 
@@ -84,37 +84,37 @@ class ErasureClient {
         web3Provider: this.#web3Provider,
         ethersProvider: this.#ethersProvider,
         protocolVersion: this.#protocolVersion,
-      }
+      };
 
-      if (process.env.NODE_ENV !== 'test') {
-        const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`)
+      if (process.env.NODE_ENV !== "test") {
+        const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`);
 
         Config.store.registry = Object.keys(contracts).reduce((p, c) => {
           p[c] = contracts[c][Config.store.network]
           return p;
-        }, {})
+        }, {});
       }
 
       this.#token = new Token({
         dai: new DAI(),
         nmr: new NMR(),
-      })
-      this.#erasureUsers = new Erasure_Users()
+      });
+      this.#erasureUsers = new Erasure_Users();
       this.#escrowFactory = new Escrow_Factory({
         token: this.#token,
         erasureUsers: this.#erasureUsers,
-      })
+      });
       this.#feedFactory = new Feed_Factory({
         escrowFactory: this.#escrowFactory,
         tokenManager: this.#token,
-      })
+      });
       this.#agreementFactory = new Agreement_Factory({
         token: this.#token,
-      })
+      });
 
-      return await this.#erasureUsers.registerUser()
+      return await this.#erasureUsers.registerUser();
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
@@ -131,40 +131,40 @@ class ErasureClient {
       // Check if address is proofhash. If yes, then its ErasurePost.
       if (Utils.isProofhash(address) || (await IPFS.isHash(address))) {
         if (await IPFS.isHash(address)) {
-          address = Utils.hashToSha256(address)
+          address = Utils.hashToSha256(address);
         }
 
-        const feeds = await this.#feedFactory.getFeeds()
+        const feeds = await this.#feedFactory.getFeeds();
         if (feeds && feeds.length > 0) {
           for (const feed of feeds) {
-            const posts = await feed.getPosts()
+            const posts = await feed.getPosts();
             const _posts = posts.reduce((p, post) => {
-              p[post.proofhash().proofhash] = post
-              return p
-            }, {})
+              p[post.proofhash().proofhash] = post;
+              return p;
+            }, {});
 
             if (address in _posts) {
-              return feed.createClone(address)
+              return feed.createClone(address);
             }
           }
         }
 
-        throw new Error('Unable to construct ErasurePost object!')
+        throw new Error("Unable to construct ErasurePost object!");
       }
 
       if (!Ethers.isAddress(address)) {
-        throw new Error(`Not a valid address: ${address}`)
+        throw new Error(`Not a valid address: ${address}`);
       }
 
       const init = {
-        feed: 'Initialized(address,bytes)',
+        feed: "Initialized(address,bytes)",
         escrow:
-          'Initialized(address,address,address,uint8,uint256,uint256,uint256,bytes,bytes)',
+          "Initialized(address,address,address,uint8,uint256,uint256,uint256,bytes,bytes)",
         simple:
-          'Initialized(address,address,address,uint8,uint256,uint8,bytes)',
+          "Initialized(address,address,address,uint8,uint256,uint8,bytes)",
         countdown:
-          'Initialized(address,address,address,uint8,uint256,uint8,uint256,bytes)',
-      }
+          "Initialized(address,address,address,uint8,uint256,uint8,uint256,bytes)",
+      };
 
       for (const type of Object.keys(init)) {
         // Get the contract creation transaction.
@@ -172,7 +172,7 @@ class ErasureClient {
           address,
           fromBlock: 0,
           topics: [ethers.utils.id(init[type])],
-        })
+        });
 
         // Found the type.
         if (results.length > 0) {
@@ -181,74 +181,74 @@ class ErasureClient {
           )
 
           switch (type) {
-            case 'feed':
-              return this.#feedFactory.createClone(address, creationReceipt)
+            case "feed":
+              return this.#feedFactory.createClone(address, creationReceipt);
 
-            case 'escrow': {
+            case "escrow": {
               let {
                 buyer,
                 seller,
-                tokenId,
+                tokenID,
                 stakeAmount,
                 paymentAmount,
                 encodedMetadata,
               } = this.#escrowFactory.decodeParams(
                 results[0].data,
                 false /* encodedCalldata */,
-              )
+              );
 
               return this.#escrowFactory.createClone({
                 buyer,
                 seller,
-                tokenId,
+                tokenID,
                 stakeAmount,
                 paymentAmount,
                 escrowAddress: address,
                 creationReceipt,
                 encodedMetadata,
-              })
+              });
             }
 
             case 'simple': {
               let {
-                tokenId,
+                tokenID,
                 staker,
                 griefRatio,
                 counterparty,
                 encodedMetadata,
-              } = this.#agreementFactory.decodeParams(results[0].data, false)
+              } = this.#agreementFactory.decodeParams(results[0].data, false);
 
               return this.#agreementFactory.createClone({
                 address,
                 type,
-                tokenId,
+                tokenID,
                 staker,
                 griefRatio,
                 counterparty,
                 creationReceipt,
                 encodedMetadata,
-              })
+              });
             }
 
             case 'countdown': {
               let {
-                tokenId,
+                tokenID,
                 staker,
                 griefRatio,
                 counterparty,
                 encodedMetadata,
-              } = this.#agreementFactory.decodeParams(results[0].data)
+              } = this.#agreementFactory.decodeParams(results[0].data);
 
               return this.#agreementFactory.createClone({
                 address,
                 type,
-                tokenId,
+                tokenID,
                 staker,
                 griefRatio,
                 counterparty,
                 creationReceipt,
                 encodedMetadata,
-              })
+              });
             }
           }
         }
@@ -257,9 +257,9 @@ class ErasureClient {
       // Didnt find the type.
       throw new Error(
         `Address ${address} is not feed, post, escrow or agreement type!`,
-      )
+      );
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
@@ -274,32 +274,32 @@ class ErasureClient {
    * @returns {Promise<ErasureFeed>}
    */
   async createFeed(opts) {
-    let { operator, data, proofhash, metadata } = opts || {}
+    let { operator, data, proofhash, metadata } = opts || {};
 
-    operator = operator || (await Ethers.getAccount(this.#ethersProvider))
+    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
     if (!Ethers.isAddress(operator)) {
-      throw new Error(`Operator ${operator} is not an address`)
+      throw new Error(`Operator ${operator} is not an address`);
     }
 
-    metadata = metadata || undefined
+    metadata = metadata || undefined;
 
     if (proofhash !== undefined && !Utils.isProofhash(proofhash)) {
-      throw new Error(`Invalid proofhash: ${proofhash}`)
+      throw new Error(`Invalid proofhash: ${proofhash}`);
     }
 
     const feed = await this.#feedFactory.create({
       operator,
       metadata,
-    })
+    });
 
     // Create optional post.
     if (proofhash !== undefined && proofhash !== null) {
-      await feed.createPost(null, proofhash)
+      await feed.createPost(null, proofhash);
     } else if (data !== undefined && data !== null) {
-      await feed.createPost(data, null)
+      await feed.createPost(data, null);
     }
 
-    return feed
+    return feed;
   }
 
   /**
@@ -329,17 +329,17 @@ class ErasureClient {
     griefRatio,
     griefRatioType,
     agreementCountdown,
-    tokenId = constants.TOKEN_TYPES.NMR,
+    tokenID = constants.TOKEN_TYPES.NMR,
     metadata,
   }) {
-    operator = operator || (await Ethers.getAccount(this.#ethersProvider))
+    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
     if (!Ethers.isAddress(operator)) {
-      throw new Error(`Operator ${operator} is not an address`)
+      throw new Error(`Operator ${operator} is not an address`);
     }
 
-    metadata = metadata || undefined
+    metadata = metadata || undefined;
 
-    buyer = buyer || operator
+    buyer = buyer || operator;
 
     return this.#escrowFactory.create({
       operator,
@@ -351,9 +351,9 @@ class ErasureClient {
       griefRatio,
       griefRatioType,
       agreementCountdown,
-      tokenId,
+      tokenID,
       metadata,
-    })
+    });
   }
 
   /**
@@ -376,24 +376,24 @@ class ErasureClient {
     griefRatio,
     griefRatioType,
     countdownLength,
-    tokenId = constants.TOKEN_TYPES.NMR,
+    tokenID = constants.TOKEN_TYPES.NMR,
     metadata,
   }) {
     try {
       if (operator === undefined) {
-        operator = await Ethers.getAccount(this.#ethersProvider)
+        operator = await Ethers.getAccount(this.#ethersProvider);
       }
       if (!Ethers.isAddress(operator)) {
-        throw new Error(`Operator ${operator} is not an address`)
+        throw new Error(`Operator ${operator} is not an address`);
       }
 
-      staker = staker === undefined ? operator : staker
+      staker = staker === undefined ? operator : staker;
 
       if (!Ethers.isAddress(counterparty)) {
-        throw new Error(`Counterparty ${counterparty} is not an address`)
+        throw new Error(`Counterparty ${counterparty} is not an address`);
       }
 
-      metadata = metadata || undefined
+      metadata = metadata || undefined;
 
       return this.#agreementFactory.create({
         operator,
@@ -402,11 +402,11 @@ class ErasureClient {
         griefRatio,
         griefRatioType,
         countdownLength,
-        tokenId,
+        tokenID,
         metadata,
-      })
+      });
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 
@@ -414,31 +414,31 @@ class ErasureClient {
    * Mint mock NMR/DAI tokens for testnet.
    *
    * @param {string} paymentAmount
-   * @param {integer} tokenId
+   * @param {integer} tokenID
    */
   async mintMockTokens(
     paymentAmount,
-    tokenId = constants.TOKEN_TYPES.NMR,
+    tokenID = constants.TOKEN_TYPES.NMR,
     operator = null,
   ) {
     if (!this.#token) {
-      throw new Error('You need to call login() first')
+      throw new Error("You need to call login() first");
     }
 
     try {
       if (!operator) {
-        operator = await Ethers.getAccount(this.#ethersProvider)
+        operator = await Ethers.getAccount(this.#ethersProvider);
       } else if (!Ethers.isAddress(operator)) {
-        throw new Error(`Not a valid address: ${address}`)
+        throw new Error(`Not a valid address: ${address}`);
       }
 
-      paymentAmount = Ethers.parseEther(paymentAmount)
-      await this.#token.mintMockTokens(tokenId, operator, paymentAmount)
+      paymentAmount = Ethers.parseEther(paymentAmount);
+      await this.#token.mintMockTokens(tokenID, operator, paymentAmount);
     } catch (err) {
-      throw err
+      throw err;
     }
   }
 }
 
-export { Ethers }
-export default ErasureClient
+export { Ethers };
+export default ErasureClient;

@@ -22,13 +22,38 @@ class Agreement_Factory {
   }
 
   /**
+   * Access the web3 contract class
+   *
+   * @memberof Agreement_Factory
+   * @method contract
+   * @returns {Object} contract object
+   */
+  contract = type => {
+    let abi, agreementType;
+    if (type !== "simple") {
+      abi = countdownContractAbi;
+      agreementType = "CountdownGriefing_Factory";
+    } else {
+      abi = simpleContractAbi;
+      agreementType = "SimpleGriefing_Factory";
+    }
+
+    const contract = new ethers.Contract(
+      Config.store.registry[agreementType],
+      abi,
+      Ethers.getWallet(Config.store.ethersProvider),
+    );
+    return contract;
+  };
+
+  /**
    * Create a new agreement
    *
    * @param {Object} config
    * @param {string} [config.operator]
    * @param {string} config.staker
    * @param {string} config.counterparty
-   * @param {number} config.tokenId
+   * @param {number} config.tokenID
    * @param {string} config.griefRatio
    * @param {string} config.griefRatioType
    * @param {string} config.agreementCountdown
@@ -39,7 +64,7 @@ class Agreement_Factory {
     operator,
     staker,
     counterparty,
-    tokenId = constants.TOKEN_TYPES.NMR,
+    tokenID = constants.TOKEN_TYPES.NMR,
     griefRatio,
     griefRatioType,
     countdownLength,
@@ -83,7 +108,7 @@ class Agreement_Factory {
         operator,
         staker,
         counterparty,
-        tokenId,
+        tokenID,
         Ethers.parseEther(griefRatio),
         griefRatioType,
         ...(countdownLength !== undefined ? [countdownLength] : []),
@@ -96,7 +121,7 @@ class Agreement_Factory {
 
     return new ErasureAgreement({
       token: this.#token,
-      tokenId,
+      tokenID,
       staker,
       griefRatio,
       counterparty,
@@ -111,7 +136,7 @@ class Agreement_Factory {
   createClone = ({
     address,
     type,
-    tokenId,
+    tokenID,
     staker,
     griefRatio,
     counterparty,
@@ -120,7 +145,7 @@ class Agreement_Factory {
   }) => {
     return new ErasureAgreement({
       token: this.#token,
-      tokenId,
+      tokenID,
       staker,
       griefRatio,
       counterparty,
@@ -150,7 +175,7 @@ class Agreement_Factory {
         operator: result[0],
         staker: result[1],
         counterparty: result[2],
-        tokenId: result[3],
+        tokenID: result[3],
         griefRatio: Ethers.formatEther(result[4].toString()),
         griefRatioType: result[5],
         countdownLength: result[6].toNumber(),
@@ -165,7 +190,7 @@ class Agreement_Factory {
         operator: result[0],
         staker: result[1],
         counterparty: result[2],
-        tokenId: result[3],
+        tokenID: result[3],
         griefRatio: Ethers.formatEther(result[4].toString()),
         griefRatioType: result[5],
         encodedMetadata: result[6],
