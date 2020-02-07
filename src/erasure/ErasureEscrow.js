@@ -134,20 +134,6 @@ class ErasureEscrow {
   };
 
   /**
-   * Get the creation timestamp of this escrow
-   *
-   * @memberof ErasureEscrow
-   * @method getCreationTimestamp
-   * @returns {integer}
-   */
-  getCreationTimestamp = async () => {
-    const block = await Config.store.ethersProvider.getBlock(
-      this.#creationReceipt.blockNumber,
-    );
-    return block.timestamp;
-  };
-
-  /**
    * Get the address of the seller of this escrow
    *
    * @memberof ErasureEscrow
@@ -249,13 +235,12 @@ class ErasureEscrow {
         ],
       );
 
-      const result = await this.#agreementFactory
+      agreementAddress = await this.#agreementFactory
         .contract()
         .getNextNonceInstance(this.address(), calldata);
-      agreementAddress = result;
     }
 
-    const agreement = await this.#agreementFactory.createClone({
+    return await this.#agreementFactory.createClone({
       address: agreementAddress,
       type: "countdown",
       tokenID: getdata.tokenID,
@@ -265,7 +250,6 @@ class ErasureEscrow {
       creationReceipt: null,
       encodedMetadata: "0x",
     });
-    return agreement;
   };
 
   /**
