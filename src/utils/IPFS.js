@@ -32,12 +32,6 @@ const IPFS = {
    */
   add: async (data) => {
     try {
-      // if (process.env.NODE_ENV === 'test') {
-      //   const hash = await IPFS.getHash(data)
-      //   IPFS.keystore[hash] = data
-      //   return hash
-      // }
-
       const content = Buffer.from(data)
       const results = await IPFS.getClient().add(content)
       return results[0].hash
@@ -54,10 +48,6 @@ const IPFS = {
    */
   get: async (hash) => {
     try {
-      // if (process.env.NODE_ENV === 'test') {
-      //   return IPFS.keystore[hash]
-      // }
-
       const results = await IPFS.getClient().get(hash)
       return results[0].content.toString()
     } catch (err) {

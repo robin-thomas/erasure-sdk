@@ -1,4 +1,6 @@
-import IPFS from 'ipfsd-ctl';
+import { createController } from 'ipfsd-ctl'
+import { findBin } from 'ipfsd-ctl/src/utils'
+
 import process from "process";
 import { ethers } from "ethers";
 import ganache from "ganache-cli";
@@ -232,36 +234,22 @@ export const setenv = async () => {
 
       await deploy();
 
-      const node = await IPFS.createController({
-        profile: "test",
-        test: true,
-        disposable: true,
-        type: "js",
+      const node = await createController({
+        test: "true",
+        type: "go",
+        ipfsBin: findBin('go'),
         ipfsOptions: {
           offline: true,
           config: {
-            Swarm: {
-              DisableNatPortMap: false
-            },
             Addresses: {
               API: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.api}`,
               Gateway: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.gateway}`
-            },
-            Discovery: {
-              MDNS: {
-                Enabled: false,
-              }
-            },
-            Bootstrap: [],
+            }
           }
         }
       });
 
-      console.log('node', node.api);
-
       process.on('exit', async () => {
-        console.log("Caught interrupt signal");
-
         await node.stop();
       });
     }
