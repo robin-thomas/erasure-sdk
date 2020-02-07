@@ -188,7 +188,7 @@ class ErasureClient {
               let {
                 buyer,
                 seller,
-                tokenId,
+                tokenID,
                 stakeAmount,
                 paymentAmount,
                 encodedMetadata,
