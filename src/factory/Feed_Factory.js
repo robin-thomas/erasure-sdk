@@ -7,11 +7,10 @@ import Box from "../utils/3Box";
 import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Config from "../utils/Config";
+import Contract from "../utils/Contract";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 import ESP_1001 from "../utils/ESP_1001";
-
-import { abi } from "@erasure/abis/src/v1.3.0/abis/Feed_Factory.json";
 
 class Feed_Factory {
   #contract = null;
@@ -22,11 +21,7 @@ class Feed_Factory {
     this.#escrowFactory = escrowFactory;
     this.#tokenManager = tokenManager;
 
-    this.#contract = new ethers.Contract(
-      Config.store.registry.Feed_Factory,
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    );
+    this.#contract = Contract.contract('Feed_Factory');
   }
 
   /**

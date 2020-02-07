@@ -9,10 +9,9 @@ import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Config from "../utils/Config";
 import Crypto from "../utils/Crypto";
+import Contract from "../utils/Contract";
 import ESP_1001 from "../utils/ESP_1001";
 import Ethers from "../utils/Ethers";
-
-import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow_Factory.json";
 
 class Escrow_Factory {
   #token = null;
@@ -26,11 +25,7 @@ class Escrow_Factory {
     this.#token = token;
     this.#erasureUsers = erasureUsers;
 
-    this.#contract = new ethers.Contract(
-      Config.store.registry.CountdownGriefingEscrow_Factory,
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    );
+    this.#contract = Contract.contract('CountdownGriefingEscrow_Factory');
   }
 
   /**

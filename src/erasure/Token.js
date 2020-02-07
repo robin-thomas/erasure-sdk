@@ -26,14 +26,11 @@ class Token {
    */
   approve = async (tokenID, spender, value) => {
     try {
-      let currentAllowance = Ethers.parseEther("0");
-
-      switch (tokenID) {
+      switch (tokenId) {
         case constants.TOKEN_TYPES.NMR:
-          currentAllowance = this.#nmr.allowance(spender);
           return await this.#nmr.changeApproval(
             spender,
-            currentAllowance,
+            await this.#nmr.allowance(spender),
             value,
           );
 

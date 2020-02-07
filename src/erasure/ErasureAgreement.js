@@ -1,15 +1,14 @@
 import { ethers } from "ethers";
 
-import Abi from "../utils/Abi";
-import IPFS from "../utils/IPFS";
-import Crypto from "../utils/Crypto";
-import Ethers from "../utils/Ethers";
-import Config from "../utils/Config";
-import ESP_1001 from "../utils/ESP_1001";
-import ErasurePost from "./ErasurePost";
+import Abi from '../utils/Abi'
+import IPFS from '../utils/IPFS'
+import Crypto from '../utils/Crypto'
+import Ethers from '../utils/Ethers'
+import Config from '../utils/Config'
+import ESP_1001 from '../utils/ESP_1001'
+import Contract from "../utils/Contract";
 
-import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing.json";
-import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing.json";
+import ErasurePost from './ErasurePost'
 
 class ErasureAgreement {
   #abi = null;
@@ -44,27 +43,17 @@ class ErasureAgreement {
     creationReceipt,
     encodedMetadata,
   }) {
-    this.#type = type;
-    this.#staker = staker;
-    this.#token = token;
-    this.#tokenID = tokenID;
-    this.#griefRatio = griefRatio;
-    this.#counterparty = counterparty;
-    this.#agreementAddress = agreementAddress;
-    this.#creationReceipt = creationReceipt;
-    this.#encodedMetadata = encodedMetadata;
+    this.#type = type
+    this.#staker = staker
+    this.#token = token
+    this.#tokenID = tokenID
+    this.#griefRatio = griefRatio
+    this.#counterparty = counterparty
+    this.#agreementAddress = agreementAddress
+    this.#creationReceipt = creationReceipt
+    this.#encodedMetadata = encodedMetadata
 
-    if (type === "countdown") {
-      this.#abi = countdownContractAbi;
-    } else if (type === "simple") {
-      this.#abi = simpleContractAbi;
-    }
-
-    this.#contract = new ethers.Contract(
-      agreementAddress,
-      this.#abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    );
+    this.#contract = Contract.contract(type === 'countdown' ? 'CountdownGriefing' : 'SimpleGriefing', agreementAddress);
   }
 
   /**
@@ -98,20 +87,6 @@ class ErasureAgreement {
    */
   creationReceipt = () => {
     return this.#creationReceipt;
-  };
-
-  /**
-   * Get the creation timestamp of this agreement
-   *
-   * @memberof ErasureAgreement
-   * @method getCreationTimestamp
-   * @returns {integer}
-   */
-  getCreationTimestamp = async () => {
-    const block = await Config.store.ethersProvider.getBlock(
-      this.#creationReceipt.blockNumber,
-    );
-    return block.timestamp;
   };
 
   /**

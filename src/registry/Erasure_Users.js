@@ -3,19 +3,14 @@ import { ethers } from 'ethers'
 import Box from '../utils/3Box'
 import Config from '../utils/Config'
 import Crypto from '../utils/Crypto'
+import Contract from '../utils/Contract'
 import Ethers from '../utils/Ethers'
-
-import { abi } from '@erasure/abis/src/v1.3.0/abis/Erasure_Users.json'
 
 class Erasure_Users {
   #contract = null
 
   constructor() {
-    this.#contract = new ethers.Contract(
-      Config.store.registry.Erasure_Users,
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    )
+    this.#contract = Contract.contract('Erasure_Users');
   }
 
   /**

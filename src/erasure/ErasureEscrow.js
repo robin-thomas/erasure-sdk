@@ -7,11 +7,10 @@ import IPFS from "../utils/IPFS";
 import Crypto from "../utils/Crypto";
 import Ethers from "../utils/Ethers";
 import Config from "../utils/Config";
+import Contract from "../utils/Contract";
 import ESP_1001 from "../utils/ESP_1001";
 
 import Agreement_Factory from "../factory/Agreement_Factory";
-
-import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow.json";
 
 const ESCROW_STATES = {
   IS_OPEN: 0, // initialized but no deposits made
@@ -75,11 +74,7 @@ class ErasureEscrow {
       token: this.#token,
     });
 
-    this.#contract = new ethers.Contract(
-      escrowAddress,
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    );
+    this.#contract = Contract.contract('CountdownGriefingEscrow', escrowAddress);
   }
 
   static get ESCROW_STATES() {

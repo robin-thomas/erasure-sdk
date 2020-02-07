@@ -12,8 +12,7 @@ import Crypto from '../utils/Crypto'
 import Ethers from '../utils/Ethers'
 import Config from '../utils/Config'
 import ESP_1001 from '../utils/ESP_1001'
-
-import { abi } from '@erasure/abis/src/v1.3.0/abis/Feed.json'
+import Contract from "../utils/Contract";
 
 class ErasureFeed {
   #owner = null
@@ -49,11 +48,7 @@ class ErasureFeed {
     this.#creationReceipt = creationReceipt
     this.#encodedMetadata = encodedMetadata
 
-    this.#contract = new ethers.Contract(
-      feedAddress,
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    )
+    this.#contract = Contract.contract('Feed', feedAddress);
   }
 
   /**
@@ -86,20 +81,6 @@ class ErasureFeed {
    */
   creationReceipt = () => {
     return this.#creationReceipt
-  }
-
-  /**
-   * Get the creation timestamp of this feed
-   *
-   * @memberof ErasureFeed
-   * @method getCreationTimestamp
-   * @returns {integer}
-   */
-  getCreationTimestamp = async () => {
-    const block = await Config.store.ethersProvider.getBlock(
-      this.#creationReceipt.blockNumber,
-    )
-    return block.timestamp
   }
 
   /**
@@ -247,7 +228,7 @@ class ErasureFeed {
             encryptedDatahash,
           }),
         )
-        proofhash = Utils.hashToSha256(staticMetadataB58)
+        proofhash = Utils.hashToSha256(staticMetadataB58);
       }
 
       const tx = await this.contract().submitHash(proofhash)
