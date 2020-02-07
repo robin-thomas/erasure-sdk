@@ -52,7 +52,7 @@ const IPFS = {
    * @param {string} hash - download file from the ipfs hash
    * @returns {string} data downloaded from ipfs
    */
-  get: async (hash, retry = true) => {
+  get: async (hash) => {
     try {
       // if (process.env.NODE_ENV === 'test') {
       //   return IPFS.keystore[hash]
@@ -61,11 +61,7 @@ const IPFS = {
       const results = await IPFS.getClient().get(hash)
       return results[0].content.toString()
     } catch (err) {
-      if (retry) {
-        return await IPFS.get(hash, false)
-      } else {
-        throw err
-      }
+      throw err
     }
   },
 

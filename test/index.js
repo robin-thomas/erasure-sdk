@@ -82,27 +82,12 @@ describe('ErasureClient', () => {
     // Deploy all contracts to ganache.
     await require("./deploy").setenv();
 
-    const mapper = {
-      FeedFactory: "Feed_Factory",
-      SimpleGriefingFactory: "SimpleGriefing_Factory",
-      CountdownGriefingFactory: "CountdownGriefing_Factory",
-      CountdownGriefingEscrowFactory: "CountdownGriefingEscrow_Factory",
-    };
-
     registry = require(`@erasure/abis/src/${protocolVersion}`);
     registry = Object.keys(registry).reduce((p, c) => {
-      if (mapper[c] !== undefined) {
-        if (c === "DAI" || c === "NMR") {
-          p[mapper[c]] = registry[c].mainnet;
-        } else {
-          p[mapper[c]] = registry[c].kovan;
-        }
+      if (c === "DAI" || c === "NMR") {
+        p[c] = registry[c].mainnet;
       } else {
-        if (c === "DAI" || c === "NMR") {
-          p[c] = registry[c].mainnet;
-        } else {
-          p[c] = registry[c].kovan;
-        }
+        p[c] = registry[c].kovan;
       }
 
       return p;
@@ -248,6 +233,28 @@ describe('ErasureClient', () => {
 
       await feed.reveal()
       assert.ok((await feed.checkStatus()).revealed === true)
+    })
+
+    describe('Get Posts of a Feed', () => {
+      let feed
+      before(async () => {
+        feed = await client.createFeed()
+        assert.ok(Ethers.isAddress(feed.address()))
+      })
+
+      it('User with atleast one feed without a post', async () => {
+        const posts = await feed.getPosts()
+        assert.ok(posts.length === 0)
+      })
+
+      it('User with feed(s) with atleast one post', async () => {
+        await feed.createPost(rawData)
+        const posts = await feed.getPosts()
+        assert.ok(posts.length === 1)
+
+        const data = await IPFS.get(posts[0].proofhash().multihash)
+        assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)))
+      })
     })
   })
 
@@ -728,28 +735,6 @@ describe('ErasureClient', () => {
         const events = receipt.events.map(e => e.event)
         assert.ok(events.includes('Cancelled'))
       })
-    })
-  })
-
-  describe('Get Posts of a Feed', () => {
-    let feed
-    before(async () => {
-      feed = await client.createFeed()
-      assert.ok(Ethers.isAddress(feed.address()))
-    })
-
-    it('User with atleast one feed without a post', async () => {
-      const posts = await feed.getPosts()
-      assert.ok(posts.length === 0)
-    })
-
-    it('User with feed(s) with atleast one post', async () => {
-      await feed.createPost(rawData)
-      const posts = await feed.getPosts()
-      assert.ok(posts.length === 1)
-
-      const data = await IPFS.get(posts[0].proofhash().multihash)
-      assert.ok(JSON.parse(data).datahash === (await IPFS.getHash(rawData)))
     })
   })
 

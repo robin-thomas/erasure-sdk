@@ -1,4 +1,5 @@
-import IPFS from 'ipfs'
+import IPFS from 'ipfsd-ctl';
+import process from "process";
 import { ethers } from "ethers";
 import ganache from "ganache-cli";
 
@@ -230,22 +231,39 @@ export const setenv = async () => {
       }).listen(testConfig.ganache.port);
 
       await deploy();
-    }
 
-    const node = new IPFS({
-      silent: true,
-      offline: true,
-      config: {
-        Addresses: {
-          API: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.api}`,
-          Gateway: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.gateway}`
+      const node = await IPFS.createController({
+        profile: "test",
+        test: true,
+        disposable: true,
+        type: "js",
+        ipfsOptions: {
+          offline: true,
+          config: {
+            Swarm: {
+              DisableNatPortMap: false
+            },
+            Addresses: {
+              API: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.api}`,
+              Gateway: `/ip4/127.0.0.1/tcp/${testConfig.ipfs.port.gateway}`
+            },
+            Discovery: {
+              MDNS: {
+                Enabled: false,
+              }
+            },
+            Bootstrap: [],
+          }
         }
-      }
-    })
-    await node.ready
+      });
 
-    const Gateway = require('ipfs/src/http');
-    const gateway = new Gateway(node);
-    gateway.start()
+      console.log('node', node.api);
+
+      process.on('exit', async () => {
+        console.log("Caught interrupt signal");
+
+        await node.stop();
+      });
+    }
   } catch (err) {}
 }
