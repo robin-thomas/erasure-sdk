@@ -468,7 +468,7 @@ describe('ErasureClient', () => {
         );
         assert.equal(
           await (await escrow.getAgreement()).address(),
-          "0x8fD364d48F9583253bf07e1f6491dC0f0ae87500",
+          "0x09d93aB1a8b885BB627120A415294aA7869530A2",
         );
       });
 
