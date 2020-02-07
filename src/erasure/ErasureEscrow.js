@@ -9,6 +9,8 @@ import Ethers from "../utils/Ethers";
 import Config from "../utils/Config";
 import ESP_1001 from "../utils/ESP_1001";
 
+import Agreement_Factory from "../factory/Agreement_Factory";
+
 import { abi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefingEscrow.json";
 
 const ESCROW_STATES = {
@@ -24,7 +26,7 @@ class ErasureEscrow {
   #token = null;
   #buyer = null;
   #seller = null;
-  #tokenId = null;
+  #tokenID = null;
   #contract = null;
   #stakeAmount = null;
   #paymentAmount = null;
@@ -32,6 +34,7 @@ class ErasureEscrow {
   #escrowAddress = null;
   #creationReceipt = null;
   #encodedMetadata = null;
+  #agreementFactory = null;
 
   /**
    * @constructor
@@ -48,7 +51,7 @@ class ErasureEscrow {
     token,
     buyer,
     seller,
-    tokenId,
+    tokenID,
     stakeAmount,
     paymentAmount,
     escrowAddress,
@@ -59,7 +62,7 @@ class ErasureEscrow {
     this.#token = token;
     this.#buyer = buyer;
     this.#seller = seller;
-    this.#tokenId = tokenId;
+    this.#tokenID = tokenID;
     this.#stakeAmount = stakeAmount;
     this.#paymentAmount = paymentAmount;
     this.#escrowAddress = escrowAddress;
@@ -67,6 +70,10 @@ class ErasureEscrow {
     this.#erasureUsers = erasureUsers;
     this.#creationReceipt = creationReceipt;
     this.#encodedMetadata = encodedMetadata;
+
+    this.#agreementFactory = new Agreement_Factory({
+      token: this.#token,
+    });
 
     this.#contract = new ethers.Contract(
       escrowAddress,
@@ -163,14 +170,14 @@ class ErasureEscrow {
   };
 
   /**
-   * Get the tokenId
+   * Get the tokenID
    *
    * @memberof ErasureEscrow
-   * @method tokenId
-   * @returns {integer} tokenId
+   * @method tokenID
+   * @returns {integer} tokenID
    */
-  tokenId = () => {
-    return this.#tokenId;
+  tokenID = () => {
+    return this.#tokenID;
   };
 
   /**
@@ -200,6 +207,68 @@ class ErasureEscrow {
   };
 
   /**
+   * Get the agreement this escrow spawns
+   *
+   * @memberof ErasureEscrow
+   * @method getAgreement
+   * @returns {ErasureAgreement}
+   */
+  getAgreement = async () => {
+    const logs = await Config.store.ethersProvider.getLogs({
+      address: this.address(),
+      topics: [ethers.utils.id("Finalized(address)")],
+      fromBlock: 0,
+    });
+    const getdata = await this.getData();
+
+    let agreementAddress;
+    if (logs.length) {
+      agreementAddress = Abi.decode(["address"], logs[0].data)[0];
+    } else {
+      const calldata = Abi.encodeWithSelector(
+        "initialize",
+        [
+          "address",
+          "address",
+          "address",
+          "uint8",
+          "uint256",
+          "uint8",
+          "uint256",
+          "bytes",
+        ],
+        [
+          this.address(),
+          getdata.buyer,
+          getdata.seller,
+          getdata.tokenID,
+          getdata.ratio,
+          getdata.ratioType,
+          getdata.agreementLength,
+          "0x",
+        ],
+      );
+
+      const result = await this.#agreementFactory
+        .contract()
+        .getNextNonceInstance(this.address(), calldata);
+      agreementAddress = result;
+    }
+
+    const agreement = await this.#agreementFactory.createClone({
+      address: agreementAddress,
+      type: "countdown",
+      tokenID: getdata.tokenID,
+      staker: getdata.buyer,
+      griefRatio: getdata.ratio,
+      counterparty: getdata.seller,
+      creationReceipt: null,
+      encodedMetadata: "0x",
+    });
+    return agreement;
+  };
+
+  /**
    * Get the state data of the escrow
    *
    * @memberof ErasureEscrow
@@ -207,9 +276,9 @@ class ErasureEscrow {
    * @returns {Promise} object with all relevant data
    */
   getData = async () => {
-    const operator = await this.contract().getOperator()
-    const seller = await this.contract().getSeller()
-    const buyer = await this.contract().getBuyer()
+    const operator = await this.contract().getOperator();
+    const seller = await this.contract().getSeller();
+    const buyer = await this.contract().getBuyer();
     const {
       tokenID,
       paymentAmount,
@@ -217,21 +286,21 @@ class ErasureEscrow {
       ratio,
       ratioType,
       countdownLength,
-    } = await this.contract().getData()
-    const escrowLength = await this.contract().getLength()
-    const escrowDeadline = await this.contract().getDeadline()
-    const escrowStatus = await this.contract().getEscrowStatus()
-    const countdownStatus = await this.contract().getCountdownStatus()
-    const metadata = await this.metadata()
+    } = await this.contract().getData();
+    const escrowLength = await this.contract().getLength();
+    const escrowDeadline = await this.contract().getDeadline();
+    const escrowStatus = await this.contract().getEscrowStatus();
+    const countdownStatus = await this.contract().getCountdownStatus();
+    const metadata = await this.metadata();
 
-    let datasold
+    let datasold;
     if (escrowStatus === 4) {
-      const logs = await this.#ethersProvider.getLogs({
+      const logs = await Config.store.ethersProvider.getLogs({
         address: this.address(),
-        topics: [ethers.utils.id('DataSubmitted(bytes)')],
+        topics: [ethers.utils.id("DataSubmitted(bytes)")],
         fromBlock: 0,
-      })
-      datasold = Abi.decode(['bytes'], logs[0].data)
+      });
+      datasold = Abi.decode(["bytes"], logs[0].data);
     }
 
     return {
@@ -250,8 +319,8 @@ class ErasureEscrow {
       operator,
       metadata,
       datasold,
-    }
-  }
+    };
+  };
 
   /**
    * Called by seller to deposit the stake
@@ -271,7 +340,7 @@ class ErasureEscrow {
     }
 
     const stakeAmount = Ethers.parseEther(this.#stakeAmount);
-    await this.#token.approve(this.tokenId(), this.address(), stakeAmount);
+    await this.#token.approve(this.tokenID(), this.address(), stakeAmount);
 
     const tx = await this.contract().depositStake();
     const receipt = await tx.wait();
@@ -310,7 +379,7 @@ class ErasureEscrow {
     }
 
     const paymentAmount = Ethers.parseEther(this.#paymentAmount);
-    await this.#token.approve(this.tokenId(), this.address(), paymentAmount);
+    await this.#token.approve(this.tokenID(), this.address(), paymentAmount);
 
     const tx = await this.contract().depositPayment();
     return await tx.wait();
