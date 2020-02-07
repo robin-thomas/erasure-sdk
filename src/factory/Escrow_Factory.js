@@ -55,7 +55,7 @@ class Escrow_Factory {
    * @param {string} [config.operator]
    * @param {string} config.buyer
    * @param {string} config.seller
-   * @param {number} config.tokenId
+   * @param {number} config.tokenID
    * @param {string} config.paymentAmount
    * @param {string} config.stakeAmount
    * @param {string} config.escrowCountdown
@@ -69,7 +69,7 @@ class Escrow_Factory {
     operator,
     buyer,
     seller,
-    tokenId = constants.TOKEN_TYPES.NMR,
+    tokenID = constants.TOKEN_TYPES.NMR,
     paymentAmount,
     stakeAmount,
     escrowCountdown,
@@ -105,7 +105,7 @@ class Escrow_Factory {
           operator,
           buyer,
           seller,
-          tokenId,
+          tokenID,
           Ethers.parseEther(paymentAmount),
           Ethers.parseEther(stakeAmount),
           escrowCountdown,
@@ -121,7 +121,7 @@ class Escrow_Factory {
       return new ErasureEscrow({
         buyer,
         seller,
-        tokenId,
+        tokenID,
         stakeAmount,
         paymentAmount,
         token: this.#token,
@@ -138,7 +138,7 @@ class Escrow_Factory {
   createClone = ({
     buyer,
     seller,
-    tokenId,
+    tokenID,
     stakeAmount,
     paymentAmount,
     escrowAddress,
@@ -148,7 +148,7 @@ class Escrow_Factory {
     return new ErasureEscrow({
       buyer,
       seller,
-      tokenId,
+      tokenID,
       stakeAmount,
       paymentAmount,
       escrowAddress,
@@ -192,7 +192,7 @@ class Escrow_Factory {
       operator: Ethers.getAddress(result[0]),
       buyer: Ethers.getAddress(result[1]),
       seller: Ethers.getAddress(result[2]),
-      tokenId: Number(result[3]),
+      tokenID: Number(result[3]),
       paymentAmount: Ethers.formatEther(result[4]).toString(),
       stakeAmount: Ethers.formatEther(result[5]).toString(),
       escrowCountdown: Ethers.formatEther(result[6].toString()),
