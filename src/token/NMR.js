@@ -1,9 +1,8 @@
 import { ethers } from 'ethers'
 
 import Config from '../utils/Config'
+import Contract from '../utils/Contract'
 import Ethers from '../utils/Ethers'
-
-import { abi } from '@erasure/abis/src/v1.3.0/abis/MockNMR.json'
 
 class NMR {
   #contract = null
@@ -12,11 +11,7 @@ class NMR {
    * @constructor
    */
   constructor() {
-    this.#contract = new ethers.Contract(
-      Config.store.registry.NMR,
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    )
+    this.#contract = Contract.contract("NMR");
   }
 
   /**

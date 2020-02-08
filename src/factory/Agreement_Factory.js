@@ -1,9 +1,6 @@
 import { ethers } from "ethers";
 import { constants } from "@erasure/crypto-ipfs";
 
-import { abi as simpleContractAbi } from "@erasure/abis/src/v1.3.0/abis/SimpleGriefing_Factory.json";
-import { abi as countdownContractAbi } from "@erasure/abis/src/v1.3.0/abis/CountdownGriefing_Factory.json";
-
 import ErasureAgreement from "../erasure/ErasureAgreement";
 
 import Abi from "../utils/Abi";
@@ -11,6 +8,7 @@ import IPFS from "../utils/IPFS";
 import Utils from "../utils/Utils";
 import Ethers from "../utils/Ethers";
 import Config from "../utils/Config";
+import Contract from "../utils/Contract";
 import ESP_1001 from "../utils/ESP_1001";
 
 class Agreement_Factory {
@@ -29,21 +27,8 @@ class Agreement_Factory {
    * @returns {Object} contract object
    */
   contract = type => {
-    let abi, agreementType;
-    if (type !== "simple") {
-      abi = countdownContractAbi;
-      agreementType = "CountdownGriefing_Factory";
-    } else {
-      abi = simpleContractAbi;
-      agreementType = "SimpleGriefing_Factory";
-    }
-
-    const contract = new ethers.Contract(
-      Config.store.registry[agreementType],
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    );
-    return contract;
+    const agreementType = type !== "simple" ? "CountdownGriefing_Factory" : "SimpleGriefing_Factory";
+    return Contract.contract(agreementType);
   };
 
   /**
@@ -70,20 +55,8 @@ class Agreement_Factory {
     countdownLength,
     metadata,
   }) => {
-    let abi, agreementType;
-    if (countdownLength !== undefined) {
-      abi = countdownContractAbi;
-      agreementType = "CountdownGriefing_Factory";
-    } else {
-      abi = simpleContractAbi;
-      agreementType = "SimpleGriefing_Factory";
-    }
-
-    const contract = new ethers.Contract(
-      Config.store.registry[agreementType],
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    );
+    const agreementType = countdownLength !== undefined ? "CountdownGriefing_Factory" : "SimpleGriefing_Factory";
+    const contract = Contract.contract(agreementType);
 
     let encodedMetadata;
     if (metadata === undefined) {

@@ -18,17 +18,18 @@ import Config from "./utils/Config";
 import ESP_1001 from "./utils/ESP_1001";
 
 class ErasureClient {
-  #ipfs = null;
-  #registry = {};
-  #web3Provider = null;
-  #ethersProvider = null;
-  #protocolVersion = "";
+  #ipfs = null
+  #authereum = {}
+  #registry = {}
+  #web3Provider = null
+  #ethersProvider = null
+  #protocolVersion = ''
 
-  #token = null;
-  #feedFactory = null;
-  #erasureUsers = null;
-  #escrowFactory = null;
-  #agreementFactory = null;
+  #token = null
+  #feedFactory = null
+  #erasureUsers = null
+  #escrowFactory = null
+  #agreementFactory = null
 
   /**
    * ErasureClient
@@ -42,8 +43,9 @@ class ErasureClient {
    * @param {string} config.ipfs.port
    * @param {string} config.ipfs.protocol
    */
-  constructor({ protocolVersion, web3Provider, registry, ipfs }) {
+  constructor({ protocolVersion, web3Provider, registry, ipfs, authereum }) {
     this.#ipfs = null;
+    this.#authereum = authereum;
     this.#registry = null;
     this.#web3Provider = null;
     this.#ethersProvider = null;
@@ -79,6 +81,7 @@ class ErasureClient {
     try {
       Config.store = {
         ipfs: this.#ipfs,
+        authereum: this.#authereum,
         registry: this.#registry,
         network: (await this.#ethersProvider.getNetwork()).name,
         web3Provider: this.#web3Provider,
