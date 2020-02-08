@@ -1,7 +1,6 @@
 import { multihash } from '@erasure/crypto-ipfs'
 import { ethers } from 'ethers'
 
-import Config from './Config'
 import IPFS from './IPFS'
 
 const ESP_1001 = {

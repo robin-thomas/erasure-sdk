@@ -5,6 +5,9 @@ import Ethers from "./Ethers";
 
 const Contract = {
   contract: (name, address = null) => {
+    // Dont move it within ``, as babel is not replacing the string.
+    const protocolVersion = Config.store.protocolVersion;
+
     switch (name) {
       case "DAI":
         name = "MockERC20";
@@ -17,7 +20,7 @@ const Contract = {
         break;
     }
 
-    const { abi } = require(`@erasure/abis/src/${Config.store.protocolVersion}/abis/${name}.json`);
+    const { abi } = require(`@erasure/abis/src/${protocolVersion}/abis/${name}.json`);
 
     const contract = new ethers.Contract(
       address ? address : Config.store.registry[name],
