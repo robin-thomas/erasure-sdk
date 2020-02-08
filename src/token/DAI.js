@@ -1,6 +1,5 @@
 import { ethers } from 'ethers'
 
-import Config from '../utils/Config'
 import Contract from '../utils/Contract'
 import Ethers from '../utils/Ethers'
 
