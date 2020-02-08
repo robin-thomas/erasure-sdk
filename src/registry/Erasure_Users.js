@@ -10,7 +10,7 @@ class Erasure_Users {
   #contract = null
 
   constructor() {
-    this.#contract = Contract.contract('Erasure_Users');
+    this.#contract = Contract.contract("Erasure_Users");
   }
 
   /**

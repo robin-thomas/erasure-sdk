@@ -74,7 +74,7 @@ class ErasureEscrow {
       token: this.#token,
     });
 
-    this.#contract = Contract.contract('CountdownGriefingEscrow', escrowAddress);
+    this.#contract = Contract.contract("CountdownGriefingEscrow", escrowAddress);
   }
 
   static get ESCROW_STATES() {

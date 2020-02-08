@@ -25,7 +25,7 @@ class Escrow_Factory {
     this.#token = token;
     this.#erasureUsers = erasureUsers;
 
-    this.#contract = Contract.contract('CountdownGriefingEscrow_Factory');
+    this.#contract = Contract.contract("CountdownGriefingEscrow_Factory");
   }
 
   /**

@@ -48,7 +48,7 @@ class ErasureFeed {
     this.#creationReceipt = creationReceipt
     this.#encodedMetadata = encodedMetadata
 
-    this.#contract = Contract.contract('Feed', feedAddress);
+    this.#contract = Contract.contract("Feed", feedAddress);
   }
 
   /**

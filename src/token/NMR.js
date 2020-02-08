@@ -11,7 +11,7 @@ class NMR {
    * @constructor
    */
   constructor() {
-    this.#contract = Contract.contract('NMR');
+    this.#contract = Contract.contract("NMR");
   }
 
   /**

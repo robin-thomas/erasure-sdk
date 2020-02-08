@@ -26,7 +26,7 @@ class Token {
    */
   approve = async (tokenID, spender, value) => {
     try {
-      switch (tokenId) {
+      switch (tokenID) {
         case constants.TOKEN_TYPES.NMR:
           return await this.#nmr.changeApproval(
             spender,

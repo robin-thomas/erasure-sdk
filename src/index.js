@@ -44,12 +44,12 @@ class ErasureClient {
    * @param {string} config.ipfs.protocol
    */
   constructor({ protocolVersion, web3Provider, registry, ipfs, authereum }) {
-    this.#ipfs = null
+    this.#ipfs = null;
     this.#authereum = authereum;
-    this.#registry = null
-    this.#web3Provider = null
-    this.#ethersProvider = null
-    this.#protocolVersion = protocolVersion
+    this.#registry = null;
+    this.#web3Provider = null;
+    this.#ethersProvider = null;
+    this.#protocolVersion = protocolVersion;
 
     if (ipfs !== undefined && ipfs !== null) {
       this.#ipfs = ipfs;

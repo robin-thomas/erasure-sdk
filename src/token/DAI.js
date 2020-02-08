@@ -11,7 +11,7 @@ class DAI {
    * @constructor
    */
   constructor() {
-    this.#contract = Contract.contract('DAI');
+    this.#contract = Contract.contract("DAI");
   }
 
   /**

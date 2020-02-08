@@ -1,11 +1,11 @@
 import { ethers } from "ethers";
 
-import Abi from '../utils/Abi'
-import IPFS from '../utils/IPFS'
-import Crypto from '../utils/Crypto'
-import Ethers from '../utils/Ethers'
-import Config from '../utils/Config'
-import ESP_1001 from '../utils/ESP_1001'
+import Abi from "../utils/Abi";
+import IPFS from "../utils/IPFS";
+import Crypto from "../utils/Crypto";
+import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
+import ESP_1001 from "../utils/ESP_1001";
 import Contract from "../utils/Contract";
 
 import ErasurePost from './ErasurePost'
@@ -43,17 +43,17 @@ class ErasureAgreement {
     creationReceipt,
     encodedMetadata,
   }) {
-    this.#type = type
-    this.#staker = staker
-    this.#token = token
-    this.#tokenID = tokenID
-    this.#griefRatio = griefRatio
-    this.#counterparty = counterparty
-    this.#agreementAddress = agreementAddress
-    this.#creationReceipt = creationReceipt
-    this.#encodedMetadata = encodedMetadata
+    this.#type = type;
+    this.#staker = staker;
+    this.#token = token;
+    this.#tokenID = tokenID;
+    this.#griefRatio = griefRatio;
+    this.#counterparty = counterparty;
+    this.#agreementAddress = agreementAddress;
+    this.#creationReceipt = creationReceipt;
+    this.#encodedMetadata = encodedMetadata;
 
-    this.#contract = Contract.contract(type === 'countdown' ? 'CountdownGriefing' : 'SimpleGriefing', agreementAddress);
+    this.#contract = Contract.contract(type === "countdown" ? "CountdownGriefing" : "SimpleGriefing", agreementAddress);
   }
 
   /**

@@ -21,7 +21,7 @@ class Feed_Factory {
     this.#escrowFactory = escrowFactory;
     this.#tokenManager = tokenManager;
 
-    this.#contract = Contract.contract('Feed_Factory');
+    this.#contract = Contract.contract("Feed_Factory");
   }
 
   /**

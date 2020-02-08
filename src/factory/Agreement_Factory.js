@@ -27,21 +27,8 @@ class Agreement_Factory {
    * @returns {Object} contract object
    */
   contract = type => {
-    let abi, agreementType;
-    if (type !== "simple") {
-      abi = countdownContractAbi;
-      agreementType = "CountdownGriefing_Factory";
-    } else {
-      abi = simpleContractAbi;
-      agreementType = "SimpleGriefing_Factory";
-    }
-
-    const contract = new ethers.Contract(
-      Config.store.registry[agreementType],
-      abi,
-      Ethers.getWallet(Config.store.ethersProvider),
-    );
-    return contract;
+    const agreementType = type !== "simple" ? "CountdownGriefing_Factory" : "SimpleGriefing_Factory";
+    return Contract.contract(agreementType);
   };
 
   /**
