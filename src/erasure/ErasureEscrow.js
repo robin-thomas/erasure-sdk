@@ -74,7 +74,10 @@ class ErasureEscrow {
       token: this.#token,
     });
 
-    this.#contract = Contract.contract("CountdownGriefingEscrow", escrowAddress);
+    this.#contract = Contract.contract(
+      "CountdownGriefingEscrow",
+      escrowAddress,
+    );
   }
 
   static get ESCROW_STATES() {
@@ -350,17 +353,29 @@ class ErasureEscrow {
    * @returns {Promise} transaction receipt
    */
   depositPayment = async () => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider);
-    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.buyer())) {
+    const user = await Ethers.getAccount(Config.store.ethersProvider);
+    if (Ethers.getAddress(user) !== Ethers.getAddress(this.buyer())) {
       throw new Error(
         `depositPayment() can only be called by the seller: ${this.buyer()}`,
       );
     }
 
     const paymentAmount = Ethers.parseEther(this.#paymentAmount);
+    console.log("tokenID", this.tokenID());
+    console.log("escrow_address", this.address());
     await this.#token.approve(this.tokenID(), this.address(), paymentAmount);
+    console.log(
+      "approve successfull",
+      Ethers.formatEther(paymentAmount),
+      "DAI",
+    );
 
     const tx = await this.contract().depositPayment();
+    console.log(
+      "depositPayment successfull",
+      Ethers.formatEther(paymentAmount),
+      "DAI",
+    );
     return await tx.wait();
   };
 

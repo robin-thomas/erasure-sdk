@@ -44,22 +44,27 @@ const ESP_1001 = {
    * @returns {Object} metadata
    */
   decodeMetadata: async encodeMetadata => {
-    const metadata = JSON.parse(
-      new TextDecoder("utf-8").decode(encodeMetadata),
+    const metadataParsed = JSON.parse(
+      ethers.utils.toUtf8String(encodeMetadata),
+      // new TextDecoder("utf-8").decode(encodeMetadata),
     );
-    if (metadata.metadata_version !== "v1.0.0") {
+
+    if (metadataParsed.metadata_version !== "v1.0.0") {
       throw new Error(
-        `Incorrect metadata version: Expected v1.0.0 and got ${metadata.metadata_version}`,
+        `Incorrect metadata version: Expected v1.0.0 and got ${metadataParsed.metadata_version}`,
       );
     }
-    const ipfs_metadata = JSON.parse(await IPFS.get(metadata.ipld_cid));
+    const ipfs_metadata = JSON.parse(await IPFS.get(metadataParsed.ipld_cid));
 
-    return {
+    const metadata = {
       application: metadataParsed.application,
       app_version: metadataParsed.app_version,
       contract_metadata: metadataParsed.app_storage,
       ipfs_metadata,
     };
+    console.log("metadata", metadata);
+
+    return metadata;
   },
 };
 
