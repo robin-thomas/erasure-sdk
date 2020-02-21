@@ -18,18 +18,18 @@ import Config from "./utils/Config";
 import ESP_1001 from "./utils/ESP_1001";
 
 class ErasureClient {
-  #ipfs = null
-  #authereum = {}
-  #registry = {}
-  #web3Provider = null
-  #ethersProvider = null
-  #protocolVersion = ''
+  #ipfs = null;
+  #authereum = {};
+  #registry = {};
+  #web3Provider = null;
+  #ethersProvider = null;
+  #protocolVersion = "";
 
-  #token = null
-  #feedFactory = null
-  #erasureUsers = null
-  #escrowFactory = null
-  #agreementFactory = null
+  #token = null;
+  #feedFactory = null;
+  #erasureUsers = null;
+  #escrowFactory = null;
+  #agreementFactory = null;
 
   /**
    * ErasureClient
@@ -93,7 +93,7 @@ class ErasureClient {
         const contracts = require(`@erasure/abis/src/${this.#protocolVersion}`);
 
         Config.store.registry = Object.keys(contracts).reduce((p, c) => {
-          p[c] = contracts[c][Config.store.network]
+          p[c] = contracts[c][Config.store.network];
           return p;
         }, {});
       }
@@ -181,7 +181,9 @@ class ErasureClient {
         if (results.length > 0) {
           const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
             results[0].transactionHash,
-          )
+          );
+
+          console.log("type", type);
 
           switch (type) {
             case "feed":
@@ -212,7 +214,7 @@ class ErasureClient {
               });
             }
 
-            case 'simple': {
+            case "simple": {
               let {
                 tokenID,
                 staker,
@@ -233,7 +235,7 @@ class ErasureClient {
               });
             }
 
-            case 'countdown': {
+            case "countdown": {
               let {
                 tokenID,
                 staker,
@@ -279,7 +281,7 @@ class ErasureClient {
   async createFeed(opts) {
     let { operator, data, proofhash, metadata } = opts || {};
 
-    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
+    operator = operator || ethers.constants.AddressZero;
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
@@ -335,14 +337,34 @@ class ErasureClient {
     tokenID = constants.TOKEN_TYPES.NMR,
     metadata,
   }) {
-    operator = operator || (await Ethers.getAccount(this.#ethersProvider));
+    console.log({
+      operator,
+      buyer,
+      seller,
+      paymentAmount,
+      stakeAmount,
+      escrowCountdown,
+      griefRatio,
+      griefRatioType,
+      agreementCountdown,
+      tokenID,
+      metadata,
+    });
+    operator = operator || ethers.constants.AddressZero;
+    buyer = buyer || ethers.constants.AddressZero;
+    seller = seller || ethers.constants.AddressZero;
+
     if (!Ethers.isAddress(operator)) {
       throw new Error(`Operator ${operator} is not an address`);
     }
+    if (!Ethers.isAddress(buyer)) {
+      throw new Error(`Buyer ${buyer} is not an address`);
+    }
+    if (!Ethers.isAddress(seller)) {
+      throw new Error(`Seller ${seller} is not an address`);
+    }
 
     metadata = metadata || undefined;
-
-    buyer = buyer || operator;
 
     return this.#escrowFactory.create({
       operator,
@@ -383,17 +405,16 @@ class ErasureClient {
     metadata,
   }) {
     try {
-      if (operator === undefined) {
-        operator = await Ethers.getAccount(this.#ethersProvider);
-      }
+      operator = operator || ethers.constants.AddressZero;
+
       if (!Ethers.isAddress(operator)) {
         throw new Error(`Operator ${operator} is not an address`);
       }
-
-      staker = staker === undefined ? operator : staker;
-
+      if (!Ethers.isAddress(staker)) {
+        throw new Error(`staker ${staker} is not an address`);
+      }
       if (!Ethers.isAddress(counterparty)) {
-        throw new Error(`Counterparty ${counterparty} is not an address`);
+        throw new Error(`counterparty ${counterparty} is not an address`);
       }
 
       metadata = metadata || undefined;

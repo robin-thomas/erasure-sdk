@@ -74,9 +74,12 @@ class Escrow_Factory {
     metadata,
   }) => {
     try {
-      metadata = metadata || "";
-
-      const encodedMetadata = await ESP_1001.encodeMetadata(metadata);
+      let encodedMetadata;
+      if (metadata === undefined) {
+        encodedMetadata = "0x";
+      } else {
+        encodedMetadata = await ESP_1001.encodeMetadata(metadata);
+      }
 
       const agreementParams = Abi.encode(
         ["uint256", "uint8", "uint256"],
@@ -195,7 +198,7 @@ class Escrow_Factory {
       agreementParams: {
         griefRatio: Ethers.formatEther(agreementParams[0]).toString(),
         griefRatioType: agreementParams[1],
-        agreementCountdown: agreementParams[2],
+        agreementCountdown: agreementParams[2].toNumber(),
       },
     };
   };

@@ -1,7 +1,7 @@
-import { multihash } from '@erasure/crypto-ipfs'
-import { ethers } from 'ethers'
+import { multihash } from "@erasure/crypto-ipfs";
+import { ethers } from "ethers";
 
-import IPFS from './IPFS'
+import IPFS from "./IPFS";
 
 const ESP_1001 = {
   /**
@@ -16,49 +16,56 @@ const ESP_1001 = {
   encodeMetadata: async ({
     application,
     app_version,
-    app_storage,
+    contract_metadata,
     ipfs_metadata,
   }) => {
-    let ipld_cid
+    let ipld_cid;
     if (ipfs_metadata) {
-      ipld_cid = await IPFS.add(JSON.stringify(ipfs_metadata))
+      ipld_cid = await IPFS.add(JSON.stringify(ipfs_metadata));
     }
+    console.log("metadata.ipld_cid", ipld_cid);
 
-    const stringMetadata = JSON.stringify({
-      metadata_version: 'v1.0.0',
+    const metadata = {
+      metadata_version: "v1.0.0",
       application,
       app_version,
-      app_storage,
+      app_storage: contract_metadata,
       ipld_cid,
-    });
+    };
 
-    const hexMetadata = ethers.utils.toUtf8Bytes(stringMetadata)
-    return hexMetadata
+    const encodeMetadata = ethers.utils.toUtf8Bytes(JSON.stringify(metadata));
+    return encodeMetadata;
   },
 
   /**
    * decode ESP-1001 encoded metadata into javascript object
    *
-   * @param {string} metadata
+   * @param {string} encodeMetadata
    * @returns {Object} metadata
    */
-  decodeMetadata: async metadata => {
-    const stringMetadata = ethers.utils.toUtf8String(metadata)
+  decodeMetadata: async encodeMetadata => {
+    const metadataParsed = JSON.parse(
+      ethers.utils.toUtf8String(encodeMetadata),
+      // new TextDecoder("utf-8").decode(encodeMetadata),
+    );
 
-    const metadataParsed = JSON.parse(stringMetadata)
-    if (metadataParsed.metadata_version !== 'v1.0.0') {
+    if (metadataParsed.metadata_version !== "v1.0.0") {
       throw new Error(
         `Incorrect metadata version: Expected v1.0.0 and got ${metadataParsed.metadata_version}`,
-      )
+      );
     }
+    const ipfs_metadata = JSON.parse(await IPFS.get(metadataParsed.ipld_cid));
 
-    return {
+    const metadata = {
       application: metadataParsed.application,
       app_version: metadataParsed.app_version,
-      app_storage: metadataParsed.app_storage,
-      ipfs_metadata: JSON.parse(await IPFS.get(metadataParsed.ipld_cid)),
+      contract_metadata: metadataParsed.app_storage,
+      ipfs_metadata,
     };
-  },
-}
+    console.log("metadata", metadata);
 
-export default ESP_1001
+    return metadata;
+  },
+};
+
+export default ESP_1001;

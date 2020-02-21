@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { ethers } from "ethers";
 
 const Ethers = {
   /**
@@ -8,15 +8,15 @@ const Ethers = {
    */
   getProvider: (ethersProvider = null) => {
     if (ethersProvider !== null) {
-      return ethersProvider
+      return ethersProvider;
     }
 
-    if (typeof window !== 'undefined' && window.ethereum !== undefined) {
-      window.ethereum.autoRefreshOnNetworkChange = false
-      ethersProvider = new ethers.providers.Web3Provider(window.ethereum)
+    if (typeof window !== "undefined" && window.ethereum !== undefined) {
+      window.ethereum.autoRefreshOnNetworkChange = false;
+      ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
     }
 
-    return ethersProvider
+    return ethersProvider;
   },
 
   /**
@@ -26,9 +26,9 @@ const Ethers = {
    */
   getWallet: (ethersProvider = null) => {
     try {
-      return Ethers.getProvider(ethersProvider).getSigner()
+      return Ethers.getProvider(ethersProvider).getSigner();
     } catch (err) {
-      return null
+      return null;
     }
   },
 
@@ -40,20 +40,15 @@ const Ethers = {
    */
   isAddress: address => {
     try {
-      ethers.utils.getAddress(address)
-      return true
+      ethers.utils.getAddress(address);
+      return true;
     } catch (err) {
-      return false
+      return false;
     }
   },
 
-  getAddress: hex => {
-    const address = hex.replace(`0x${'0'.repeat(24)}`, '0x')
-    if (address === '0x') {
-      return hex
-    }
-
-    return ethers.utils.getAddress(address)
+  getAddress: address => {
+    return ethers.utils.getAddress(address);
   },
 
   parseEther: ether => ethers.utils.parseEther(ether),
@@ -62,11 +57,11 @@ const Ethers = {
   hexlify: value => ethers.utils.hexlify(value),
 
   getAccount: async (ethersProvider = null) => {
-    return await Ethers.getWallet(ethersProvider).getAddress()
+    return await Ethers.getWallet(ethersProvider).getAddress();
   },
 
   MaxUint256: () => ethers.constants.MaxUint256,
   AddressZero: () => ethers.constants.AddressZero,
-}
+};
 
-export default Ethers
+export default Ethers;

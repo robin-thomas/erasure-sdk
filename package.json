@@ -27,7 +27,7 @@
     "url": "https://github.com/robin-thomas/erasure-sdk/issues"
   },
   "devDependencies": {
-    "3box": "^1.16.1",
+    "3box": "^1.17.1",
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.8.4",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
@@ -35,7 +35,7 @@
     "@babel/preset-env": "^7.8.4",
     "@babel/register": "^7.8.3",
     "@babel/runtime": "^7.8.4",
-    "@erasure/abis": "^1.3.16",
+    "@erasure/abis": "^1.3.24",
     "@erasure/crypto-ipfs": "^1.2.4",
     "babel-loader": "^8.0.6",
     "bip39": "^3.0.2",
