@@ -18,7 +18,7 @@ SDK documentation can be found here: https://erasure-docs.robinthomas2591.now.sh
 SDK can be installed by,
 
 ```sh
-$ npm install @robinthomas/erasure-sdk
+$ npm install @erasure/sdk
 ```
 
 # Features

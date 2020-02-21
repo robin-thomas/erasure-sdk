@@ -1,9 +1,9 @@
 {
-  "name": "@robinthomas/erasure-sdk",
-  "version": "1.0.22",
+  "name": "@erasure/sdk",
+  "version": "1.1.0",
   "description": "Erasure SDK",
   "main": "dist/index.js",
-  "homepage": "https://github.com/robin-thomas/erasure-sdk#readme",
+  "homepage": "https://github.com/erasureprotocol/erasure-sdk#readme",
   "scripts": {
     "build": "webpack --mode=production",
     "start": "webpack --watch",
@@ -17,14 +17,14 @@
     "format": "prettier -c 'test/**/*.js' 'src/**/*.js' --config .prettierrc",
     "format-write": "prettier -c 'test/**/*.js' 'src/**/*.js' --config .prettierrc --write"
   },
-  "author": "Robin Thomas <robinthomas2591@gmail.com>",
+  "author": "Numerai Inc.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/robin-thomas/erasure-sdk.git"
+    "url": "git+https://github.com/erasureprotocol/erasure-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/robin-thomas/erasure-sdk/issues"
+    "url": "https://github.com/erasureprotocol/erasure-sdk/issues"
   },
   "devDependencies": {
     "3box": "^1.17.1",
