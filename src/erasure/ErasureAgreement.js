@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import BigNumber from "bignumber.js";
 
 import Abi from "../utils/Abi";
 import IPFS from "../utils/IPFS";
@@ -8,16 +9,17 @@ import Config from "../utils/Config";
 import ESP_1001 from "../utils/ESP_1001";
 import Contract from "../utils/Contract";
 
-import ErasurePost from './ErasurePost'
+import ErasurePost from "./ErasurePost";
 
 class ErasureAgreement {
   #abi = null;
   #type = "";
-  #token = null;
+  #tokenWrapper = null;
   #tokenID = null;
   #staker = null;
   #contract = null;
   #griefRatio = null;
+  #ratioType = null;
   #counterparty = null;
   #agreementAddress = null;
   #creationReceipt = null;
@@ -34,26 +36,20 @@ class ErasureAgreement {
    */
   constructor({
     type,
-    staker,
     token,
-    tokenID,
-    griefRatio,
-    counterparty,
     agreementAddress,
     creationReceipt,
     encodedMetadata,
   }) {
     this.#type = type;
-    this.#staker = staker;
-    this.#token = token;
-    this.#tokenID = tokenID;
-    this.#griefRatio = griefRatio;
-    this.#counterparty = counterparty;
+    this.#contract = Contract.contract(
+      type === "countdown" ? "CountdownGriefing" : "SimpleGriefing",
+      agreementAddress,
+    );
     this.#agreementAddress = agreementAddress;
     this.#creationReceipt = creationReceipt;
     this.#encodedMetadata = encodedMetadata;
-
-    this.#contract = Contract.contract(type === "countdown" ? "CountdownGriefing" : "SimpleGriefing", agreementAddress);
+    this.#tokenWrapper = token;
   }
 
   /**
@@ -123,7 +119,10 @@ class ErasureAgreement {
    * @method staker
    * @returns {address} address of the staker
    */
-  staker = () => {
+  staker = async () => {
+    if (!this.#staker) {
+      this.#staker = await this.contract().getStaker();
+    }
     return this.#staker;
   };
 
@@ -134,8 +133,47 @@ class ErasureAgreement {
    * @method counterparty
    * @returns {address} address of the counterparty
    */
-  counterparty = () => {
+  counterparty = async () => {
+    if (!this.#counterparty) {
+      this.#counterparty = await this.contract().getCounterparty();
+    }
     return this.#counterparty;
+  };
+
+  /**
+   * Get the griefRatio of this agreement
+   *
+   * @memberof ErasureAgreement
+   * @method griefRatio
+   * @returns {string} griefRatio
+   */
+  griefRatio = async () => {
+    if (!this.#griefRatio) {
+      const { ratio, ratioType } = await this.contract().getRatio(
+        await this.staker(),
+      );
+      this.#griefRatio = ethers.utils.formatEther(ratio);
+    }
+    console.log("griefRatio", this.#griefRatio);
+    return this.#griefRatio;
+  };
+
+  /**
+   * Get the ratioType of this agreement
+   *
+   * @memberof ErasureAgreement
+   * @method ratioType
+   * @returns {string} ratioType
+   */
+  ratioType = async () => {
+    if (!this.#ratioType) {
+      const { ratio, ratioType } = await this.contract().getRatio(
+        await this.staker(),
+      );
+      this.#ratioType = ratioType;
+    }
+    console.log("ratioType", this.#ratioType);
+    return this.#ratioType;
   };
 
   /**
@@ -145,7 +183,11 @@ class ErasureAgreement {
    * @method tokenID
    * @returns {integer} tokenID
    */
-  tokenID = () => {
+  tokenID = async () => {
+    if (!this.#tokenID) {
+      const res = await this.contract().getToken();
+      this.#tokenID = res.tokenID;
+    }
     return this.#tokenID;
   };
 
@@ -195,13 +237,19 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   stake = async amount => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider);
-    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
-      throw new Error(`stake() can be called only by staker: ${this.staker()}`);
+    const user = await Ethers.getAccount(Config.store.ethersProvider);
+    if (Ethers.getAddress(user) !== Ethers.getAddress(await this.staker())) {
+      throw new Error(
+        `stake() can be called only by staker: ${await this.staker()}`,
+      );
     }
 
     const stakeAmount = Ethers.parseEther(amount);
-    await this.#token.approve(this.tokenID(), this.address(), stakeAmount);
+    await this.#tokenWrapper.approve(
+      await this.tokenID(),
+      this.address(),
+      stakeAmount,
+    );
 
     const tx = await this.contract().increaseStake(stakeAmount);
     return await tx.wait();
@@ -216,17 +264,21 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   reward = async amount => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider);
+    const user = await Ethers.getAccount(Config.store.ethersProvider);
     if (
-      Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
+      Ethers.getAddress(user) !== Ethers.getAddress(await this.counterparty())
     ) {
       throw new Error(
-        `reward() can be called only by counterparty: ${this.counterparty()}`,
+        `reward() can be called only by counterparty: ${await this.counterparty()}`,
       );
     }
 
     const rewardAmount = Ethers.parseEther(amount);
-    await this.#token.approve(this.tokenID(), this.address(), rewardAmount);
+    await this.#tokenWrapper.approve(
+      await this.tokenID(),
+      this.address(),
+      rewardAmount,
+    );
 
     const tx = await this.contract().increaseStake(rewardAmount);
     return await tx.wait();
@@ -243,18 +295,30 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipt
    */
   punish = async (amount, message) => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider);
+    const user = await Ethers.getAccount(Config.store.ethersProvider);
     if (
-      Ethers.getAddress(operator) !== Ethers.getAddress(this.counterparty())
+      Ethers.getAddress(user) !== Ethers.getAddress(await this.counterparty())
     ) {
       throw new Error(
-        `punish() can be called only by counterparty: ${this.counterparty()}`,
+        `punish() can be called only by counterparty: ${await this.counterparty()}`,
       );
     }
 
+    console.log('amount', amount)
+    console.log('message', message)
+
     const punishAmount = Ethers.parseEther(amount);
-    const expectedCost = punishAmount.mul(this.#griefRatio);
-    await this.#token.approve(this.tokenID(), this.address(), expectedCost);
+    const expectedCost = await this.contract().getCost(
+      await this.griefRatio(),
+      punishAmount,
+      await this.ratioType(),
+    );
+    console.log("expectedCost", expectedCost);
+    await this.#tokenWrapper.approve(
+      await this.tokenID(),
+      this.address(),
+      ethers.utils.bigNumberify(expectedCost),
+    );
 
     const tx = await this.contract().punish(punishAmount, Buffer.from(message));
     const receipt = await tx.wait();
@@ -299,10 +363,10 @@ class ErasureAgreement {
    * @returns {Promise} transaction receipts
    */
   requestWithdraw = async () => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider);
-    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.staker())) {
+    const user = await Ethers.getAccount(Config.store.ethersProvider);
+    if (Ethers.getAddress(user) !== Ethers.getAddress(await this.staker())) {
       throw new Error(
-        `requestWithdraw() can be called only by staker: ${this.staker()}`,
+        `requestWithdraw() can be called only by staker: ${await this.staker()}`,
       );
     }
 
@@ -406,7 +470,7 @@ class ErasureAgreement {
       counterparty,
       tokenID,
       currentStake,
-      ratio,
+      ratio: ethers.utils.formatEther(ratio),
       ratioType,
       agreementLength,
       agreementDeadline,

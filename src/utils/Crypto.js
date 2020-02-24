@@ -39,15 +39,15 @@ const Crypto = {
      */
     genKeyPair: async (ethersProvider = null) => {
       try {
-        const operator = await Ethers.getAccount(ethersProvider)
+        const user = await Ethers.getAccount(ethersProvider)
 
-        const msg = `I am signing this message to generate my ErasureClient keypair as ${operator}`
+        const msg = `I am signing this message to generate my ErasureClient keypair as ${user}`
         const signature = await Ethers.getWallet(ethersProvider).signMessage(
           msg,
         )
 
         const salt = createHash('sha256')
-          .update(operator)
+          .update(user)
           .digest('base64')
 
         const key = cryptoIpfs.asymmetric.generateKeyPair(signature, salt)

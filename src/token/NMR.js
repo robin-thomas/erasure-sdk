@@ -1,11 +1,11 @@
-import { ethers } from 'ethers'
+import { ethers } from "ethers";
 
-import Config from '../utils/Config'
-import Contract from '../utils/Contract'
-import Ethers from '../utils/Ethers'
+import Config from "../utils/Config";
+import Contract from "../utils/Contract";
+import Ethers from "../utils/Ethers";
 
 class NMR {
-  #contract = null
+  #contract = null;
 
   /**
    * @constructor
@@ -21,13 +21,12 @@ class NMR {
    */
   allowance = async spender => {
     try {
-      const operator = await Ethers.getAccount(Config.store.ethersProvider)
-
-      return this.#contract.allowance(operator, spender)
+      const user = await Ethers.getAccount(Config.store.ethersProvider);
+      return this.#contract.allowance(user, spender);
     } catch (err) {
-      throw err
+      throw err;
     }
-  }
+  };
 
   /**
    * Change the approval so that NMR could be staked
@@ -45,12 +44,12 @@ class NMR {
         spender,
         oldValue,
         newValue,
-      )
-      return await tx.wait()
+      );
+      return await tx.wait();
     } catch (err) {
-      throw err
+      throw err;
     }
-  }
+  };
 
   /**
    * Mints some mock NMR tokens
@@ -61,12 +60,12 @@ class NMR {
    */
   mintMockTokens = async (to, value) => {
     try {
-      const tx = await this.#contract.mintMockTokens(to, value)
-      return await tx.wait()
+      const tx = await this.#contract.mintMockTokens(to, value);
+      return await tx.wait();
     } catch (err) {
-      throw err
+      throw err;
     }
-  }
+  };
 }
 
-export default NMR
+export default NMR;

@@ -48,6 +48,9 @@ const Ethers = {
   },
 
   getAddress: address => {
+    if (address.length > 42) {
+      address = "0x" + address.slice(-40);
+    }
     return ethers.utils.getAddress(address);
   },
 

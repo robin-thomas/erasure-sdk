@@ -337,19 +337,6 @@ class ErasureClient {
     tokenID = constants.TOKEN_TYPES.NMR,
     metadata,
   }) {
-    console.log({
-      operator,
-      buyer,
-      seller,
-      paymentAmount,
-      stakeAmount,
-      escrowCountdown,
-      griefRatio,
-      griefRatioType,
-      agreementCountdown,
-      tokenID,
-      metadata,
-    });
     operator = operator || ethers.constants.AddressZero;
     buyer = buyer || ethers.constants.AddressZero;
     seller = seller || ethers.constants.AddressZero;
@@ -443,21 +430,21 @@ class ErasureClient {
   async mintMockTokens(
     paymentAmount,
     tokenID = constants.TOKEN_TYPES.NMR,
-    operator = null,
+    user = null,
   ) {
     if (!this.#token) {
       throw new Error("You need to call login() first");
     }
 
     try {
-      if (!operator) {
-        operator = await Ethers.getAccount(this.#ethersProvider);
-      } else if (!Ethers.isAddress(operator)) {
-        throw new Error(`Not a valid address: ${address}`);
+      if (!user) {
+        user = await Ethers.getAccount(this.#ethersProvider);
+      } else if (!Ethers.isAddress(user)) {
+        throw new Error(`Not a valid address: ${user}`);
       }
 
       paymentAmount = Ethers.parseEther(paymentAmount);
-      await this.#token.mintMockTokens(tokenID, operator, paymentAmount);
+      await this.#token.mintMockTokens(tokenID, user, paymentAmount);
     } catch (err) {
       throw err;
     }

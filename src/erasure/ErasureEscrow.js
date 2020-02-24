@@ -242,9 +242,9 @@ class ErasureEscrow {
       address: agreementAddress,
       type: "countdown",
       tokenID: getdata.tokenID,
-      staker: getdata.buyer,
+      staker: getdata.seller,
       griefRatio: getdata.ratio,
-      counterparty: getdata.seller,
+      counterparty: getdata.buyer,
       creationReceipt: null,
       encodedMetadata: "0x",
     });
@@ -282,14 +282,16 @@ class ErasureEscrow {
         topics: [ethers.utils.id("DataSubmitted(bytes)")],
         fromBlock: 0,
       });
-      datasold = Abi.decode(["bytes"], logs[0].data);
+      datasold = JSON.parse(
+        ethers.utils.toUtf8String(Abi.decode(["bytes"], logs[0].data)[0]),
+      );
     }
 
     return {
       tokenID,
       paymentAmount: ethers.utils.formatEther(paymentAmount),
       stakeAmount: ethers.utils.formatEther(stakeAmount),
-      ratio,
+      ratio: ethers.utils.formatEther(ratio).toString(),
       ratioType,
       agreementLength: countdownLength,
       escrowLength,
@@ -313,19 +315,25 @@ class ErasureEscrow {
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipt
    */
-  depositStake = async proofhash => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider);
-    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.seller())) {
-      throw new Error(
-        `depositStake() can only be called by the seller: ${this.seller()}`,
-      );
-    }
+  depositStake = async (proofhash, extraData) => {
+    const user = await Ethers.getAccount(Config.store.ethersProvider);
 
     const stakeAmount = Ethers.parseEther(this.#stakeAmount);
     await this.#token.approve(this.tokenID(), this.address(), stakeAmount);
 
-    const tx = await this.contract().depositStake();
+    let tx;
+    if (Ethers.getAddress(this.seller()) === ethers.constants.AddressZero) {
+      tx = await this.contract().depositAndSetSeller(user);
+    } else if (Ethers.getAddress(user) !== Ethers.getAddress(this.seller())) {
+      throw new Error(
+        `depositStake() can only be called by the seller: ${this.seller()}`,
+      );
+    } else {
+      tx = await this.contract().depositStake();
+    }
+
     const receipt = await tx.wait();
+    this.#seller = user;
 
     // If the payment is already deposited, also send the encrypted symkey
     let agreementAddress = null;
@@ -335,6 +343,7 @@ class ErasureEscrow {
     if (isFinalized) {
       ({ agreementAddress } = await this.finalize(
         proofhash,
+        extraData,
         true /* finalized */,
       ));
     }
@@ -356,26 +365,15 @@ class ErasureEscrow {
     const user = await Ethers.getAccount(Config.store.ethersProvider);
     if (Ethers.getAddress(user) !== Ethers.getAddress(this.buyer())) {
       throw new Error(
-        `depositPayment() can only be called by the seller: ${this.buyer()}`,
+        `depositPayment() can only be called by the buyer: ${this.buyer()}`,
       );
     }
 
     const paymentAmount = Ethers.parseEther(this.#paymentAmount);
-    console.log("tokenID", this.tokenID());
     console.log("escrow_address", this.address());
     await this.#token.approve(this.tokenID(), this.address(), paymentAmount);
-    console.log(
-      "approve successfull",
-      Ethers.formatEther(paymentAmount),
-      "DAI",
-    );
 
     const tx = await this.contract().depositPayment();
-    console.log(
-      "depositPayment successfull",
-      Ethers.formatEther(paymentAmount),
-      "DAI",
-    );
     return await tx.wait();
   };
 
@@ -385,14 +383,19 @@ class ErasureEscrow {
    * @memberof ErasureEscrow
    * @method finalize
    * @param proofhash proofhash of the data to sell
+   * @param extraData additional data to submit to the contract
    * @param finalized true if finalize function already called and only submitting data
    * @returns {Promise} address of the agreement
    * @returns {Promise} transaction receipts
    */
-  finalize = async (proofhash, finalized = false) => {
+  finalize = async (proofhash, extraData, finalized = false) => {
     const keypair = await Box.getKeyPair(Config.store.web3Provider);
     if (keypair === null) {
       throw new Error("Cannot find the keypair of this user!");
+    }
+
+    if (typeof proofhash === "object") {
+      proofhash = proofhash.proofhash;
     }
 
     const symKey = await Box.getSymKey(proofhash, Config.store.web3Provider);
@@ -403,7 +406,7 @@ class ErasureEscrow {
         secretKey: keypair.key.secretKey,
       },
     };
-
+    ``;
     // Encrypt the symKey
     const nonce = Crypto.asymmetric.genNonce();
     const encryptedSymKey = Crypto.asymmetric.encrypt(
@@ -434,6 +437,8 @@ class ErasureEscrow {
     const tx = await this.contract().submitData(
       Buffer.from(
         JSON.stringify({
+          proofhash,
+          ...extraData,
           nonce: nonce.toString(),
           encryptedSymKey: encryptedSymKey.toString(),
         }),
