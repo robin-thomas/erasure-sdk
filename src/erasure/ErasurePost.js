@@ -194,18 +194,18 @@ class ErasurePost {
     agreementCountdown,
     metadata,
   }) => {
-    const operator = await Ethers.getAccount(Config.store.ethersProvider);
-    if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
+    const user = await Ethers.getAccount(Config.store.ethersProvider);
+    if (Ethers.getAddress(user) !== Ethers.getAddress(this.owner())) {
       throw new Error(
         `offerSell() can only be called by the owner: ${this.owner()}`,
       );
     }
 
     return await this.#escrowFactory.create({
-      operator,
+      user,
       ...(buyer !== undefined && buyer !== null
         ? { buyer }
-        : { buyer: operator }),
+        : { buyer: user }),
       seller: this.owner(),
       paymentAmount,
       stakeAmount,
@@ -298,7 +298,6 @@ class ErasurePost {
     const seller = this.owner();
 
     return await this.#escrowFactory.create({
-      operator: buyer,
       buyer,
       seller,
       paymentAmount,

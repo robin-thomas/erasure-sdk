@@ -1,4 +1,4 @@
-import { ethers } from 'ethers'
+import { ethers } from "ethers";
 
 import Config from "./Config";
 import Ethers from "./Ethers";
@@ -12,15 +12,19 @@ const Contract = {
       case "DAI":
         name = "MockERC20";
         address = Config.store.registry.DAI;
+        console.log("DAI", address);
         break;
 
       case "NMR":
         name = "MockNMR";
         address = Config.store.registry.NMR;
+        console.log("NMR", address);
         break;
     }
 
-    const { abi } = require(`@erasure/abis/src/${protocolVersion}/abis/${name}.json`);
+    const {
+      abi,
+    } = require(`@erasure/abis/src/${protocolVersion}/abis/${name}.json`);
 
     const contract = new ethers.Contract(
       address ? address : Config.store.registry[name],
@@ -28,13 +32,16 @@ const Contract = {
       Ethers.getWallet(Config.store.ethersProvider),
     );
 
-    const fnTxList = Object.keys(contract.interface.functions).reduce((p, c) => {
-      if (contract.interface.functions[c].type === "transaction") {
-        p[c] = c;
-      }
+    const fnTxList = Object.keys(contract.interface.functions).reduce(
+      (p, c) => {
+        if (contract.interface.functions[c].type === "transaction") {
+          p[c] = c;
+        }
 
-      return p;
-    }, {});
+        return p;
+      },
+      {},
+    );
 
     const isAuthereum = Config.store.web3Provider.currentProvider.isAuthereum;
 
@@ -47,7 +54,7 @@ const Contract = {
           }
         }
         return contract[fn](...args);
-      }
+      };
       return p;
     }, {});
 
@@ -55,7 +62,7 @@ const Contract = {
       ...contract,
       ...functions,
     };
-  }
+  },
 };
 
 export default Contract;

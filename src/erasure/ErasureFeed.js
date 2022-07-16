@@ -1,28 +1,28 @@
-import { ethers } from 'ethers'
-import { constants } from '@erasure/crypto-ipfs'
+import { ethers } from "ethers";
+import { constants } from "@erasure/crypto-ipfs";
 
-import ErasurePost from './ErasurePost'
-import Escrow_Factory from '../factory/Escrow_Factory'
+import ErasurePost from "./ErasurePost";
+import Escrow_Factory from "../factory/Escrow_Factory";
 
-import Abi from '../utils/Abi'
-import Box from '../utils/3Box'
-import IPFS from '../utils/IPFS'
-import Utils from '../utils/Utils'
-import Crypto from '../utils/Crypto'
-import Ethers from '../utils/Ethers'
-import Config from '../utils/Config'
-import ESP_1001 from '../utils/ESP_1001'
+import Abi from "../utils/Abi";
+import Box from "../utils/3Box";
+import IPFS from "../utils/IPFS";
+import Utils from "../utils/Utils";
+import Crypto from "../utils/Crypto";
+import Ethers from "../utils/Ethers";
+import Config from "../utils/Config";
+import ESP_1001 from "../utils/ESP_1001";
 import Contract from "../utils/Contract";
 
 class ErasureFeed {
-  #owner = null
-  #tokenManager = null
-  #encodedMetadata = null
-  #numSold = 0
-  #contract = null
-  #feedAddress = null
-  #escrowFactory = null
-  #creationReceipt = null
+  #owner = null;
+  #tokenManager = null;
+  #encodedMetadata = null;
+  #numSold = 0;
+  #contract = null;
+  #feedAddress = null;
+  #escrowFactory = null;
+  #creationReceipt = null;
 
   /**
    * @constructor
@@ -41,12 +41,12 @@ class ErasureFeed {
     creationReceipt,
     encodedMetadata,
   }) {
-    this.#owner = owner
-    this.#tokenManager = tokenManager
-    this.#feedAddress = feedAddress
-    this.#escrowFactory = escrowFactory
-    this.#creationReceipt = creationReceipt
-    this.#encodedMetadata = encodedMetadata
+    this.#owner = owner;
+    this.#tokenManager = tokenManager;
+    this.#feedAddress = feedAddress;
+    this.#escrowFactory = escrowFactory;
+    this.#creationReceipt = creationReceipt;
+    this.#encodedMetadata = encodedMetadata;
 
     this.#contract = Contract.contract("Feed", feedAddress);
   }
@@ -58,8 +58,8 @@ class ErasureFeed {
    * @method contract
    */
   contract = () => {
-    return this.#contract
-  }
+    return this.#contract;
+  };
 
   /**
    * Get the address of this feed
@@ -69,8 +69,8 @@ class ErasureFeed {
    * @returns {address} address of the feed
    */
   address = () => {
-    return this.#feedAddress
-  }
+    return this.#feedAddress;
+  };
 
   /**
    * Get the creationReceipt of this feed
@@ -80,8 +80,8 @@ class ErasureFeed {
    * @returns {Object}
    */
   creationReceipt = () => {
-    return this.#creationReceipt
-  }
+    return this.#creationReceipt;
+  };
 
   /**
    * Get the creation timestamp of this feed
@@ -93,9 +93,9 @@ class ErasureFeed {
   getCreationTimestamp = async () => {
     const block = await Config.store.ethersProvider.getBlock(
       this.#creationReceipt.blockNumber,
-    )
-    return block.timestamp
-  }
+    );
+    return block.timestamp;
+  };
 
   /**
    * Get the address of the owner of this feed
@@ -105,8 +105,8 @@ class ErasureFeed {
    * @returns {address} address of the owner
    */
   owner = () => {
-    return this.#owner
-  }
+    return this.#owner;
+  };
 
   /**
    * Get the metadata of this feed
@@ -116,12 +116,12 @@ class ErasureFeed {
    * @returns {object} metadata
    */
   metadata = async () => {
-    if (this.#encodedMetadata !== '0x') {
-      return await ESP_1001.decodeMetadata(this.#encodedMetadata)
+    if (this.#encodedMetadata !== "0x") {
+      return await ESP_1001.decodeMetadata(this.#encodedMetadata);
     } else {
-      return this.#encodedMetadata
+      return this.#encodedMetadata;
     }
-  }
+  };
 
   /**
    * Get the amount of a tokens staked on this feed
@@ -138,8 +138,8 @@ class ErasureFeed {
       DAI: Ethers.formatEther(
         await this.#contract.getStake(constants.TOKEN_TYPES.DAI),
       ),
-    }
-  }
+    };
+  };
 
   /**
    * Get the amount of a tokens staked on this feed
@@ -150,9 +150,9 @@ class ErasureFeed {
    * @returns {Promise} amount of tokens at stake
    */
   getStakeByTokenID = async tokenID => {
-    const stake = await this.contract().getStake(tokenID)
-    return Ethers.formatEther(stake)
-  }
+    const stake = await this.contract().getStake(tokenID);
+    return Ethers.formatEther(stake);
+  };
 
   /**
    * Deposit tokens as a stake on this feed
@@ -164,11 +164,11 @@ class ErasureFeed {
    * @returns {Promise} transaction receipt
    */
   depositStake = async (tokenID, amount) => {
-    const stakeAmount = Ethers.parseEther(amount)
-    await this.#tokenManager.approve(tokenID, this.address(), stakeAmount)
+    const stakeAmount = Ethers.parseEther(amount);
+    await this.#tokenManager.approve(tokenID, this.address(), stakeAmount);
 
-    return this.contract().depositStake(tokenID, stakeAmount)
-  }
+    return this.contract().depositStake(tokenID, stakeAmount);
+  };
 
   /**
    * Withdraw tokens as a stake on this feed
@@ -181,11 +181,11 @@ class ErasureFeed {
    */
   withdrawStake = async (tokenID, amount = null) => {
     if (amount === null) {
-      amount = await this.getStakeByTokenID(tokenID)
+      amount = await this.getStakeByTokenID(tokenID);
     }
-    const stakeAmount = Ethers.parseEther(amount)
-    return this.contract().withdrawStake(tokenID, stakeAmount)
-  }
+    const stakeAmount = Ethers.parseEther(amount);
+    return this.contract().withdrawStake(tokenID, stakeAmount);
+  };
 
   /**
    * Submit new data to this feed
@@ -200,39 +200,39 @@ class ErasureFeed {
    */
   createPost = async (data, proofhash = null) => {
     try {
-      const operator = await Ethers.getAccount(Config.store.ethersProvider)
-      if (Ethers.getAddress(operator) !== Ethers.getAddress(this.owner())) {
+      const user = await Ethers.getAccount(Config.store.ethersProvider);
+      if (Ethers.getAddress(user) !== Ethers.getAddress(this.owner())) {
         throw new Error(
           `createPost() can only be called by the owner: ${this.owner()}`,
-        )
+        );
       }
 
       if (proofhash === null) {
         // Get the IPFS hash of the post without uploading it to IPFS.
-        const datahash = await IPFS.getHash(data)
+        const datahash = await IPFS.getHash(data);
 
-        const symKey = Crypto.symmetric.genKey()
-        const keyhash = await IPFS.getHash(symKey)
+        const symKey = Crypto.symmetric.genKey();
+        const keyhash = await IPFS.getHash(symKey);
 
         // Store the symKey in the keystore.
-        await Box.setSymKey(keyhash, symKey, Config.store.web3Provider)
+        await Box.setSymKey(keyhash, symKey, Config.store.web3Provider);
 
-        const encryptedPost = Crypto.symmetric.encrypt(symKey, data)
-        const encryptedDatahash = await IPFS.add(encryptedPost)
+        const encryptedPost = Crypto.symmetric.encrypt(symKey, data);
+        const encryptedDatahash = await IPFS.add(encryptedPost);
 
         const staticMetadataB58 = await IPFS.add(
           JSON.stringify({
-            creator: operator,
+            creator: user,
             datahash,
             keyhash,
             encryptedDatahash,
           }),
-        )
+        );
         proofhash = Utils.hashToSha256(staticMetadataB58);
       }
 
-      const tx = await this.contract().submitHash(proofhash)
-      const creationReceipt = await tx.wait()
+      const tx = await this.contract().submitHash(proofhash);
+      const creationReceipt = await tx.wait();
 
       return new ErasurePost({
         proofhash,
@@ -240,23 +240,23 @@ class ErasureFeed {
         feedAddress: this.address(),
         escrowFactory: this.#escrowFactory,
         creationReceipt,
-      })
+      });
     } catch (err) {
-      throw err
+      throw err;
     }
-  }
+  };
 
   createClone = async proofhash => {
     const logs = await Config.store.ethersProvider.getLogs({
       address: this.address(),
       fromBlock: 0,
-      topics: [ethers.utils.id('HashSubmitted(bytes32)')],
-    })
-    const found = logs.filter(ele => ele.data === proofhash)[0]
+      topics: [ethers.utils.id("HashSubmitted(bytes32)")],
+    });
+    const found = logs.filter(ele => ele.data === proofhash)[0];
 
     const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
       found.transactionHash,
-    )
+    );
 
     return new ErasurePost({
       proofhash,
@@ -264,8 +264,8 @@ class ErasureFeed {
       feedAddress: this.address(),
       escrowFactory: this.#escrowFactory,
       creationReceipt,
-    })
-  }
+    });
+  };
 
   /**
    * Get all the posts submitted to this feed
@@ -277,16 +277,16 @@ class ErasureFeed {
   getPosts = async () => {
     let results = await Config.store.ethersProvider.getLogs({
       address: this.address(),
-      topics: [ethers.utils.id('HashSubmitted(bytes32)')],
+      topics: [ethers.utils.id("HashSubmitted(bytes32)")],
       fromBlock: 0,
-    })
+    });
 
-    let posts = []
+    let posts = [];
     if (results && results.length > 0) {
       for (const result of results) {
         const creationReceipt = await Config.store.ethersProvider.getTransactionReceipt(
           result.transactionHash,
-        )
+        );
 
         posts.push(
           new ErasurePost({
@@ -296,12 +296,12 @@ class ErasureFeed {
             escrowFactory: this.#escrowFactory,
             creationReceipt,
           }),
-        )
+        );
       }
     }
 
-    return posts
-  }
+    return posts;
+  };
 
   /**
    * Reveal all posts in this feed publically
@@ -312,15 +312,15 @@ class ErasureFeed {
    * @returns {Promise} array of base58 multihash format of the ipfs address of the revealed keys
    */
   reveal = async () => {
-    const posts = await this.getPosts()
+    const posts = await this.getPosts();
 
-    let hashes = []
+    let hashes = [];
     for (const post of posts) {
-      hashes.push(await post.reveal())
+      hashes.push(await post.reveal());
     }
 
-    return hashes
-  }
+    return hashes;
+  };
 
   /**
    * Get the status of the feed
@@ -330,18 +330,18 @@ class ErasureFeed {
    * @returns {Promise} revealed bool true if the feed is revealed
    */
   checkStatus = async () => {
-    let revealed = false
+    let revealed = false;
 
-    const posts = await this.getPosts()
+    const posts = await this.getPosts();
     for (const post of posts) {
       if (await post.isRevealed()) {
-        revealed = true
-        break
+        revealed = true;
+        break;
       }
     }
 
-    return { revealed }
-  }
+    return { revealed };
+  };
 }
 
-export default ErasureFeed
+export default ErasureFeed;

@@ -49,8 +49,11 @@ class Feed_Factory {
       const tx = await this.#contract.create(callData);
       const creationReceipt = await tx.wait();
 
+      const user = await Ethers.getAccount(Config.store.ethersProvider);
+      console.log("user", user);
+
       return new ErasureFeed({
-        owner: operator,
+        owner: user,
         tokenManager: this.#tokenManager,
         feedAddress: creationReceipt.logs[0].address,
         escrowFactory: this.#escrowFactory,
@@ -63,12 +66,8 @@ class Feed_Factory {
   };
 
   createClone = async (address, creationReceipt) => {
-    const logs = await Config.store.ethersProvider.getLogs({
-      address,
-      fromBlock: 0,
-      topics: [ethers.utils.id("OperatorUpdated(address)")],
-    });
-    const owner = Ethers.getAddress(logs[logs.length - 1].data);
+    const contract = Contract.contract("Feed", address);
+    const owner = await contract.getCreator();
 
     const logsMetadata = await Config.store.ethersProvider.getLogs({
       address,
@@ -84,7 +83,7 @@ class Feed_Factory {
     }
 
     return new ErasureFeed({
-      owner,
+      owner: contract,
       feedAddress: address,
       escrowFactory: this.#escrowFactory,
       creationReceipt,
@@ -103,8 +102,8 @@ class Feed_Factory {
       let feeds = [];
       if (results && results.length > 0) {
         for (const result of results) {
-          const owner = Ethers.getAddress(result.topics[2]);
           const feedAddress = Ethers.getAddress(result.topics[1]);
+          const owner = Ethers.getAddress(result.topics[2]);
 
           if (user !== null && owner !== Ethers.getAddress(user)) {
             continue;
