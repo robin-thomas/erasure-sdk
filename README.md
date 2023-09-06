@@ -3,6 +3,8 @@
 ![](https://img.shields.io/badge/nodejs-12.04-blue.svg)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+## [Winner of CoinList + Erasure hackathon!!](https://medium.com/coinlist/announcing-the-winners-of-the-erasure-coinlist-hackathon-84462559b26c)
+
 # Table of Contents
 
 1. [Introduction](#introduction)
